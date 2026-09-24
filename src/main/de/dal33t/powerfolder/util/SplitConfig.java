@@ -125,11 +125,19 @@ public class SplitConfig extends Properties {
             return 0;
         }
         int removed = 0;
-        Iterator<Object> keys = folders.keySet().iterator();
-        while (keys.hasNext()) {
-            if (String.valueOf(keys.next()).startsWith(prefix)) {
-                keys.remove();
-                removed++;
+        /* On the folder half itself, which is the monitor PropertiesUtil.store0 holds for the whole
+           write of the config file. Removing through a Hashtable iterator does NOT take it - only the
+           Hashtable's own methods do - so a removal landed in the middle of a save: the key was still
+           in the snapshot store0 had taken, get() answered null for it, and saveConvert threw a
+           NullPointerException. The remove(key) this replaced took that monitor per key and was
+           mutually exclusive with the save without saying so. */
+        synchronized (folders) {
+            Iterator<Object> keys = folders.keySet().iterator();
+            while (keys.hasNext()) {
+                if (String.valueOf(keys.next()).startsWith(prefix)) {
+                    keys.remove();
+                    removed++;
+                }
             }
         }
         return removed;

@@ -94,6 +94,47 @@ public class AccountTest {
     }
 
     /**
+     * PFS-5722: {@link Account#hasAdminPermission(FolderInfo, String)} answers at the ADDRESSED
+     * location, like the read and write checks since PFS-5510. An account invited to a subfolder
+     * alone is admin inside it although it holds nothing on the folder above - which is how a
+     * request addresses a file: top folder plus a path.
+     */
+    @Test
+    public void testAdminCountsAtTheAddressedLocation() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "structure/SubA", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo subA = FolderInfoFactory.newFolder(location);
+
+        // Invited to SubA as its admin, nothing at all on the folder above.
+        Account subAdmin = new Account();
+        subAdmin.grant(FolderPermission.admin(subA));
+
+        assertFalse("Not admin of the folder above", subAdmin.hasAdminPermission(top));
+        assertFalse("... and not by an unrelated path either",
+            subAdmin.hasAdminPermission(top, "elsewhere/file.txt"));
+        assertTrue("Admin at the addressed location", subAdmin.hasAdminPermission(top, "structure/SubA"));
+        assertTrue("... and deeper inside it",
+            subAdmin.hasAdminPermission(top, "structure/SubA/deeper/file.txt"));
+        assertTrue("... also when the subfolder itself is addressed",
+            subAdmin.hasAdminPermission(subA, "deeper/file.txt"));
+        assertTrue("... addressed by the file",
+            subAdmin.hasAdminPermission(FileInfoFactory.unmarshallExistingFile(top,
+                "structure/SubA/deeper/file.txt", null, 0, null, null, new Date(), 1, null, false, null)));
+
+        // Write access is not admin, however deep it is granted.
+        Account writer = new Account();
+        writer.grant(FolderPermission.readWrite(subA));
+        assertFalse("Read/write in the subfolder is not admin of it",
+            writer.hasAdminPermission(top, "structure/SubA/file.txt"));
+
+        // And an admin of the top folder stays admin below it - inheritance is not touched.
+        Account topAdmin = new Account();
+        topAdmin.grant(FolderPermission.admin(top));
+        assertTrue("The admin above is admin below", topAdmin.hasAdminPermission(top, "structure/SubA/file.txt"));
+    }
+
+    /**
      * PFS-5510: mirrors the manually verified end-to-end scenario (localhost + narvi QA):
      * hans@powerfolder.com holds direct READ on the top folder "!Test!", the group "Schreibgruppe"
      * holds READ_WRITE on the shared subfolder "!Test!/Schreibrechte", and hans is a member of that

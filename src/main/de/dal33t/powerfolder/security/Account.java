@@ -244,7 +244,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
-    @Cache(usage = CacheConcurrencyStrategy.NONE)
+    /* Cached (PFS-5878) since a change to it reaches the other nodes (PFS-5913). The region's TTL is short
+     * on purpose: a copy left behind by a lost broadcast grants a permission twice and fails the login. */
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
@@ -302,6 +304,9 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.groups = new CopyOnWriteArrayList<>();
         this.emails = new CopyOnWriteArrayList<>();
         this.tokens = new ConcurrentHashMap<>();
+        // SP-7193: Every new account carries its creation date, whichever path creates it. Accounts loaded from
+        // the database are populated field by field afterwards, so an old record without a date stays as it is.
+        this.registerDate = new Date();
     }
 
     /**
@@ -1930,11 +1935,9 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     /**
      * Answers if the user is admin of the folder. Inheritance from the top folder and its interruption
-     * (PFC-3543) are honored, but only for the folder that is passed in - there is no path-aware
-     * overload like {@link #hasWritePermissions(FolderInfo, String)}. A caller that holds a top folder
-     * plus a path must resolve the addressed subfolder first (see
-     * {@code RequestAnalyzer.getFolder(true)}), otherwise it asks about the top folder and allows too
-     * much.
+     * (PFC-3543) are honored, but only for the folder that is passed in: a caller that holds a top
+     * folder plus a path asks about the top folder here and refuses an admin of the subfolder the path
+     * leads into. Such a caller wants {@link #hasAdminPermission(FolderInfo, String)}.
      *
      * @param foInfo the folder to check
      * @return true if the user is admin of the folder.
@@ -1942,6 +1945,34 @@ public class Account implements Serializable, D2DObject, Auditable {
     public boolean hasAdminPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.admin(foInfo));
+    }
+
+    /**
+     * PFS-5722: Answers if the user is admin at the addressed location - the EFFECTIVE access resolves
+     * the enclosing shared subfolder (granted directly or through (nested) groups), see
+     * {@link #getAllowedAccess(FolderInfo, String)}. The read and write checks have had this since
+     * PFS-5510; without it every action that asks for ADMIN was answered by the top folder, so an
+     * account invited to a subfolder alone could not create, change or remove a public link on
+     * anything inside it.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the user is admin at the addressed location.
+     */
+    public boolean hasAdminPermission(FolderInfo foInfo, String subDirPath) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.ADMIN) >= 0;
+    }
+
+    /**
+     * PFS-5722: Like {@link #hasAdminPermission(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the user is admin at the file's location.
+     */
+    public boolean hasAdminPermission(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasAdminPermission(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
     }
 
     public boolean hasTwoFactorAuthenticationToken() {

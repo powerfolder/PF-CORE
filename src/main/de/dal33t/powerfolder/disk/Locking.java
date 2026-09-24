@@ -214,13 +214,37 @@ public class Locking extends PFComponent {
         return getLock(lockPath);
     }
 
+    /**
+     * Whether this node can say anything about the locks of a file: a lock is a file in the meta
+     * folder of the tree, so only the node that holds the folder has one to look in.
+     *
+     * @param fInfo the file, may be null
+     *
+     * @return true when the lock files of this file's tree are here
+     */
+    public boolean knowsLocksOf(FileInfo fInfo) {
+        if (fInfo == null || fInfo.getFolderInfo() == null) {
+            return false;
+        }
+        /* The tree the lock files belong to, which for a subfolder is its top folder - the same one
+           getLockFile() arrives at, it just builds a whole FileInfo on the way there. */
+        FolderInfo topFolder = fInfo.getFolderInfo().getTopFolder();
+        if (topFolder == null) {
+            topFolder = fInfo.getFolderInfo();
+        }
+        return getController().getFolderRepository().getMetaFolder(topFolder) != null;
+    }
+
     private Path getLockFile(FileInfo fInfo) {
         fInfo = FileInfoFactory.mapToTopFolder(fInfo);
         Folder metaFolder = getController().getFolderRepository()
                 .getMetaFolder(fInfo.getFolderInfo());
         if (metaFolder == null) {
-            logWarning("Meta-folder for " + fInfo.getFolderInfo()
-                    + " not found");
+            /* A folder of another cluster node: its meta folder is there, not here, so there is
+               nothing to look in and nothing wrong either. Asked once per file of a listing, this
+               was 136 647 warnings in a day on one node of the customer's cluster - 70 percent of
+               its log, and two seconds of writing for a single listing of a thousand files. */
+            logFine("Meta-folder for " + fInfo.getFolderInfo() + " not found");
             return null;
         }
         Path baseDir = metaFolder.getLocalBase().resolve(

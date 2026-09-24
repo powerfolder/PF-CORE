@@ -132,8 +132,13 @@ public class LuceneIndexManager extends PFComponent {
     /** PFS-5653: who a "device:" search looks at - the name of the device a file was last written on. */
     private static final String[] DEVICE_FIELDS = {"modifiedByDeviceName"};
 
+    /**
+     * The fields a QUOTED phrase is searched in. The tags are among them: a tag is written as a phrase
+     * ("Hallo BVL 2") and putting it in quotes is the obvious way to ask for exactly it - which found
+     * nothing at all while the tag field stood outside this list.
+     */
     private static final String[] PHRASE_FIELDS =
-            {"fileName", "relativeName", CONTENT_FIELD};
+            {"fileName", "relativeName", CONTENT_FIELD, "tags"};
 
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
@@ -1658,18 +1663,39 @@ public class LuceneIndexManager extends PFComponent {
      * @return the query, or null if there is nothing to filter by.
      */
     private static Query fileNameQuery(String value) {
+        /* No name: in the query means no value here, which is the normal case - every search that filters
+         * by nothing asks this method. It used to fall out of indexTerms(null) as an empty list; since the
+         * value is read directly, the absence has to be answered here. */
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String token : indexTerms(value)) {
-            BooleanQuery.Builder word = new BooleanQuery.Builder();
-            for (String field : NAME_FIELDS) {
-                word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
-                word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
-                word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+        for (String rawWord : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
+            /* A word with a star or a question mark in it is the pattern the user wrote and is asked as
+             * it stands; the analyzer would throw those characters away with the rest of the
+             * punctuation. Every other word keeps the three shapes name: always had. */
+            if (isWildcardPattern(rawWord)) {
+                BooleanQuery.Builder pattern = new BooleanQuery.Builder();
+                for (String field : NAME_FIELDS) {
+                    pattern.add(new WildcardQuery(new Term(field, rawWord)), BooleanClause.Occur.SHOULD);
+                }
+                pattern.setMinimumNumberShouldMatch(1);
+                allWords.add(pattern.build(), BooleanClause.Occur.MUST);
+                any = true;
+                continue;
             }
-            word.setMinimumNumberShouldMatch(1);
-            allWords.add(word.build(), BooleanClause.Occur.MUST);
-            any = true;
+            for (String token : indexTerms(rawWord)) {
+                BooleanQuery.Builder word = new BooleanQuery.Builder();
+                for (String field : NAME_FIELDS) {
+                    word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                    word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                    word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+                }
+                word.setMinimumNumberShouldMatch(1);
+                allWords.add(word.build(), BooleanClause.Occur.MUST);
+                any = true;
+            }
         }
         return any ? allWords.build() : null;
     }
@@ -1834,18 +1860,45 @@ public class LuceneIndexManager extends PFComponent {
             /* The filter clauses are built once; the keyword part is added on top, so the query can be
              * repeated with typo tolerance without rebuilding the filters. */
             Query filterQuery = bqBuilder.build();
-            Query contentQuery = hasKeywords ? buildQuery(queryText, false) : null;
+            Query contentQuery = hasKeywords ? buildQuery(queryText, false, false) : null;
             TopDocs topDocs = search(searcher, withContent(filterQuery, contentQuery), maxResults, sort);
 
             if (isFine()) {
                 logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
             }
 
+            /* PFS-5863: a word INSIDE a word - "rechnung" in "Jahresrechnung" - is a wildcard query, and
+             * a wildcard walks the term dictionary of the index it is asked of. Asked of every folder of
+             * a server that carries thousands of them, that was the bulk of the time: a search of three
+             * words took 7.1 s, the same search without the wildcards 1.8 s, and a plain term query over
+             * the very same indexes 0.6 s. So it waits for a folder that found nothing without it - the
+             * same place the typo tolerance waits. */
+            /* What ran last, so that no round repeats the query of the round before it: a query of short
+             * words gets no fuzzy clause and a query of long ones no wildcard, and either way the next
+             * round would otherwise rebuild the very query that just came back empty. */
+            Query lastQuery = contentQuery;
+            if (topDocs.scoreDocs.length == 0 && contentQuery != null) {
+                Query infixQuery = buildQuery(queryText, true, false);
+                if (infixQuery != null && !infixQuery.equals(lastQuery)) {
+                    lastQuery = infixQuery;
+                    topDocs = search(searcher, withContent(filterQuery, infixQuery), maxResults, sort);
+                    if (isFine()) {
+                        logFine(folder + ": Infix fallback found " + topDocs.totalHits
+                                + " for query '" + queryText + "'");
+                    }
+                }
+            }
+
             /* PFS-5653: typo tolerance costs a FuzzyQuery per token and field and drags in near-misses, so
              * it is a fallback only - a query that found something is never re-run fuzzily. */
             if (topDocs.scoreDocs.length == 0 && contentQuery != null && isFuzzySearchEnabled()) {
-                Query fuzzyQuery = buildQuery(queryText, true);
-                if (fuzzyQuery != null) {
+                Query fuzzyQuery = buildQuery(queryText, true, true);
+                /* Only a token of four characters or more gets a fuzzy clause (addTokenQueries), so a
+                 * short query builds the very query that just ran - and running it again is the one
+                 * thing this fallback must not do. A folder that finds nothing is the normal case on a
+                 * server carrying thousands of folder indexes: the round runs in nearly all of them,
+                 * and a search for "QA" paid it in every single one. */
+                if (fuzzyQuery != null && !fuzzyQuery.equals(lastQuery)) {
                     topDocs = search(searcher, withContent(filterQuery, fuzzyQuery), maxResults, sort);
                     if (isFine()) {
                         logFine(folder + ": Fuzzy fallback found " + topDocs.totalHits
@@ -1916,11 +1969,11 @@ public class LuceneIndexManager extends PFComponent {
      * @return the composed query, or null if input is empty after
      *         sanitization
      */
-    private Query buildQuery(String queryText, boolean fuzzy) {
+    private Query buildQuery(String queryText, boolean infix, boolean fuzzy) {
         List<String> phrases = extractPhrases(queryText);
 
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
-                .replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ")
+                .replaceAll("[^\\p{L}\\p{N}\\s._\\-*?]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
 
@@ -1938,6 +1991,26 @@ public class LuceneIndexManager extends PFComponent {
                 negated = true;
                 token = token.substring(1);
             }
+            if (isWildcardPattern(token)) {
+                /* The pattern the user wrote, taken as it stands: a word inside a word is not searched
+                 * for by default any more - it costs an automaton per index, see doSearch - but somebody
+                 * who types the star is asking for exactly that, and gets it in the first round. Name and
+                 * path only, the fields the automatic wildcard uses as well; over the full text a pattern
+                 * would walk the entire term dictionary of every index. */
+                BooleanQuery.Builder pattern = new BooleanQuery.Builder();
+                for (String field : INFIX_WILDCARD_FIELDS) {
+                    pattern.add(new WildcardQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                }
+                pattern.setMinimumNumberShouldMatch(1);
+                if (negated) {
+                    allTokens.add(pattern.build(), BooleanClause.Occur.MUST_NOT);
+                } else {
+                    allTokens.add(pattern.build(), BooleanClause.Occur.MUST);
+                    hasPositive = true;
+                }
+                continue;
+            }
+
             List<String> terms = indexTerms(token);
             if (terms.isEmpty()) {
                 continue;
@@ -1949,7 +2022,11 @@ public class LuceneIndexManager extends PFComponent {
                 BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
                 for (String term : terms) {
                     BooleanQuery.Builder oneTerm = new BooleanQuery.Builder();
-                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, false);
+                    /* An exclusion is exhaustive, in every round: a file somebody asked to be rid of must
+                     * not come back because the word sat inside another one - "-annual" drops
+                     * "Report_Annual.pdf". The wildcard costs an automaton per index here too, but only
+                     * when a minus was typed, and then it is the point of the query. */
+                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, true, false);
                     oneTerm.setMinimumNumberShouldMatch(1);
                     exclusion.add(oneTerm.build(), BooleanClause.Occur.MUST);
                 }
@@ -1960,16 +2037,16 @@ public class LuceneIndexManager extends PFComponent {
             for (String term : terms) {
                 BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
-                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, fuzzy);
+                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, infix, fuzzy);
 
                 String folded = foldAccents(term);
                 if (!folded.equals(term) && !folded.isEmpty()) {
-                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, infix, false);
                 }
 
                 String stripped = stripAccents(term);
                 if (!stripped.equals(term) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
+                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, infix, false);
                 }
 
                 fieldDisjunction.setMinimumNumberShouldMatch(1);
@@ -2023,6 +2100,13 @@ public class LuceneIndexManager extends PFComponent {
      * "faktura" and "2026" next to each other, which is how the index stored that name.
      */
     private Query buildPhraseQuery(String phrase) {
+        String pattern = phrase.toLowerCase(Locale.ROOT).trim();
+        if (isWildcardPattern(pattern)) {
+            /* A pattern in quotes is one pattern, spaces included - and the only field that holds a name
+             * with its spaces as ONE term is relativeNameExact, the whole path of the file in lower case.
+             * Cut into terms it would ask for words that carry a star, which the index never stored. */
+            return new WildcardQuery(new Term("relativeNameExact", pattern));
+        }
         List<String> words = indexTerms(phrase);
         if (words.isEmpty()) {
             return null;
@@ -2044,6 +2128,11 @@ public class LuceneIndexManager extends PFComponent {
             }
             disjunction.add(pb.build(), BooleanClause.Occur.SHOULD);
         }
+        /* A phrase that IS a tag says so exactly. The tags field carries every tag of a file in one
+         * stream of words, where a phrase query can also span the end of one tag and the start of the
+         * next; the exact term cannot, and it is the one a user quoting a tag means. */
+        disjunction.add(new TermQuery(new Term("tagsExact", phrase.toLowerCase(Locale.ROOT).trim())),
+                BooleanClause.Occur.SHOULD);
         disjunction.setMinimumNumberShouldMatch(1);
         return disjunction.build();
     }
@@ -2051,7 +2140,7 @@ public class LuceneIndexManager extends PFComponent {
     private void addTokenQueries(BooleanQuery.Builder builder,
                                  String token,
                                  float exactBoost, float prefixBoost,
-                                 float wildcardBoost, boolean fuzzy) {
+                                 float wildcardBoost, boolean infix, boolean fuzzy) {
         for (String field : SEARCH_FIELDS) {
             builder.add(
                     new BoostQuery(new TermQuery(
@@ -2068,7 +2157,7 @@ public class LuceneIndexManager extends PFComponent {
             // PFS-5652: infix wildcard only on the name/path fields (see INFIX_WILDCARD_FIELDS). On the
             // full-text content field it would scan the whole term dictionary; on the other fields it just
             // adds automaton-compile cost for little benefit.
-            if (token.length() <= 12 && INFIX_WILDCARD_FIELDS.contains(field)) {
+            if (infix && token.length() <= 12 && INFIX_WILDCARD_FIELDS.contains(field)) {
                 builder.add(
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),
@@ -2085,6 +2174,23 @@ public class LuceneIndexManager extends PFComponent {
                         BooleanClause.Occur.SHOULD);
             }
         }
+    }
+
+    /**
+     * Whether the user wrote a wildcard into this word themselves. Stars and question marks alone are
+     * not one: that asks for every file there is, at the price of an automaton per index, and nobody
+     * means it.
+     */
+    private static boolean isWildcardPattern(String token) {
+        if (token.indexOf('*') < 0 && token.indexOf('?') < 0) {
+            return false;
+        }
+        for (int i = 0; i < token.length(); i++) {
+            if (Character.isLetterOrDigit(token.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2285,7 +2391,10 @@ public class LuceneIndexManager extends PFComponent {
          * overwrite - the same reasoning the discard path already follows. narvi holds 7 425
          * interrupted subfolders after a migration, each of them an index of its own, and closing
          * them took 63 of the 70 seconds its shutdown lasted. */
-        boolean throwingAway = discard || rebuildScheduled;
+        /* PFC-3536: the directory may be gone - deleted with the share it belonged to - and then there is
+         * nothing to commit into and no lock file left that anyone could wait for. */
+        boolean directoryGone = Files.notExists(indexPath);
+        boolean throwingAway = discard || rebuildScheduled || directoryGone;
 
         if (!throwingAway) {
             commitAndRefresh();
@@ -2305,8 +2414,12 @@ public class LuceneIndexManager extends PFComponent {
              * swallowed here, which is why that state had no explanation. */
             try { if (throwingAway) { w.rollback(); } else { w.close(); } }
             catch (Exception e) {
-                logWarning(folder + ": Unable to release the index writer at " + indexPath
-                    + " - the lock stays held until this process ends. " + e);
+                if (directoryGone) {
+                    logFine(folder + ": Index directory gone before the writer was released: " + indexPath);
+                } else {
+                    logWarning(folder + ": Unable to release the index writer at " + indexPath
+                        + " - the lock stays held until this process ends. " + e);
+                }
             }
         }
 

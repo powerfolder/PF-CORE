@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import java.io.Serializable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 
@@ -520,7 +521,7 @@ public class FileInfoCriteria implements Serializable {
             return Collections.emptyList();
         }
         List<String> words = new ArrayList<>();
-        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ").split("\\s+")) {
+        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-*?]", " ").split("\\s+")) {
             /* PFS-5306: the tokenizer keeps a dot only between alphanumerics, so a trailing one - as in
              * "29.7." - would be searched for but never indexed. */
             while (word.endsWith(".")) {
@@ -630,11 +631,45 @@ public class FileInfoCriteria implements Serializable {
     private static boolean containsAllWords(String text, List<String> words) {
         String lower = text.toLowerCase();
         for (String word : words) {
-            if (!lower.contains(word)) {
+            if (!nameWordMatches(lower, word)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Whether one word of a name filter sits in the text, which is expected in lower case already. A word
+     * the user wrote a star or a question mark into is a pattern and is matched as one; every other word
+     * is looked for the way it always was, as a part of the text.
+     */
+    public static boolean nameWordMatches(String lowerText, String word) {
+        if (word.indexOf('*') < 0 && word.indexOf('?') < 0) {
+            return lowerText.contains(word);
+        }
+        return globPattern(word).matcher(lowerText).find();
+    }
+
+    /** The regular expression a pattern of stars and question marks stands for. */
+    private static Pattern globPattern(String pattern) {
+        StringBuilder regex = new StringBuilder(pattern.length() + 8);
+        StringBuilder literal = new StringBuilder();
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c != '*' && c != '?') {
+                literal.append(c);
+                continue;
+            }
+            if (literal.length() > 0) {
+                regex.append(Pattern.quote(literal.toString()));
+                literal.setLength(0);
+            }
+            regex.append(c == '*' ? ".*" : ".");
+        }
+        if (literal.length() > 0) {
+            regex.append(Pattern.quote(literal.toString()));
+        }
+        return Pattern.compile(regex.toString());
     }
 
     private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {
