@@ -2155,6 +2155,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     try {
                         PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
+                    } catch (NoSuchFileException e) {
+                        // PFC-3536: gone with the directory that held it - nothing left to delete.
+                        logFine(folder + ": System directory already gone: " + folder.getSystemSubDir());
                     } catch (IOException e) {
                         logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
                     }
