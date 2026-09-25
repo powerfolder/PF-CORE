@@ -2519,6 +2519,35 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * PFC-3641: Erases the FileInfos of this top folder from its database that lie inside an interrupted
+     * subfolder - recorded while the barrier was missing on this node. Raw, like the interrupt itself,
+     * nothing is propagated: that content, the root directory included (PFC-3575), belongs to the
+     * subfolder's own database.
+     *
+     * @param fileInfos FileInfos of this folder the scan left out because of a barrier
+     */
+    void eraseFileInfosInInterruptedSubFolders(Collection<FileInfo> fileInfos) {
+        List<FileInfo> erased = new ArrayList<>();
+        for (FileInfo fInfo : fileInfos) {
+            // Asked again: the scan ran in between, and the barrier may be gone by now
+            if (!isInInterruptedSubFolder(fInfo)) {
+                continue;
+            }
+            getDAO().delete(null, fInfo);
+            erased.add(fInfo);
+        }
+        if (erased.isEmpty()) {
+            return;
+        }
+        setDBDirty();
+        if (searchIndexManager != null) {
+            searchIndexManager.purgeFiles(erased);
+        }
+        logInfo(this + ": Erased " + erased.size() + " FileInfo(s) inside interrupted subfolders"
+            + " - recorded while their barrier was missing");
+    }
+
+    /**
      * PFC-3543: Removes FileInfos that live inside an interrupted subfolder from
      * the given collection. Such files are owned by that subfolder's own DAO and
      * must never enter this folder's DAO - not even via a remote file list from an
