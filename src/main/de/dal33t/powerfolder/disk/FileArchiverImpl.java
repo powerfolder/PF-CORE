@@ -340,7 +340,7 @@ public class FileArchiverImpl implements FileArchiver {
      *
      * @return true if all visitor calls and directory operations succeeded
      */
-    private boolean walkArchive(Path dir, ArchiveVisitor visitor, boolean deleteEmptyDirs) {
+    private boolean walkArchive(Path dir, ArchiveVisitor visitor, boolean deleteEmptyDirs, List<Path> unversioned) {
         if (dir == null || Files.notExists(dir) || !Files.isDirectory(dir)) {
             return true;
         }
@@ -364,7 +364,7 @@ public class FileArchiverImpl implements FileArchiver {
                 continue;
             }
             if (Files.isDirectory(entry)) {
-                boolean subSuccess = walkArchive(entry, visitor, deleteEmptyDirs);
+                boolean subSuccess = walkArchive(entry, visitor, deleteEmptyDirs, unversioned);
                 if (deleteEmptyDirs && subSuccess) {
                     try {
                         Files.delete(entry);
@@ -381,7 +381,9 @@ public class FileArchiverImpl implements FileArchiver {
                 try {
                     baseName = getBaseName(entry);
                 } catch (RuntimeException e) {
-                    log.log(Level.WARNING, entry + ": Skipping: " + e.toString());
+                    // Aged out by the caller; one warning per file flooded the log every night
+                    log.fine(entry + ": No version marker: " + e);
+                    unversioned.add(entry);
                     continue;
                 }
                 fileMap.computeIfAbsent(baseName, k -> new LinkedList<>()).add(entry);
@@ -981,6 +983,7 @@ public class FileArchiverImpl implements FileArchiver {
         }
         
         long[] calculatedSize = {0L};
+        List<Path> unversioned = new ArrayList<>();
         walkArchive(archiveDirectory, (baseName, dir, versions) -> {
             
             recoverLostFileInfo(versions, dao, folderInfo, myAccount, lostFileInfos);
@@ -999,8 +1002,10 @@ public class FileArchiverImpl implements FileArchiver {
             }
             
             return true;
-        }, true);
-        
+        }, true, unversioned);
+        // Versions archived without a _K_n marker (old dotted-directory bug) age out like any other version
+        cleanupOldVersions(unversioned, cleanupDate);
+
         size = calculatedSize[0];
         saveSize();
         

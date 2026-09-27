@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiverImpl;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -427,6 +428,24 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         assertEquals(0, archiver.getArchivedFilesInfos(fib).size());
         assertEquals(0, archiver.getSize());
+    }
+
+    /** Versions archived without a _K_n marker (old dotted-directory bug) age out like any other version. */
+    public void testCleanupFileWithoutVersionMarker() throws IOException {
+        Folder fb = getFolderAtBart();
+        Path archive = Files.createDirectories(fb.getSystemSubDir().resolve("archive"));
+        Path legacy = TestHelper.createRandomFile(Files.createDirectories(archive.resolve("list_K_2.user")), "Betrieb");
+        FileArchiver archiver = new FileArchiverImpl(archive, getContollerBart().getMySelf().getInfo());
+        AccountInfo me = getContollerBart().getMySelf().getAccountInfo();
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        archiver.maintainAndCleanup(cal.getTime(), fb.getDAO(), fb.getInfo(), me);
+        assertTrue("Within retention, must be kept", Files.exists(legacy));
+
+        cal.add(Calendar.DATE, 2);
+        archiver.maintainAndCleanup(cal.getTime(), fb.getDAO(), fb.getInfo(), me);
+        assertFalse("Past retention, must be deleted", Files.exists(legacy));
     }
 
     public void testRecoverLostFileInfos() throws IOException {
