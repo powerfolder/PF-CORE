@@ -127,6 +127,8 @@ public class LookAndFeelSupport {
         // Base font (covers non-Latin scripts; see getBaseFontName()).
         UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
         log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
+        currentDark = dark;
+        startSystemThemeWatcher();
     }
 
     /**
@@ -142,6 +144,62 @@ public class LookAndFeelSupport {
             log.fine("dark-mode detection failed: " + t);
         }
         return false;
+    }
+
+    /** The dark/light state currently applied to the UI. */
+    private static volatile boolean currentDark;
+    private static Thread themeWatcher;
+
+    /**
+     * Start a background watcher (macOS only) that flips the FlatLaf theme live
+     * when the system appearance changes, so no client restart is needed. The
+     * appearance check spawns a short-lived process, so it runs off the EDT; the
+     * actual theme switch is applied on the EDT.
+     */
+    private static synchronized void startSystemThemeWatcher() {
+        if (!OSUtil.isMacOS() || themeWatcher != null) {
+            return;
+        }
+        themeWatcher = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    Thread.sleep(2500);
+                    boolean dark = isSystemDarkMode();
+                    if (dark != currentDark) {
+                        SwingUtilities.invokeLater(() -> switchTheme(dark));
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Throwable t) {
+                    log.fine("theme watcher: " + t);
+                }
+            }
+        }, "FlatLaf-macOS-appearance-watcher");
+        themeWatcher.setDaemon(true);
+        themeWatcher.start();
+    }
+
+    /** Re-install the light/dark FlatLaf theme and refresh all open windows. */
+    private static void switchTheme(boolean dark) {
+        if (dark == currentDark) {
+            return;
+        }
+        currentDark = dark;
+        try {
+            applyThemeDefaults(dark);
+            boolean ok = dark
+                ? com.formdev.flatlaf.FlatDarkLaf.setup()
+                : com.formdev.flatlaf.FlatLightLaf.setup();
+            if (ok) {
+                UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
+                com.formdev.flatlaf.FlatLaf.updateUI();
+                log.info("Switched FlatLaf theme to " + (dark ? "Dark" : "Light")
+                    + " (system appearance changed)");
+            }
+        } catch (Throwable t) {
+            log.warning("live theme switch failed: " + t);
+        }
     }
 
     /** Default accent (PowerFolder/origin primary colour) when no brand colour is found. */
