@@ -76,6 +76,15 @@ public class ActionLabel extends PFComponent {
         uiComponent.addMouseListener(new MyMouseAdapter());
         CursorUtils.setHandCursor(uiComponent);
 
+        // Re-apply the theme-aware foreground when the L&F is switched live
+        // (FlatLaf light <-> dark). updateComponentTreeUI fires "UI" on setUI.
+        uiComponent.addPropertyChangeListener("UI",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    displayText();
+                }
+            });
+
         action.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setEnabled(action.isEnabled());

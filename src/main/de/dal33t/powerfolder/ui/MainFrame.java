@@ -262,6 +262,11 @@ public class MainFrame extends PFUIComponent {
 
     private void configureUi() {
 
+        // Refresh set-once icons (logo, header/status buttons) when the user
+        // switches macOS light <-> dark while the client is running, so no
+        // restart is needed (Option B / live theme refresh).
+        LookAndFeelSupport.addThemeChangeListener(this::refreshThemeIcons);
+
         // On macOS the window uses the native title bar (see LookAndFeelSupport:
         // Synthetica.window.decoration=false), which provides the close/minimize/
         // zoom controls, so leave that native title pane in place. On Windows/Linux
@@ -384,6 +389,36 @@ public class MainFrame extends PFUIComponent {
                 PreferencesEntry.ASK_FOR_QUIT_ON_X.setValue(getController(),
                     false);
             }
+        }
+    }
+
+    /**
+     * Re-applies the icons that are only set once at build time so they follow a
+     * live macOS light &lt;-&gt; dark switch (the icon cache was cleared by
+     * {@code Icons.setDarkMode}, so these re-fetch the light/white variant).
+     * Runs on the EDT (invoked from the FlatLaf theme-change listener).
+     */
+    private void refreshThemeIcons() {
+        if (logoLabel != null) {
+            logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
+        }
+        if (allInSyncButton != null) {
+            allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+        }
+        if (pauseButton != null) {
+            pauseButton.setIcon(Icons.getIconById(Icons.PAUSE));
+        }
+        if (setupButton != null) {
+            setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
+        }
+        if (notConnectedLoggedInLabel != null) {
+            notConnectedLoggedInLabel.setIcon(Icons.getIconById(Icons.WARNING));
+        }
+        if (noticeWarningButton != null) {
+            noticeWarningButton.setIcon(Icons.getIconById(Icons.WARNING));
+        }
+        if (noticeInfoButton != null) {
+            noticeInfoButton.setIcon(Icons.getIconById(Icons.INFORMATION));
         }
     }
 

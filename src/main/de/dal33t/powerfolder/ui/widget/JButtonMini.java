@@ -69,7 +69,12 @@ public class JButtonMini extends JButton {
             setIcon(icon);
         }
 
-        setOpaque(true);
+        // Transparent so the icon sits on the panel background (no white/grey
+        // box behind it). Under FlatLaf an opaque, content-filled button paints
+        // its button background as a solid rectangle around the icon.
+        setOpaque(false);
+        setContentAreaFilled(false);
+        setFocusPainted(false);
         setBorder(null);
         setBorder(Borders.createEmptyBorder("0dlu, 0dlu, 0dlu, 0dlu"));
         setMargin(new Insets(0, 0, 0, 0));

@@ -203,6 +203,29 @@ public class LookAndFeelSupport {
         themeWatcher.start();
     }
 
+    /**
+     * Listeners notified after a live light/dark switch, so set-once UI elements
+     * (logo, header icons, label colours) can refresh without an app restart.
+     */
+    private static final java.util.List<Runnable> themeChangeListeners =
+        new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /**
+     * Register a callback fired on the EDT after every live theme switch. Used
+     * by {@code MainFrame} (and any window) to re-apply icons/colours that are
+     * only set once at build time. Idempotent per instance is the caller's job.
+     */
+    public static void addThemeChangeListener(Runnable r) {
+        if (r != null) {
+            themeChangeListeners.add(r);
+        }
+    }
+
+    /** True if the client is currently showing the dark theme. */
+    public static boolean isDarkMode() {
+        return currentDark;
+    }
+
     /** Re-install the light/dark FlatLaf theme and refresh all open windows. */
     private static void switchTheme(boolean dark) {
         if (dark == currentDark) {
@@ -218,6 +241,15 @@ public class LookAndFeelSupport {
                 UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
                 de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
                 com.formdev.flatlaf.FlatLaf.updateUI();
+                // Refresh set-once elements (logo, header icons, label colours)
+                // that FlatLaf.updateUI() alone does not re-run.
+                for (Runnable r : themeChangeListeners) {
+                    try {
+                        r.run();
+                    } catch (Throwable t) {
+                        log.fine("theme change listener failed: " + t);
+                    }
+                }
                 log.info("Switched FlatLaf theme to " + (dark ? "Dark" : "Light")
                     + " (system appearance changed)");
             }
