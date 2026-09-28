@@ -361,7 +361,18 @@ public class Icons {
             // common actions/buttons
             "Add.png", "Delete.png", "Edit.png", "Settings.png", "Preferences.png",
             "Cog.png", "FilterTextFieldGlass.png", "Upload.png", "Download.png",
-            "Abort.png", "Clear.png", "Open.png", "ArrowLeft.png", "ArrowRight.png"));
+            "Abort.png", "Clear.png", "Open.png", "ArrowLeft.png", "ArrowRight.png",
+            // specialised actions/utility (Material Symbols)
+            "Advanced.png", "Bug.png", "Collapse.png", "Expand.png", "ConnectBright.png",
+            "Details.png", "Dialog.png", "Download_active.png", "DynDns.png", "Expected.png",
+            "Files.png", "FindComputers.png", "Group.png", "Inactive.png", "Invite.png",
+            "AddFriend.png", "RemoveFriend.png", "Mac.png", "Question.png", "Restore.png",
+            "SortBlank.png", "SortDown.png", "SortUp.png", "SystemMonitor.png",
+            "Unknown.png", "Updates.png", "WakeUp.png",
+            // node / computer status
+            "NodeMyself.png", "NodeFriendConnected.png", "NodeNonFriendConnected.png",
+            "NodeFriendDisconnected.png", "NodeNonFriendDisconnected.png",
+            "NodeFriendPoor.png", "NodeFriendmedium.png", "NodeFriendLan.png"));
     static {
         for (int i = 0; i <= 11; i++) {
             MONOCHROME_ICON_FILES.add(String.format("Sync%02d.png", i));
