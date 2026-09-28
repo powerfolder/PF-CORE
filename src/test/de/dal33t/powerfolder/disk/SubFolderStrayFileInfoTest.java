@@ -77,4 +77,29 @@ public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
         assertTrue("Nothing is deleted on disk", strayFile.toFile().exists());
         assertNotNull("... and the subfolder still has its file", subFolder.getFileInfo("Report.txt"));
     }
+
+    /** A tree unmounts its subfolders first: the top folder scanning in between must not take their content. */
+    public void testTheBarrierHoldsWhileTheTopFolderOutlivesItsSubfolder() {
+        Folder topFolder = getFolderAtBart();
+        Path reports = topFolder.getPhysicalDir().resolve("projects/reports");
+        TestHelper.createRandomFile(reports, "Report.txt");
+        scanFolder(topFolder);
+        Folder subFolder = topFolder.share((DirectoryInfo) topFolder.getFileInfo("projects/reports"));
+        subFolder.setInheritsPermissions(false);
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        repository.removeFolder(subFolder, false);
+        TestHelper.createRandomFile(reports, "Later.txt");
+        scanFolder(topFolder);
+
+        assertNull("The top folder did not take the subfolder's content",
+            topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(), "projects/reports/Later.txt"),
+                null));
+        assertNull("... nor the file that was there before",
+            topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(), "projects/reports/Report.txt"),
+                null));
+
+        repository.removeFolder(topFolder, false);
+        assertTrue("The barrier goes with the top folder", repository.getInterruptedSubFolders().isEmpty());
+    }
 }
