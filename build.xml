@@ -158,6 +158,9 @@ For creation of the installer:
 			<include name="synthetica.jar" />
 			<include name="syntheticaAddons.jar" />
 
+			<!-- Modern flat Look and Feel (light + dark), PFI-93 UI modernization -->
+			<include name="flatlaf-3.5.4.jar" />
+
 			<include name="bcprov-jdk18on-1.77.jar" />
 			<include name="bcpkix-jdk18on-1.77.jar" />
 			<include name="bcutil-jdk18on-1.77.jar" />

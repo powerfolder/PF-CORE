@@ -82,20 +82,40 @@ public class LookAndFeelSupport {
     private static void setLookAndFeelImpl(LookAndFeel laf)
         throws UnsupportedLookAndFeelException
     {
-        setSyntheticaLicense();
-        UIManager.setLookAndFeel(laf);
-        SyntheticaLookAndFeel.setFont(getBaseFontName(), 11);
-        setSyntheticaLicense();
-
-        // On macOS use the native window decoration (title bar with the standard
-        // red/yellow/green close/minimize/zoom controls) instead of Synthetica's
-        // own decoration, which the skin enables by default
-        // (Synthetica.window.decoration=true). MainFrame then omits its custom
-        // min/max/close buttons on macOS so the native controls are the only ones.
-        // Windows/Linux keep the Synthetica-decorated look unchanged.
-        if (OSUtil.isMacOS()) {
-            UIManager.put("Synthetica.window.decoration", Boolean.FALSE);
+        // PFI-93 UI modernization: use FlatLaf (flat, modern, with built-in light
+        // and dark themes) instead of Synthetica. Follow the OS appearance — dark
+        // on macOS when the system is in Dark Mode. The passed 'laf' (the legacy
+        // Synthetica skin) is intentionally ignored and kept only as a fallback.
+        boolean dark = isSystemDarkMode();
+        boolean ok = dark
+            ? com.formdev.flatlaf.FlatDarkLaf.setup()
+            : com.formdev.flatlaf.FlatLightLaf.setup();
+        if (!ok) {
+            log.warning("FlatLaf setup failed; falling back to legacy look and feel");
+            setSyntheticaLicense();
+            UIManager.setLookAndFeel(laf);
+            SyntheticaLookAndFeel.setFont(getBaseFontName(), 11);
+            setSyntheticaLicense();
+            return;
         }
+        // Base font (covers non-Latin scripts; see getBaseFontName()).
+        UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
+        log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
+    }
+
+    /**
+     * @return {@code true} if the OS is currently in Dark Mode (detected on
+     *         macOS). Other platforms default to light for now.
+     */
+    private static boolean isSystemDarkMode() {
+        try {
+            if (OSUtil.isMacOS()) {
+                return TrayIconManager.isMacMenuBarDarkMode();
+            }
+        } catch (Throwable t) {
+            log.fine("dark-mode detection failed: " + t);
+        }
+        return false;
     }
 
     /**
