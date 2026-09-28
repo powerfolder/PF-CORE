@@ -339,6 +339,55 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
+    /** Whether the UI is in dark mode; monochrome icons are shown white then. */
+    private static volatile boolean darkMode;
+
+    /**
+     * Icon ids that are monochrome (or the logo) and must be re-tinted white in
+     * dark mode so they stay visible on the dark background.
+     */
+    private static final java.util.Set<String> WHITEN_IN_DARK =
+        new java.util.HashSet<>(java.util.Arrays.asList(
+            FOLDER, LOCAL_FOLDER, ONLINE_FOLDER, ONLINE_FOLDER_SMALL, TYPICAL_FOLDER,
+            SYNC_COMPLETE, SYNC_INCOMPLETE, INFORMATION, LOGO400UI));
+    static {
+        WHITEN_IN_DARK.addAll(java.util.Arrays.asList(SYNC_ANIMATION));
+    }
+
+    /**
+     * Switch the icon set between light and dark. Clears the icon cache so icons
+     * are reloaded (and re-tinted) on next access. Call from LookAndFeelSupport
+     * when the FlatLaf theme changes.
+     */
+    public static void setDarkMode(boolean dark) {
+        if (dark != darkMode) {
+            darkMode = dark;
+            ID_ICON_MAP.clear();
+        }
+    }
+
+    /** @return a copy of {@code icon} with every pixel set to white, alpha kept. */
+    private static Icon whiten(Icon icon) {
+        int w = icon.getIconWidth(), h = icon.getIconHeight();
+        if (w <= 0 || h <= 0) {
+            return icon;
+        }
+        java.awt.image.BufferedImage src = new java.awt.image.BufferedImage(
+            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = src.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(
+            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int a = src.getRGB(x, y) >>> 24;
+                out.setRGB(x, y, (a << 24) | 0x00FFFFFF);
+            }
+        }
+        return new ImageIcon(out);
+    }
+
     public static Icon getIconById(String id) {
         if (id == null) {
             log.severe("Icon id null ???");
@@ -413,6 +462,9 @@ public class Icons {
         }
 
         icon = new ImageIcon(iconURL);
+        if (darkMode && WHITEN_IN_DARK.contains(id)) {
+            icon = whiten(icon);
+        }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);
         }

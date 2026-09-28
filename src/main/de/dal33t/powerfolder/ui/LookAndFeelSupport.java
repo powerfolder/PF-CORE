@@ -127,6 +127,7 @@ public class LookAndFeelSupport {
         // Base font (covers non-Latin scripts; see getBaseFontName()).
         UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
         log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
+        de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
         currentDark = dark;
         startSystemThemeWatcher();
     }
@@ -193,6 +194,7 @@ public class LookAndFeelSupport {
                 : com.formdev.flatlaf.FlatLightLaf.setup();
             if (ok) {
                 UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
+                de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
                 com.formdev.flatlaf.FlatLaf.updateUI();
                 log.info("Switched FlatLaf theme to " + (dark ? "Dark" : "Light")
                     + " (system appearance changed)");
