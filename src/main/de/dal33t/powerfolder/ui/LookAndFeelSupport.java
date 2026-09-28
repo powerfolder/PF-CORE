@@ -137,14 +137,36 @@ public class LookAndFeelSupport {
      *         macOS). Other platforms default to light for now.
      */
     private static boolean isSystemDarkMode() {
-        try {
-            if (OSUtil.isMacOS()) {
-                return TrayIconManager.isMacMenuBarDarkMode();
-            }
-        } catch (Throwable t) {
-            log.fine("dark-mode detection failed: " + t);
+        if (!OSUtil.isMacOS()) {
+            return false;
         }
-        return false;
+        // Leak-free detection: spawn `defaults read -g AppleInterfaceStyle`, fully
+        // drain + close its output, wait with a timeout, and ALWAYS destroy the
+        // process. (An earlier version leaked the process/file descriptors on every
+        // poll, which exhausted the JVM after ~20 min and froze the UI.)
+        Process p = null;
+        try {
+            p = new ProcessBuilder("defaults", "read", "-g", "AppleInterfaceStyle")
+                .redirectErrorStream(true).start();
+            try (java.io.InputStream in = p.getInputStream()) {
+                byte[] buf = new byte[256];
+                while (in.read(buf) != -1) { /* discard, let the process finish */ }
+            }
+            if (!p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                return currentDark; // don't thrash if it hangs; cleaned up in finally
+            }
+            return p.exitValue() == 0; // key present => Dark mode
+        } catch (Exception e) {
+            log.fine("dark-mode detection failed: " + e);
+            return currentDark;
+        } finally {
+            if (p != null) {
+                p.destroy();
+                try { p.getOutputStream().close(); } catch (Exception ignore) { }
+                try { p.getInputStream().close(); } catch (Exception ignore) { }
+                try { p.getErrorStream().close(); } catch (Exception ignore) { }
+            }
+        }
     }
 
     /** The dark/light state currently applied to the UI. */
@@ -164,7 +186,7 @@ public class LookAndFeelSupport {
         themeWatcher = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    Thread.sleep(2500);
+                    Thread.sleep(5000);
                     boolean dark = isSystemDarkMode();
                     if (dark != currentDark) {
                         SwingUtilities.invokeLater(() -> switchTheme(dark));
