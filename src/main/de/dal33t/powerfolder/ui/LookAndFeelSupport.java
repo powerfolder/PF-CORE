@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
@@ -85,6 +86,16 @@ public class LookAndFeelSupport {
         UIManager.setLookAndFeel(laf);
         SyntheticaLookAndFeel.setFont(getBaseFontName(), 11);
         setSyntheticaLicense();
+
+        // On macOS use the native window decoration (title bar with the standard
+        // red/yellow/green close/minimize/zoom controls) instead of Synthetica's
+        // own decoration, which the skin enables by default
+        // (Synthetica.window.decoration=true). MainFrame then omits its custom
+        // min/max/close buttons on macOS so the native controls are the only ones.
+        // Windows/Linux keep the Synthetica-decorated look unchanged.
+        if (OSUtil.isMacOS()) {
+            UIManager.put("Synthetica.window.decoration", Boolean.FALSE);
+        }
     }
 
     /**

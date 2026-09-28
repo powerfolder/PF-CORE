@@ -262,10 +262,16 @@ public class MainFrame extends PFUIComponent {
 
     private void configureUi() {
 
-        // Display the title pane.
-        uiComponent.getRootPane().putClientProperty(
-            "Synthetica.titlePane.enabled", Boolean.FALSE);
-        uiComponent.getRootPane().updateUI();
+        // On macOS the window uses the native title bar (see LookAndFeelSupport:
+        // Synthetica.window.decoration=false), which provides the close/minimize/
+        // zoom controls, so leave that native title pane in place. On Windows/Linux
+        // hide Synthetica's title pane; MainFrame draws its own window buttons.
+        if (!OSUtil.isMacOS()) {
+            // Display the title pane.
+            uiComponent.getRootPane().putClientProperty(
+                "Synthetica.titlePane.enabled", Boolean.FALSE);
+            uiComponent.getRootPane().updateUI();
+        }
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
             "pref, pref, fill:0:grow");
@@ -273,11 +279,16 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
 
-        ButtonBarBuilder b = new ButtonBarBuilder();
-        b.addFixed(minusButton);
-        b.addFixed(plusButton);
-        b.addFixed(closeButton);
-        builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
+        // On macOS the native title bar already provides close/minimize/zoom, so
+        // don't add the app's own window buttons (that would duplicate them). On
+        // Windows/Linux (Synthetica-decorated, title pane hidden) they are needed.
+        if (!OSUtil.isMacOS()) {
+            ButtonBarBuilder b = new ButtonBarBuilder();
+            b.addFixed(minusButton);
+            b.addFixed(plusButton);
+            b.addFixed(closeButton);
+            builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
+        }
 
         builder.add(logoLabel, cc.xyw(1, 1, 4));
         builder.add(inlineInfoLabel,
