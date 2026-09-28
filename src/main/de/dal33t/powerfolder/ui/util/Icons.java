@@ -349,7 +349,7 @@ public class Icons {
     private static final java.util.Set<String> WHITEN_IN_DARK =
         new java.util.HashSet<>(java.util.Arrays.asList(
             FOLDER, LOCAL_FOLDER, ONLINE_FOLDER, ONLINE_FOLDER_SMALL, TYPICAL_FOLDER,
-            SYNC_COMPLETE, SYNC_INCOMPLETE, INFORMATION, LOGO400UI));
+            SYNC_COMPLETE, SYNC_INCOMPLETE, INFORMATION, LOGO400UI, ACTION_ARROW));
     static {
         WHITEN_IN_DARK.addAll(java.util.Arrays.asList(SYNC_ANIMATION));
     }
