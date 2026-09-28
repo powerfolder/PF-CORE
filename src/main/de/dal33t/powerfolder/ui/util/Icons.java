@@ -386,6 +386,8 @@ public class Icons {
         if (dark != darkMode) {
             darkMode = dark;
             ID_ICON_MAP.clear();
+            FILETYPE_ICON_MAP.clear();
+            EXTENSION_ICON_MAP.clear();
         }
     }
 
@@ -409,6 +411,40 @@ public class Icons {
             }
         }
         return new ImageIcon(out);
+    }
+
+    /** Cache for bundled file-type glyphicons, keyed by lower-case extension. */
+    private static final Map<String, Icon> FILETYPE_ICON_MAP = new HashMap<>();
+    private static final Icon NO_FILETYPE_ICON = new ImageIcon();
+    private static final String FILETYPE_ICON_BASE =
+        "de/dal33t/powerfolder/skin/origin/icons/filetypes/";
+
+    /**
+     * @return a bundled monochrome file-type glyphicon (from the iOS glyphicons
+     *         set) for the given extension, re-tinted white in dark mode, or
+     *         {@code null} if none is bundled for that extension.
+     */
+    public static Icon getFileTypeIcon(String extension) {
+        if (extension == null || extension.isEmpty()) {
+            return null;
+        }
+        String ext = extension.toLowerCase();
+        Icon cached = FILETYPE_ICON_MAP.get(ext);
+        if (cached != null) {
+            return cached == NO_FILETYPE_ICON ? null : cached;
+        }
+        java.net.URL url = Thread.currentThread().getContextClassLoader()
+            .getResource(FILETYPE_ICON_BASE + ext + ".png");
+        if (url == null) {
+            FILETYPE_ICON_MAP.put(ext, NO_FILETYPE_ICON);
+            return null;
+        }
+        Icon icon = new ImageIcon(url);
+        if (darkMode) {
+            icon = whiten(icon);
+        }
+        FILETYPE_ICON_MAP.put(ext, icon);
+        return icon;
     }
 
     public static Icon getIconById(String id) {
@@ -726,7 +762,12 @@ public class Icons {
 
         if (icon == null) {// no icon found in cache
             if (exists) { // create one if local file is there
-                icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
+                // Prefer the bundled monochrome file-type glyphicon; fall back to
+                // the OS system icon.
+                icon = getFileTypeIcon(extension);
+                if (icon == null) {
+                    icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
+                }
                 if (icon == null) {
                     return getIconById(UNKNOWN_FILE);
                 }
@@ -743,7 +784,10 @@ public class Icons {
                     // fixes speed with lots of *.ico or *.exe files
                     icon = getIconById(UNKNOWN_FILE_GRAY);
                 } else {
-                    icon = getIconExtension(extension);
+                    icon = getFileTypeIcon(extension);
+                    if (icon == null) {
+                        icon = getIconExtension(extension);
+                    }
                     if (icon == null) {
                         icon = getIconById(UNKNOWN_FILE_GRAY);
                     } else {
