@@ -108,10 +108,11 @@ public class LookAndFeelSupport {
         // on macOS when the system is in Dark Mode. The passed 'laf' (the legacy
         // Synthetica skin) is intentionally ignored and kept only as a fallback.
         boolean dark = isSystemDarkMode();
-        // Per-brand accent colour (from the active skin's synth.xml primary
-        // colour) applied to FlatLaf before setup so all branded clients keep
-        // their identity in both light and dark themes.
-        applyAccentColor();
+        // Per-brand accent colour + a white window/panel background (light mode)
+        // applied to FlatLaf before setup so all branded clients keep their
+        // identity and the light theme uses a clean white background instead of
+        // FlatLaf's default light grey.
+        applyThemeDefaults(dark);
         boolean ok = dark
             ? com.formdev.flatlaf.FlatDarkLaf.setup()
             : com.formdev.flatlaf.FlatLightLaf.setup();
@@ -150,16 +151,24 @@ public class LookAndFeelSupport {
      * Set FlatLaf's global {@code @accentColor} to the active brand's primary
      * colour so selection/focus/accents match the brand in both light and dark.
      */
-    private static void applyAccentColor() {
+    private static void applyThemeDefaults(boolean dark) {
         try {
             String hex = accentColorHex(activeSkin);
             java.util.Map<String, String> extra =
                 new java.util.HashMap<>(com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults());
             extra.put("@accentColor", hex);
+            if (dark) {
+                // Keep FlatDark's dark background.
+                extra.remove("@background");
+            } else {
+                // White window/panel background in light mode (instead of FlatLaf's
+                // default light grey).
+                extra.put("@background", "#ffffff");
+            }
             com.formdev.flatlaf.FlatLaf.setGlobalExtraDefaults(extra);
-            log.fine("FlatLaf accent colour: " + hex);
+            log.fine("FlatLaf accent=" + hex + " background=" + (dark ? "dark" : "#ffffff"));
         } catch (Throwable t) {
-            log.fine("could not apply accent colour: " + t);
+            log.fine("could not apply theme defaults: " + t);
         }
     }
 
