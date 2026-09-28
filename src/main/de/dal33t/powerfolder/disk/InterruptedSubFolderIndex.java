@@ -198,6 +198,16 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
+     * PFC-3641: Drops the seeds of a tree whose top folder is unmounted - a barrier only holds back the
+     * scan of a mounted top folder. The next mount of the tree seeds it again from the database.
+     *
+     * @param topFolder the unmounted top folder
+     */
+    void dropSeedsOf(FolderInfo topFolder) {
+        seeds.keySet().removeIf(subFolder -> topFolder.equals(subFolder.getTopFolder()));
+    }
+
+    /**
      * PFC-3543: Drops the seed of a subfolder that is GONE - deleted, not merely unmounted
      * <p>
      * {@link #refresh0} retires a seed when its folder mounts, and that is the only way out it has:

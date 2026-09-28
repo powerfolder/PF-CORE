@@ -317,24 +317,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             } catch (IOException ignore) {
                 // On TLS sockets this may throw "unsupported", so ignore
             }
-
-            socket.setSoTimeout(200);
-
-            // Drain input without blocking forever
-            if (in != null) {
-                byte[] buf = new byte[1024];
-                try {
-                    while (in.read(buf) != -1) {
-                        // ignore incoming data
-                    }
-                } catch (SocketTimeoutException ignore) {
-                    // timeout = normal, stop reading
-                }
-            }
+            // No draining here: the receiver thread holds the read lock until a dead peer times out in TCP
         } catch (IOException e) {
             // Ignore
         } finally {
-            // Close streams AFTER shutdown + drain
+            // Closing the socket wakes up the receiver thread
             try { if (out != null) out.close(); } catch (IOException ignore) {}
             try { if (in != null) in.close(); } catch (IOException ignore) {}
 
