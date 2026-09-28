@@ -775,7 +775,7 @@ public class UIController extends PFComponent {
             Icons.setIconProperties(props);
         }
         try {
-            LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
+            LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel(), activeSkin);
         } catch (UnsupportedLookAndFeelException | ParseException e) {
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }

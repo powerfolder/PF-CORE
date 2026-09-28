@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import de.dal33t.powerfolder.skin.AbstractSyntheticaSkin;
+import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
@@ -42,6 +44,25 @@ public class LookAndFeelSupport {
 
     private LookAndFeelSupport() {
         // Only static methods available
+    }
+
+    /**
+     * The skin whose branding (primary/accent colour) drives the FlatLaf accent
+     * colour. Set via {@link #setLookAndFeel(LookAndFeel, Skin)}; may be null
+     * (then a default accent is used).
+     */
+    private static Skin activeSkin;
+
+    /**
+     * Like {@link #setLookAndFeel(LookAndFeel)} but also records the active skin
+     * so the per-brand accent colour is applied to FlatLaf. Call this from the
+     * central skin-application path so every branded client gets its accent.
+     */
+    public static void setLookAndFeel(LookAndFeel laf, Skin skin)
+        throws UnsupportedLookAndFeelException
+    {
+        activeSkin = skin;
+        setLookAndFeel(laf);
     }
 
     /**
@@ -87,6 +108,10 @@ public class LookAndFeelSupport {
         // on macOS when the system is in Dark Mode. The passed 'laf' (the legacy
         // Synthetica skin) is intentionally ignored and kept only as a fallback.
         boolean dark = isSystemDarkMode();
+        // Per-brand accent colour (from the active skin's synth.xml primary
+        // colour) applied to FlatLaf before setup so all branded clients keep
+        // their identity in both light and dark themes.
+        applyAccentColor();
         boolean ok = dark
             ? com.formdev.flatlaf.FlatDarkLaf.setup()
             : com.formdev.flatlaf.FlatLightLaf.setup();
@@ -116,6 +141,58 @@ public class LookAndFeelSupport {
             log.fine("dark-mode detection failed: " + t);
         }
         return false;
+    }
+
+    /** Default accent (PowerFolder/origin primary colour) when no brand colour is found. */
+    private static final String DEFAULT_ACCENT = "#34495c";
+
+    /**
+     * Set FlatLaf's global {@code @accentColor} to the active brand's primary
+     * colour so selection/focus/accents match the brand in both light and dark.
+     */
+    private static void applyAccentColor() {
+        try {
+            String hex = accentColorHex(activeSkin);
+            java.util.Map<String, String> extra =
+                new java.util.HashMap<>(com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults());
+            extra.put("@accentColor", hex);
+            com.formdev.flatlaf.FlatLaf.setGlobalExtraDefaults(extra);
+            log.fine("FlatLaf accent colour: " + hex);
+        } catch (Throwable t) {
+            log.fine("could not apply accent colour: " + t);
+        }
+    }
+
+    /**
+     * Extract the brand's primary colour from the active skin's synth.xml
+     * (the {@code <color type="BACKGROUND" value="#..."/> <!-- Primary color -->}
+     * entry). Falls back to {@link #DEFAULT_ACCENT}.
+     */
+    private static String accentColorHex(Skin skin) {
+        if (!(skin instanceof AbstractSyntheticaSkin)) {
+            return DEFAULT_ACCENT;
+        }
+        try {
+            String resource = ((AbstractSyntheticaSkin) skin)
+                .getDefaultSynthXMLPath().toString().replace('\\', '/');
+            try (java.io.InputStream in =
+                     LookAndFeelSupport.class.getResourceAsStream(resource)) {
+                if (in == null) {
+                    return DEFAULT_ACCENT;
+                }
+                String xml = new String(in.readAllBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8);
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                    "BACKGROUND\"\\s+value=\"(#[0-9a-fA-F]{6})\"\\s*/>\\s*<!--\\s*Primary color",
+                    java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
+                if (m.find()) {
+                    return m.group(1);
+                }
+            }
+        } catch (Throwable t) {
+            log.fine("accent extraction failed: " + t);
+        }
+        return DEFAULT_ACCENT;
     }
 
     /**
