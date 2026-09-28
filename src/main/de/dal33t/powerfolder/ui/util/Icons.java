@@ -343,15 +343,38 @@ public class Icons {
     private static volatile boolean darkMode;
 
     /**
-     * Icon ids that are monochrome (or the logo) and must be re-tinted white in
-     * dark mode so they stay visible on the dark background.
+     * Monochrome icon FILES (basenames) that must be re-tinted white in dark mode
+     * so they stay visible on the dark background. Filename-based (not icon-id)
+     * so every action id that maps to one of these PNGs is covered automatically.
      */
-    private static final java.util.Set<String> WHITEN_IN_DARK =
+    private static final java.util.Set<String> MONOCHROME_ICON_FILES =
         new java.util.HashSet<>(java.util.Arrays.asList(
-            FOLDER, LOCAL_FOLDER, ONLINE_FOLDER, ONLINE_FOLDER_SMALL, TYPICAL_FOLDER,
-            SYNC_COMPLETE, SYNC_INCOMPLETE, INFORMATION, LOGO400UI, ACTION_ARROW));
+            // folders
+            "Folder.png", "FolderLocal.png", "FolderOnline.png", "LocalFolder.png",
+            "LocalAndOnlineFolder.png", "PreviewFolder.png", "OnlineFolderSmall.png",
+            "NewFolder.png", "Directory.png", "DirectoryOpen.png",
+            // sync / status
+            "SyncComplete.png", "SyncInComplete.png", "StartSync.png",
+            "information.png", "Warning.png", "Checked.png", "Pause.png",
+            // logo + action arrow
+            "Logo400UI.png", "ActionArrow.png",
+            // common actions/buttons
+            "Add.png", "Delete.png", "Edit.png", "Settings.png", "Preferences.png",
+            "Cog.png", "FilterTextFieldGlass.png", "Upload.png", "Download.png",
+            "Abort.png", "Clear.png", "Open.png", "ArrowLeft.png", "ArrowRight.png"));
     static {
-        WHITEN_IN_DARK.addAll(java.util.Arrays.asList(SYNC_ANIMATION));
+        for (int i = 0; i <= 11; i++) {
+            MONOCHROME_ICON_FILES.add(String.format("Sync%02d.png", i));
+        }
+    }
+
+    /** @return the file name (basename) of a resource path, or the input if none. */
+    private static String baseName(String path) {
+        if (path == null) {
+            return null;
+        }
+        int slash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        return slash >= 0 ? path.substring(slash + 1) : path;
     }
 
     /**
@@ -462,7 +485,7 @@ public class Icons {
         }
 
         icon = new ImageIcon(iconURL);
-        if (darkMode && WHITEN_IN_DARK.contains(id)) {
+        if (darkMode && MONOCHROME_ICON_FILES.contains(baseName(iconId))) {
             icon = whiten(icon);
         }
         if (log.isLoggable(Level.FINER)) {
