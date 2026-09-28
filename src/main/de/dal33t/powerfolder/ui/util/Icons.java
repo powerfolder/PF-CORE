@@ -531,15 +531,45 @@ public class Icons {
             }
         }
 
-        icon = new ImageIcon(iconURL);
-        if (darkMode && MONOCHROME_ICON_FILES.contains(baseName(iconId))) {
-            icon = whiten(icon);
+        if (darkMode) {
+            // Prefer a hand-made white variant "<name>_dark.png" bundled next to
+            // the icon (e.g. the proper white PowerFolder logo from PFM);
+            // otherwise auto-whiten known monochrome glyphs. Brand logos have no
+            // _dark sibling, so they fall through to whitening their own artwork.
+            java.net.URL darkURL = darkVariantURL(iconId);
+            if (darkURL != null) {
+                icon = new ImageIcon(darkURL);
+            } else {
+                icon = new ImageIcon(iconURL);
+                if (MONOCHROME_ICON_FILES.contains(baseName(iconId))) {
+                    icon = whiten(icon);
+                }
+            }
+        } else {
+            icon = new ImageIcon(iconURL);
         }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);
         }
         ID_ICON_MAP.put(id, icon);
         return icon;
+    }
+
+    /**
+     * @return the URL of a bundled dark-mode variant "&lt;name&gt;_dark.png"
+     *         sitting next to the given classpath icon resource, or {@code null}
+     *         if there is none (or the id already refers to a _dark asset).
+     */
+    private static java.net.URL darkVariantURL(String iconId) {
+        if (iconId == null) {
+            return null;
+        }
+        int dot = iconId.toLowerCase().lastIndexOf(".png");
+        if (dot < 5 || iconId.regionMatches(true, dot - 5, "_dark", 0, 5)) {
+            return null;
+        }
+        String darkId = iconId.substring(0, dot) + "_dark" + iconId.substring(dot);
+        return Thread.currentThread().getContextClassLoader().getResource(darkId);
     }
 
     /**
