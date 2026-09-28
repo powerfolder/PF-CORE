@@ -230,6 +230,18 @@ public class LookAndFeelSupport {
     private static final String DEFAULT_ACCENT = "#34495c";
 
     /**
+     * FlatLaf keys forced to white in light mode so the whole window (incl. the
+     * header/status panels, menubar, tabs) is white, not FlatLaf's default grey.
+     * Removed in dark mode so FlatDark's own backgrounds apply.
+     */
+    private static final String[] BACKGROUND_KEYS = {
+        "@background", "Panel.background", "TabbedPane.background",
+        "Viewport.background", "ScrollPane.background", "MenuBar.background",
+        "ToolBar.background", "OptionPane.background", "RootPane.background",
+        "SplitPane.background"
+    };
+
+    /**
      * Set FlatLaf's global {@code @accentColor} to the active brand's primary
      * colour so selection/focus/accents match the brand in both light and dark.
      */
@@ -239,13 +251,16 @@ public class LookAndFeelSupport {
             java.util.Map<String, String> extra =
                 new java.util.HashMap<>(com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults());
             extra.put("@accentColor", hex);
-            if (dark) {
-                // Keep FlatDark's dark background.
-                extra.remove("@background");
-            } else {
-                // White window/panel background in light mode (instead of FlatLaf's
-                // default light grey).
-                extra.put("@background", "#ffffff");
+            // Light mode: force a clean white background on the window and all
+            // container surfaces (FlatLaf's light theme uses light grey for panels/
+            // menubar/etc., which left the header grey). Dark mode: remove the
+            // overrides so FlatDark's dark backgrounds apply.
+            for (String key : BACKGROUND_KEYS) {
+                if (dark) {
+                    extra.remove(key);
+                } else {
+                    extra.put(key, "#ffffff");
+                }
             }
             com.formdev.flatlaf.FlatLaf.setGlobalExtraDefaults(extra);
             log.fine("FlatLaf accent=" + hex + " background=" + (dark ? "dark" : "#ffffff"));
