@@ -72,4 +72,20 @@ public class ColorUtil {
         }
         return color;
     }
+
+    /**
+     * Theme-aware inactive/disabled text colour. Use instead of
+     * {@code SystemColor.textInactiveText}, which does not follow the current
+     * look and feel / macOS dark mode.
+     *
+     * @return the disabled label foreground of the active LaF (light in dark
+     *         mode, dark in light mode).
+     */
+    public static Color getTextInactiveColor() {
+        Object object = UIManager.getColor("Label.disabledForeground");
+        if (object == null) {
+            object = UIManager.getColor("textInactiveText");
+        }
+        return object instanceof Color ? (Color) object : getTextForegroundColor();
+    }
 }

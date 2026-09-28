@@ -173,11 +173,11 @@ public class ActionLabel extends PFComponent {
                 }
 
             } else {
-                uiComponent.setForeground(SystemColor.textText);
+                uiComponent.setForeground(ColorUtil.getTextForegroundColor());
                 putText(text);
             }
         } else {
-            uiComponent.setForeground(SystemColor.textInactiveText);
+            uiComponent.setForeground(ColorUtil.getTextInactiveColor());
             putText(text);
         }
     }
