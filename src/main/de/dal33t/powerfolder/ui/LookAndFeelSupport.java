@@ -161,8 +161,32 @@ public class LookAndFeelSupport {
             }
             return currentDark;
         }
-        // Linux: GNOME 42+/freedesktop expose color-scheme = 'prefer-dark';
-        // fall back to the gtk-theme name (often ends in "-dark").
+        return isLinuxDarkMode();
+    }
+
+    /**
+     * Dark-mode detection across the common Linux desktops, tried in order:
+     * the desktop-agnostic freedesktop portal, then GNOME (gsettings), KDE
+     * Plasma (kreadconfig), XFCE (xfconf-query), and finally the GTK theme name.
+     * Non-GNOME setups without any of these tools fall back to the current theme.
+     */
+    private static boolean isLinuxDarkMode() {
+        // 1) freedesktop portal (works across GNOME, KDE, ...): color-scheme
+        //    0 = no preference, 1 = prefer dark, 2 = prefer light.
+        String portal = readProcessOutput("gdbus", "call", "--session",
+            "--dest", "org.freedesktop.portal.Desktop",
+            "--object-path", "/org/freedesktop/portal/desktop",
+            "--method", "org.freedesktop.portal.Settings.Read",
+            "org.freedesktop.appearance", "color-scheme");
+        if (portal != null) {
+            if (portal.contains("uint32 1")) {
+                return true;
+            }
+            if (portal.contains("uint32 2") || portal.contains("uint32 0")) {
+                return false;
+            }
+        }
+        // 2) GNOME: color-scheme = 'prefer-dark'.
         String scheme = readProcessOutput("gsettings", "get",
             "org.gnome.desktop.interface", "color-scheme");
         if (scheme != null) {
@@ -174,6 +198,21 @@ public class LookAndFeelSupport {
                 return false;
             }
         }
+        // 3) KDE Plasma: the active ColorScheme name (e.g. "BreezeDark").
+        for (String tool : new String[] { "kreadconfig6", "kreadconfig5" }) {
+            String kde = readProcessOutput(tool, "--group", "General",
+                "--key", "ColorScheme");
+            if (kde != null && !kde.trim().isEmpty()) {
+                return kde.toLowerCase().contains("dark");
+            }
+        }
+        // 4) XFCE: the GTK theme name from xsettings.
+        String xfce = readProcessOutput("xfconf-query", "-c", "xsettings",
+            "-p", "/Net/ThemeName");
+        if (xfce != null && !xfce.trim().isEmpty()) {
+            return xfce.toLowerCase().contains("dark");
+        }
+        // 5) Last resort: the GNOME gtk-theme name (often ends in "-dark").
         String theme = readProcessOutput("gsettings", "get",
             "org.gnome.desktop.interface", "gtk-theme");
         if (theme != null && theme.toLowerCase().contains("dark")) {
