@@ -274,6 +274,21 @@ public class LookAndFeelSupport {
     };
 
     /**
+     * Bright text colour used in dark mode. FlatDark's default foreground is a
+     * dimmed grey (~#bbbbbb); this raises it to a crisp near-white so labels,
+     * menus and lists read clearly on the dark background. Tune here if needed.
+     */
+    private static final String DARK_FOREGROUND = "#f5f5f5";
+
+    /**
+     * FlatLaf keys set to {@link #DARK_FOREGROUND} in dark mode so text is bright
+     * white. Removed in light mode so FlatLight's own dark text applies.
+     */
+    private static final String[] FOREGROUND_KEYS = {
+        "@foreground", "Label.foreground"
+    };
+
+    /**
      * Set FlatLaf's global {@code @accentColor} to the active brand's primary
      * colour so selection/focus/accents match the brand in both light and dark.
      */
@@ -300,6 +315,15 @@ public class LookAndFeelSupport {
                     extra.remove(key);
                 } else {
                     extra.put(key, "#ffffff");
+                }
+            }
+            // Dark mode: brighten the default text foreground to near-white.
+            // Light mode: drop the override so FlatLight's dark text applies.
+            for (String key : FOREGROUND_KEYS) {
+                if (dark) {
+                    extra.put(key, DARK_FOREGROUND);
+                } else {
+                    extra.remove(key);
                 }
             }
             com.formdev.flatlaf.FlatLaf.setGlobalExtraDefaults(extra);
