@@ -401,7 +401,10 @@ public class Icons {
     public static void setDarkMode(boolean dark) {
         if (dark != darkMode) {
             darkMode = dark;
-            ID_ICON_MAP.clear();
+            // ID_ICON_MAP is now keyed per theme (see getIconById), so both the
+            // light and dark variants stay cached and a switch does not re-tint
+            // everything again. The file-type/extension caches are small and not
+            // theme-keyed, so clear them to pick up the new tint.
             FILETYPE_ICON_MAP.clear();
             EXTENSION_ICON_MAP.clear();
         }
@@ -525,7 +528,11 @@ public class Icons {
             return null;
         }
 
-        Icon icon = ID_ICON_MAP.get(id);
+        // Cache per theme so the light and dark variants coexist: a theme switch
+        // then no longer forces every icon to be re-loaded and re-tinted (which
+        // caused a slow burst on the EDT right after switching). See setDarkMode.
+        String key = darkMode ? id + "#dark" : id;
+        Icon icon = ID_ICON_MAP.get(key);
         if (icon != null) {
             return icon;
         }
@@ -537,7 +544,7 @@ public class Icons {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("Cached icon " + id);
                 }
-                ID_ICON_MAP.put(id, icon);
+                ID_ICON_MAP.put(key, icon);
             }
             return icon;
         } else if (id.equals(UNKNOWN_FILE_RED)) {
@@ -546,7 +553,7 @@ public class Icons {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("Cached icon " + id);
                 }
-                ID_ICON_MAP.put(id, icon);
+                ID_ICON_MAP.put(key, icon);
             }
             return icon;
         }
@@ -607,7 +614,7 @@ public class Icons {
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);
         }
-        ID_ICON_MAP.put(id, icon);
+        ID_ICON_MAP.put(key, icon);
         return icon;
     }
 
