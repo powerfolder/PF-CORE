@@ -257,12 +257,32 @@ public class LookAndFeelSupport {
     /** The dark/light state currently applied to the UI. */
     private static volatile boolean currentDark;
     private static Thread themeWatcher;
+    /**
+     * Guards against overlapping live theme switches: the watcher only schedules a
+     * new switch when no switch is already pending/running, so rapid OS appearance
+     * toggles cannot pile up FlatLaf.updateUI() calls on the EDT (which froze the
+     * UI after a few switches).
+     */
+    /** The running controller, so the watcher can offer a restart on change. */
+    private static volatile de.dal33t.powerfolder.Controller themeController;
+    /** True once the restart prompt was shown for the current mismatch. */
+    private static volatile boolean restartPrompted;
 
     /**
-     * Start a background watcher (macOS, Windows and Linux) that flips the FlatLaf
-     * theme live when the system appearance changes, so no client restart is
-     * needed. The appearance check spawns a short-lived process, so it runs off
-     * the EDT; the actual theme switch is applied on the EDT.
+     * Register the controller so the system-appearance watcher can prompt for a
+     * restart when the OS light/dark setting changes. Safe to call more than once.
+     */
+    public static void setThemeController(de.dal33t.powerfolder.Controller controller) {
+        themeController = controller;
+    }
+
+    /**
+     * Start a background watcher (macOS, Windows and Linux) that detects OS
+     * light/dark changes and offers the user a restart to apply the new theme.
+     * Live switching is intentionally avoided: repeatedly re-theming the running
+     * UI (FlatLaf.updateUI()) froze the client after a few switches. The
+     * appearance check spawns a short-lived process, so it runs off the EDT; the
+     * restart prompt is shown on the EDT.
      */
     private static synchronized void startSystemThemeWatcher() {
         if (themeWatcher != null) {
@@ -273,8 +293,18 @@ public class LookAndFeelSupport {
                 try {
                     Thread.sleep(5000);
                     boolean dark = isSystemDarkMode();
-                    if (dark != currentDark) {
-                        SwingUtilities.invokeLater(() -> switchTheme(dark));
+                    if (dark == currentDark) {
+                        // Back in sync with the applied theme; allow prompting
+                        // again on a future change.
+                        restartPrompted = false;
+                    } else if (!restartPrompted) {
+                        // Appearance changed. We do NOT live-switch (repeated
+                        // FlatLaf.updateUI() froze the UI after a few switches);
+                        // instead offer a restart, once per change.
+                        restartPrompted = true;
+                        final boolean target = dark;
+                        SwingUtilities.invokeLater(
+                            () -> promptRestartForThemeChange(target));
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -311,35 +341,34 @@ public class LookAndFeelSupport {
         return currentDark;
     }
 
-    /** Re-install the light/dark FlatLaf theme and refresh all open windows. */
-    private static void switchTheme(boolean dark) {
-        if (dark == currentDark) {
-            return;
+    /**
+     * The OS light/dark setting changed. Instead of re-theming the running UI
+     * (which froze the client after a few switches), offer the user a restart so
+     * the new theme is applied cleanly at startup. If declined, the current theme
+     * stays until the next (manual) restart. Runs on the EDT.
+     */
+    private static void promptRestartForThemeChange(boolean dark) {
+        de.dal33t.powerfolder.Controller c = themeController;
+        if (c == null || !c.isUIOpen()) {
+            return; // no UI to prompt / restart yet
         }
-        currentDark = dark;
+        log.info("System appearance changed to " + (dark ? "Dark" : "Light")
+            + "; offering restart to apply the new theme.");
         try {
-            applyThemeDefaults(dark);
-            boolean ok = dark
-                ? com.formdev.flatlaf.FlatDarkLaf.setup()
-                : com.formdev.flatlaf.FlatLightLaf.setup();
-            if (ok) {
-                UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
-                de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
-                com.formdev.flatlaf.FlatLaf.updateUI();
-                // Refresh set-once elements (logo, header icons, label colours)
-                // that FlatLaf.updateUI() alone does not re-run.
-                for (Runnable r : themeChangeListeners) {
-                    try {
-                        r.run();
-                    } catch (Throwable t) {
-                        log.fine("theme change listener failed: " + t);
-                    }
-                }
-                log.info("Switched FlatLaf theme to " + (dark ? "Dark" : "Light")
-                    + " (system appearance changed)");
+            int choice = de.dal33t.powerfolder.ui.dialog.DialogFactory.genericDialog(
+                c,
+                Translation.get("preferences.dialog.restart.title"),
+                Translation.get("preferences.dialog.restart.text"),
+                new String[] {
+                    Translation.get("preferences.dialog.restart.restart"),
+                    Translation.get("general.cancel") },
+                0,
+                de.dal33t.powerfolder.ui.dialog.GenericDialogType.QUESTION);
+            if (choice == 0) {
+                c.shutdownAndRequestRestart();
             }
         } catch (Throwable t) {
-            log.warning("live theme switch failed: " + t);
+            log.warning("theme-change restart prompt failed: " + t);
         }
     }
 

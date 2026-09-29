@@ -776,6 +776,9 @@ public class UIController extends PFComponent {
         }
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel(), activeSkin);
+            // Give the appearance watcher a controller so it can offer a restart
+            // when the OS light/dark setting changes.
+            LookAndFeelSupport.setThemeController(getController());
         } catch (UnsupportedLookAndFeelException | ParseException e) {
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
