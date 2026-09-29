@@ -309,8 +309,10 @@ public class FilesTable extends JTable {
                         } else if (fileInfo.isExpected(controller
                             .getFolderRepository()))
                         {
+                            // Remote-only / not on this device yet -> Android-style
+                            // blue cloud glyph.
                             setForeground(AVAILABLE);
-                            setIcon(Icons.getIconById(Icons.EXPECTED));
+                            setIcon(Icons.getIconById(Icons.SYNC_CLOUD));
                             statusForTooltip = Translation
                                 .get("file_info.expected");
 
@@ -343,6 +345,9 @@ public class FilesTable extends JTable {
                                     .get("file_info.new_version_available");
                             }
                         } else {
+                            // Present locally and in sync -> Android-style green
+                            // check.
+                            setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
                             if (recentlyDownloaded(fileInfo)) {
                                 statusForTooltip = Translation
                                     .get("file_info.recently_downloaded");

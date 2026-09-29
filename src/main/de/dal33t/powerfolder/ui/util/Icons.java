@@ -169,6 +169,8 @@ public class Icons {
     // Sync icons
     public static final String SYNC_COMPLETE = "sync_complete.icon";
     public static final String SYNC_INCOMPLETE = "sync_incomplete.icon";
+    /** Android-style "online only / in the cloud" glyph (blue circular arrows). */
+    public static final String SYNC_CLOUD = "sync_cloud.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
@@ -354,7 +356,10 @@ public class Icons {
             "LocalAndOnlineFolder.png", "PreviewFolder.png", "OnlineFolderSmall.png",
             "NewFolder.png", "Directory.png", "DirectoryOpen.png",
             // sync / status
-            "SyncComplete.png", "SyncInComplete.png", "StartSync.png",
+            // NOTE: "SyncComplete.png" is intentionally NOT listed: it is now the
+            // green Android-style check and must keep its colour in dark mode
+            // (whitening would turn it into a white check).
+            "SyncInComplete.png", "StartSync.png",
             "information.png", "Warning.png", "Checked.png", "Pause.png",
             // logo + action arrow
             "Logo400UI.png", "ActionArrow.png",

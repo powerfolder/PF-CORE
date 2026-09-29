@@ -280,8 +280,16 @@ public class LookAndFeelSupport {
     private static void applyThemeDefaults(boolean dark) {
         try {
             String hex = accentColorHex(activeSkin);
-            java.util.Map<String, String> extra =
-                new java.util.HashMap<>(com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults());
+            // getGlobalExtraDefaults() returns null when nothing has been set yet
+            // (the first startup call), and new HashMap<>(null) throws an NPE -
+            // which was silently swallowed below, so the brand accent and the
+            // white light-mode background never got applied. Default to an empty
+            // map when none exists yet.
+            java.util.Map<String, String> existing =
+                com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults();
+            java.util.Map<String, String> extra = existing != null
+                ? new java.util.HashMap<>(existing)
+                : new java.util.HashMap<>();
             extra.put("@accentColor", hex);
             // Light mode: force a clean white background on the window and all
             // container surfaces (FlatLaf's light theme uses light grey for panels/

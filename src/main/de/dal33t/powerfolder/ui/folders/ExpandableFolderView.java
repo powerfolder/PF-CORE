@@ -1063,8 +1063,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
             } else {
-                // We are in sync.
-                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+                // We are in sync -> Android-style green check.
+                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
                 if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
@@ -1081,8 +1081,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
-        } else { // CloudOnly
-            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+        } else { // CloudOnly -> Android-style blue cloud glyph.
+            primaryButton.setIcon(Icons.getIconById(Icons.SYNC_CLOUD));
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
