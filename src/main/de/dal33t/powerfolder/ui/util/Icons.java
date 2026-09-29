@@ -429,6 +429,57 @@ public class Icons {
         return new ImageIcon(out);
     }
 
+    /** Cache for composite folder+badge icons, keyed by badge id + dark-mode. */
+    private static final Map<String, Icon> FOLDER_BADGE_MAP = new HashMap<>();
+
+    /**
+     * Android-style folder glyph: the (dark-mode-aware) black/white folder icon
+     * with a small coloured sync-state badge in the bottom-right corner, so a
+     * folder card shows both the folder shape and its sync state at once.
+     *
+     * @param badgeIconId the status badge icon id (e.g. {@link #SYNC_COMPLETE},
+     *                    {@link #SYNC_CLOUD}, {@link #SYNC_INCOMPLETE}).
+     * @return the composite icon, or the plain folder icon if the badge is
+     *         missing.
+     */
+    public static Icon getFolderWithBadge(String badgeIconId) {
+        String key = badgeIconId + '|' + darkMode;
+        Icon cached = FOLDER_BADGE_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Icon base = getIconById(FOLDER);
+        if (base == null) {
+            return getIconById(badgeIconId);
+        }
+        Icon badge = getIconById(badgeIconId);
+        int w = base.getIconWidth(), h = base.getIconHeight();
+        if (badge == null || w <= 0 || h <= 0) {
+            return base;
+        }
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = img.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+            java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        base.paintIcon(null, g, 0, 0);
+        // Render the badge to its own image, then draw it scaled into the corner.
+        java.awt.image.BufferedImage badgeImg = new java.awt.image.BufferedImage(
+            badge.getIconWidth(), badge.getIconHeight(),
+            java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D bg = badgeImg.createGraphics();
+        badge.paintIcon(null, bg, 0, 0);
+        bg.dispose();
+        int bs = Math.round(w * 0.58f);
+        g.drawImage(badgeImg, w - bs, h - bs, bs, bs, null);
+        g.dispose();
+        Icon result = new ImageIcon(img);
+        FOLDER_BADGE_MAP.put(key, result);
+        return result;
+    }
+
     /** Cache for bundled file-type glyphicons, keyed by lower-case extension. */
     private static final Map<String, Icon> FILETYPE_ICON_MAP = new HashMap<>();
     private static final Icon NO_FILETYPE_ICON = new ImageIcon();

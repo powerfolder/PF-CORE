@@ -1058,13 +1058,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
             } else if (Double.compare(sync, 100.0d) < 0) {
-                // Not synced and not syncing.
-                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
+                // Not synced and not syncing -> folder + incomplete badge.
+                primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_INCOMPLETE));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
             } else {
-                // We are in sync -> Android-style green check.
-                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+                // We are in sync -> black folder + green check badge.
+                primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_COMPLETE));
                 if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
@@ -1081,8 +1081,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
-        } else { // CloudOnly -> Android-style blue cloud glyph.
-            primaryButton.setIcon(Icons.getIconById(Icons.SYNC_CLOUD));
+        } else { // CloudOnly -> black folder + blue cloud badge.
+            primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_CLOUD));
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
