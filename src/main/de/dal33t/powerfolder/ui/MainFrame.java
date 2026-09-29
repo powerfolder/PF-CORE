@@ -398,7 +398,34 @@ public class MainFrame extends PFUIComponent {
      * {@code Icons.setDarkMode}, so these re-fetch the light/white variant).
      * Runs on the EDT (invoked from the FlatLaf theme-change listener).
      */
+    /**
+     * Modern, theme-aware styling for the online-storage usage bar. Instead of
+     * the dark-blue accent fill it uses a light grey/white fill on a subtle
+     * track, taller and with rounded ends (FlatLaf largeHeight). Re-applied on
+     * live theme switches via {@link #refreshThemeIcons()}.
+     */
+    private void styleUsageBar() {
+        if (usagePB == null) {
+            return;
+        }
+        boolean dark = LookAndFeelSupport.isDarkMode();
+        usagePB.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
+        usagePB.setBorderPainted(false);
+        usagePB.setStringPainted(false);
+        usagePB.setPreferredSize(new java.awt.Dimension(
+            usagePB.getPreferredSize().width, 14));
+        // Fill: light grey (light mode) / near-white (dark mode).
+        java.awt.Color fill = dark
+            ? new java.awt.Color(0xE6E6E6) : new java.awt.Color(0xB8B8B8);
+        // Track: subtle, slightly lighter/darker than the surrounding surface.
+        java.awt.Color track = dark
+            ? new java.awt.Color(0x4A4A4A) : new java.awt.Color(0xEAEAEA);
+        usagePB.setForeground(fill);
+        usagePB.setBackground(track);
+    }
+
     private void refreshThemeIcons() {
+        styleUsageBar();
         if (logoLabel != null) {
             logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         }
@@ -531,6 +558,7 @@ public class MainFrame extends PFUIComponent {
         usagePB = new JProgressBar();
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(accountLoginOpener);
+        styleUsageBar();
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
