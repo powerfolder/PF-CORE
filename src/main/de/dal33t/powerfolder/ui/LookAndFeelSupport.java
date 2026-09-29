@@ -133,32 +133,78 @@ public class LookAndFeelSupport {
     }
 
     /**
-     * @return {@code true} if the OS is currently in Dark Mode (detected on
-     *         macOS). Other platforms default to light for now.
+     * @return {@code true} if the OS is currently in Dark Mode. Detected on
+     *         macOS (AppleInterfaceStyle), Windows (AppsUseLightTheme registry
+     *         value) and Linux (GNOME/freedesktop {@code color-scheme}). Unknown
+     *         setups fall back to the currently applied theme.
      */
     private static boolean isSystemDarkMode() {
-        if (!OSUtil.isMacOS()) {
-            return false;
+        if (OSUtil.isMacOS()) {
+            // `defaults read -g AppleInterfaceStyle` prints "Dark" (exit 0) when
+            // Dark mode is on, and exits non-zero when the key is absent (light).
+            String out = readProcessOutput("defaults", "read", "-g",
+                "AppleInterfaceStyle");
+            return out != null && out.toLowerCase().contains("dark");
         }
-        // Leak-free detection: spawn `defaults read -g AppleInterfaceStyle`, fully
-        // drain + close its output, wait with a timeout, and ALWAYS destroy the
-        // process. (An earlier version leaked the process/file descriptors on every
-        // poll, which exhausted the JVM after ~20 min and froze the UI.)
+        if (OSUtil.isWindowsSystem()) {
+            // AppsUseLightTheme: 0x0 => dark apps, 0x1 => light apps.
+            String out = readProcessOutput("reg", "query",
+                "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                "/v", "AppsUseLightTheme");
+            if (out != null) {
+                java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("AppsUseLightTheme\\s+REG_DWORD\\s+0x0*([0-9a-fA-F]+)")
+                    .matcher(out);
+                if (m.find()) {
+                    return Integer.parseInt(m.group(1), 16) == 0;
+                }
+            }
+            return currentDark;
+        }
+        // Linux: GNOME 42+/freedesktop expose color-scheme = 'prefer-dark';
+        // fall back to the gtk-theme name (often ends in "-dark").
+        String scheme = readProcessOutput("gsettings", "get",
+            "org.gnome.desktop.interface", "color-scheme");
+        if (scheme != null) {
+            String v = scheme.toLowerCase();
+            if (v.contains("dark")) {
+                return true;
+            }
+            if (v.contains("light") || v.contains("default")) {
+                return false;
+            }
+        }
+        String theme = readProcessOutput("gsettings", "get",
+            "org.gnome.desktop.interface", "gtk-theme");
+        if (theme != null && theme.toLowerCase().contains("dark")) {
+            return true;
+        }
+        return currentDark;
+    }
+
+    /**
+     * Run a short-lived command and return its (stdout+stderr) output, or
+     * {@code null} on error/timeout. Leak-free: the output is fully drained and
+     * every stream plus the process itself is always closed/destroyed. (An
+     * earlier macOS-only version leaked the process/file descriptors on every
+     * poll, which exhausted the JVM after ~20 min and froze the UI.)
+     */
+    private static String readProcessOutput(String... command) {
         Process p = null;
         try {
-            p = new ProcessBuilder("defaults", "read", "-g", "AppleInterfaceStyle")
-                .redirectErrorStream(true).start();
+            p = new ProcessBuilder(command).redirectErrorStream(true).start();
+            String out;
             try (java.io.InputStream in = p.getInputStream()) {
-                byte[] buf = new byte[256];
-                while (in.read(buf) != -1) { /* discard, let the process finish */ }
+                out = new String(in.readAllBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8);
             }
             if (!p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
-                return currentDark; // don't thrash if it hangs; cleaned up in finally
+                return null; // don't thrash if it hangs; cleaned up in finally
             }
-            return p.exitValue() == 0; // key present => Dark mode
+            return out;
         } catch (Exception e) {
-            log.fine("dark-mode detection failed: " + e);
-            return currentDark;
+            log.fine("theme detection command failed: " + e);
+            return null;
         } finally {
             if (p != null) {
                 p.destroy();
@@ -174,13 +220,13 @@ public class LookAndFeelSupport {
     private static Thread themeWatcher;
 
     /**
-     * Start a background watcher (macOS only) that flips the FlatLaf theme live
-     * when the system appearance changes, so no client restart is needed. The
-     * appearance check spawns a short-lived process, so it runs off the EDT; the
-     * actual theme switch is applied on the EDT.
+     * Start a background watcher (macOS, Windows and Linux) that flips the FlatLaf
+     * theme live when the system appearance changes, so no client restart is
+     * needed. The appearance check spawns a short-lived process, so it runs off
+     * the EDT; the actual theme switch is applied on the EDT.
      */
     private static synchronized void startSystemThemeWatcher() {
-        if (!OSUtil.isMacOS() || themeWatcher != null) {
+        if (themeWatcher != null) {
             return;
         }
         themeWatcher = new Thread(() -> {
@@ -198,7 +244,7 @@ public class LookAndFeelSupport {
                     log.fine("theme watcher: " + t);
                 }
             }
-        }, "FlatLaf-macOS-appearance-watcher");
+        }, "system-appearance-watcher");
         themeWatcher.setDaemon(true);
         themeWatcher.start();
     }
