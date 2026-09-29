@@ -475,7 +475,7 @@ public class Icons {
         java.awt.Graphics2D bg = badgeImg.createGraphics();
         badge.paintIcon(null, bg, 0, 0);
         bg.dispose();
-        int bs = Math.round(w * 0.58f);
+        int bs = Math.round(w * 0.66f);
         g.drawImage(badgeImg, w - bs, h - bs, bs, bs, null);
         g.dispose();
         Icon result = new ImageIcon(img);
