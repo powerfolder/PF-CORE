@@ -617,11 +617,43 @@ public class Icons {
         } else {
             icon = new ImageIcon(iconURL);
         }
+        // PFC-3643: the header brand logo is a 432x100 bitmap that is excluded
+        // from the small-icon HiDPI path (> HIDPI_MAX_BASE); on a scaled/HiDPI
+        // display the bare PNG is bilinear-upscaled and looks blurry. Give it the
+        // same bicubic multi-resolution treatment so it stays crisp.
+        if (LOGO400UI.equals(id) && icon instanceof ImageIcon) {
+            icon = toHiDpiIcon((ImageIcon) icon);
+        }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);
         }
         ID_ICON_MAP.put(key, icon);
         return icon;
+    }
+
+    /**
+     * PFC-3643: wrap a brand bitmap in a {@link java.awt.image.BaseMultiResolutionImage}
+     * with bicubic 2x/3x variants so it renders sharply on HiDPI/scaled displays
+     * (Java then resamples a higher-density variant instead of bilinear-upscaling
+     * the bare PNG). Returns the original icon on any failure.
+     */
+    private static Icon toHiDpiIcon(ImageIcon src) {
+        try {
+            int w = src.getIconWidth(), h = src.getIconHeight();
+            if (w <= 0 || h <= 0) {
+                return src;
+            }
+            java.awt.image.BufferedImage base = new java.awt.image.BufferedImage(
+                w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = base.createGraphics();
+            g.drawImage(src.getImage(), 0, 0, null);
+            g.dispose();
+            Image mr = new java.awt.image.BaseMultiResolutionImage(base,
+                upscale(base, 2), upscale(base, 3));
+            return new ImageIcon(mr);
+        } catch (Exception e) {
+            return src;
+        }
     }
 
     /**

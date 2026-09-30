@@ -28,6 +28,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,13 +86,27 @@ public class AvatarLabel extends JComponent {
         return sb.toString();
     }
 
+    /** @see #loadAvatar(String, String) with no auth token. */
+    public void loadAvatar(final String url) {
+        loadAvatar(url, null);
+    }
+
     /**
      * Asynchronously load the avatar image from {@code url}. No-op on a blank
      * URL; failures are swallowed (initials remain).
+     * <p>
+     * The server avatar endpoint ({@code /avatars/user/...}) is registered
+     * "unsecured" but its handler still requires an authenticated caller for
+     * non-public avatars, so a bare request gets a 403 ("Can't get input stream
+     * from URL"). We therefore authenticate with the device token via the
+     * {@code Authorization: Bearer <token>} header (see server WebSession), which
+     * is the same scheme the REST API uses.
      *
-     * @param url the avatar image URL (e.g. from ServerClient.getAvatarURL).
+     * @param url         the avatar image URL (from ServerClient.getAvatarURL).
+     * @param bearerToken the device token (ServerClient.getDeviceToken()), or
+     *                    {@code null}/blank for an unauthenticated request.
      */
-    public void loadAvatar(final String url) {
+    public void loadAvatar(final String url, final String bearerToken) {
         if (url == null || url.trim().isEmpty()) {
             return;
         }
@@ -97,7 +114,7 @@ public class AvatarLabel extends JComponent {
         loadToken = token;
         Thread t = new Thread(() -> {
             try {
-                BufferedImage img = javax.imageio.ImageIO.read(new URL(url));
+                BufferedImage img = fetch(url, bearerToken);
                 if (img != null && loadToken == token) {
                     avatar = img;
                     SwingUtilities.invokeLater(this::repaint);
@@ -108,6 +125,35 @@ public class AvatarLabel extends JComponent {
         }, "avatar-loader");
         t.setDaemon(true);
         t.start();
+    }
+
+    /**
+     * Fetch and decode the avatar, authenticating with a Bearer token. Returns
+     * {@code null} (not an exception) on any non-200 response - e.g. 403 (no/
+     * invalid auth) or 404 (account has no avatar) - so the caller keeps the
+     * initials fallback.
+     */
+    private static BufferedImage fetch(String url, String bearerToken)
+        throws IOException
+    {
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        try {
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(10_000);
+            con.setReadTimeout(10_000);
+            con.setInstanceFollowRedirects(true);
+            if (bearerToken != null && !bearerToken.trim().isEmpty()) {
+                con.setRequestProperty("Authorization", "Bearer " + bearerToken);
+            }
+            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                return null;
+            }
+            try (InputStream in = con.getInputStream()) {
+                return javax.imageio.ImageIO.read(in);
+            }
+        } finally {
+            con.disconnect();
+        }
     }
 
     @Override

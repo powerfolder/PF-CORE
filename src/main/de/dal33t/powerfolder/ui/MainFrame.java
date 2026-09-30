@@ -220,11 +220,13 @@ public class MainFrame extends PFUIComponent {
         // LOWER PART END
 
         // PUT TOGETHER
+        // PFC-3643: account header + storage bar first, folder-sync status after
+        // the storage bar (was: sync status on top).
         FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
         builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
-        builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
+        builderMain.add(builderLower.getPanel(), cc.xy(1, 1));
+        builderMain.add(builderUpper.getPanel(), cc.xy(1, 3));
         // PUT TOGETHER END
 
         return builderMain.getPanel();
@@ -327,7 +329,7 @@ public class MainFrame extends PFUIComponent {
         builder.add(inlineInfoLabel,
             cc.xy(2, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
         builder.add(inlineInfoCloseButton,
-            cc.xy(4, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
+            cc.xy(4, 2, CellConstraints.RIGHT, CellConstraints.TOP));
 
         builder.add(centralPanel, cc.xyw(1, 3, 4));
 
@@ -668,10 +670,12 @@ public class MainFrame extends PFUIComponent {
 
         updateTitle();
 
+        // PFC-3643: monochrome black X (matches the toolbar action icons) instead
+        // of the old red clear-filter glyph.
         inlineInfoCloseButton = new JButton3Icons(
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14),
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14),
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14));
         inlineInfoCloseButton.setToolTipText(Translation
             .get("main_frame.inline_info_close.tip"));
         inlineInfoCloseButton
@@ -905,19 +909,19 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
         StringBuilder title = new StringBuilder();
 
-        String appName = Translation.get("general.application.name");
-        // @todo Unclear, please comment what this is about.
-        if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
-            appName = "PowerFolder";
-        }
-        title.append(appName);
-
         if (getController().isVerbose()) {
-            // Append in front of program name in verbose mode. PFC-3643: the build
-            // timestamp is intentionally NOT shown in the title on any platform;
-            // only the version and node name are appended.
-            title.append(" v" + Controller.PROGRAM_VERSION);
+            // PFC-3643: in verbose (dev) mode show only the version and node name
+            // - the application name ("PowerFolder") is redundant next to the
+            // window's logo/icon. The build timestamp is intentionally NOT shown
+            // on any platform.
+            title.append("v" + Controller.PROGRAM_VERSION);
             title.append(" | " + getController().getMySelf().getNick());
+        } else {
+            String appName = Translation.get("general.application.name");
+            if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
+                appName = "PowerFolder";
+            }
+            title.append(appName);
         }
         /* No idea who archi is ;)
         Calendar cal = Calendar.getInstance();
@@ -1333,7 +1337,8 @@ public class MainFrame extends PFUIComponent {
                 avatarLabel.setName(ad.getAccount().getDisplayName());
                 accountEmailLabel.setText(ad.getAccount().getUsername());
                 avatarLabel.loadAvatar(
-                    client.getAvatarURL(client.getAccountInfo(), true));
+                    client.getAvatarURL(client.getAccountInfo(), true),
+                    client.getDeviceToken());
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));

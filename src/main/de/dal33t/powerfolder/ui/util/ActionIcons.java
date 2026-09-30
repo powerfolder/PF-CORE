@@ -42,7 +42,7 @@ import java.awt.geom.RoundRectangle2D;
 public final class ActionIcons {
 
     public enum Type {
-        WEB, EXPLORE, PAUSE, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER
+        WEB, EXPLORE, PAUSE, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
     }
 
     private ActionIcons() {
@@ -121,6 +121,10 @@ public final class ActionIcons {
                 break;
             case CREATE_FOLDER :
                 folder(g, true);
+                break;
+            case CLOSE :
+                g.draw(new Line2D.Double(5, 5, 17, 17));
+                g.draw(new Line2D.Double(17, 5, 5, 17));
                 break;
             default :
                 break;
