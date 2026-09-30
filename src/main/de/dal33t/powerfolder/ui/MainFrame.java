@@ -949,6 +949,34 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
+     * Whether the window currently fills (roughly) the whole screen - either via
+     * the app's own maximize ({@link Frame#MAXIMIZED_BOTH}) or the native macOS
+     * green "zoom" button. The native zoom does NOT go through
+     * {@link #setFrameMode(FrameMode)}, so {@code frameMode} stays
+     * {@code NORMAL} and {@link #isMaximized()} may not report it. Used to avoid
+     * force-resizing a window the OS is keeping maximized (which left an
+     * unpainted black area on macOS).
+     *
+     * @return true if the window effectively occupies the whole usable screen.
+     */
+    private boolean isEffectivelyMaximized() {
+        if (isMaximized()) {
+            return true;
+        }
+        GraphicsConfiguration gc = uiComponent.getGraphicsConfiguration();
+        if (gc == null) {
+            return false;
+        }
+        Rectangle screen = gc.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int usableW = screen.width - insets.left - insets.right;
+        int usableH = screen.height - insets.top - insets.bottom;
+        Dimension size = uiComponent.getSize();
+        // Small tolerance for window shadows / rounding.
+        return size.width >= usableW - 20 && size.height >= usableH - 20;
+    }
+
+    /**
      * Determine if application is currently minimized or hidden (for example,
      * in the systray)
      *
@@ -1044,9 +1072,22 @@ public class MainFrame extends PFUIComponent {
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
         }
-        if (frameMode == FrameMode.NORMAL) {
+        // Only shrink to the normal docked size when the window is genuinely in
+        // NORMAL mode. On macOS the native title bar's green "zoom" button
+        // maximizes the window WITHOUT going through setFrameMode(), so frameMode
+        // stays NORMAL; resizing to 1100x600 here while the OS keeps the window
+        // full-screen left the exposed surface unpainted (a black area, cleared
+        // only by minimizing/restoring). Guard against that with the effective
+        // maximized check.
+        if (frameMode == FrameMode.NORMAL && !isEffectivelyMaximized()) {
             configureNormalSize();
         }
+        // Re-layout and repaint the swapped-in central panel. When we do NOT
+        // resize (e.g. the window is maximized natively) the new panel would
+        // otherwise not be laid out/painted, leaving the black area described
+        // above.
+        centralPanel.revalidate();
+        centralPanel.repaint();
     }
 
     /**
