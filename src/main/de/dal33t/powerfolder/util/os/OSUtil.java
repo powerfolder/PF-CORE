@@ -168,10 +168,32 @@ public class OSUtil {
      * @return if systray is supported on this platform
      */
     public static boolean isSystraySupported() {
+        // PFC-3096: On Linux the AWT SystemTray is unsupported under GNOME/Wayland
+        // (no XEmbed tray). When a StatusNotifierItem (D-Bus/SNI) tray backend is
+        // available and in use, the UI layer flags it here so tray-dependent
+        // behaviour (minimize-to-tray, close-to-tray, the minimize button) stays
+        // enabled. See de.dal33t.powerfolder.ui.tray.SniTray.
+        if (sniTrayAvailable) {
+            return true;
+        }
         if (sysTraySupport == null) {
             sysTraySupport = SystemTray.isSupported();
         }
         return sysTraySupport;
+    }
+
+    /** PFC-3096: true when the SNI (D-Bus) tray backend is active (Linux). */
+    private static volatile boolean sniTrayAvailable;
+
+    /**
+     * Flag whether a StatusNotifierItem (D-Bus) tray backend is available and in
+     * use. Set by the UI layer at startup; makes {@link #isSystraySupported()}
+     * report {@code true} on GNOME/Wayland where the AWT tray is unavailable.
+     *
+     * @param available {@code true} if the SNI tray is active.
+     */
+    public static void setSNITrayAvailable(boolean available) {
+        sniTrayAvailable = available;
     }
 
     /**

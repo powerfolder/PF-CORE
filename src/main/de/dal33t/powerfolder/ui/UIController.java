@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
+import de.dal33t.powerfolder.ui.tray.SniTray;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.update.Updater;
@@ -103,6 +104,13 @@ public class UIController extends PFComponent {
     private boolean started;
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
+    /** PFC-3096: StatusNotifierItem (D-Bus) tray backend, used on Linux
+     * GNOME/KDE where the AWT SystemTray is unavailable. Null on other paths. */
+    private SniTray sniTray;
+    /** PFC-3096: menu-entry id of the SNI "Show/Hide" toggle. */
+    private int sniShowHideId = -1;
+    /** PFC-3096: menu-entry id of the SNI "Pause/Resume" entry. */
+    private int sniPauseResumeId = -1;
     private MainFrame mainFrame;
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
@@ -275,10 +283,21 @@ public class UIController extends PFComponent {
             TrayIconManager.whitelistSystray(getController());
         }
 
-        if (OSUtil.isSystraySupported()) {
+        // PFC-3096: On Linux prefer the StatusNotifierItem (D-Bus) tray when a
+        // watcher is present (KDE, or GNOME with the AppIndicator extension) - the
+        // AWT SystemTray is unsupported there. Falls back to the AWT tray
+        // (Windows, macOS, KDE-on-X11) and finally to exit-on-close.
+        boolean useSni = OSUtil.isLinux() && SniTray.isAvailable();
+        if (useSni) {
+            OSUtil.setSNITrayAvailable(true);
+        }
+
+        if (useSni) {
+            initializeSniTray();
+        } else if (OSUtil.isSystraySupported()) {
             initializeSystray();
         } else {
-            logWarning("System tray currently only supported on windows (>98)");
+            logWarning("System tray not supported on this platform/desktop");
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
@@ -374,6 +393,128 @@ public class UIController extends PFComponent {
             }
         }
 
+    }
+
+    /**
+     * PFC-3096: Build and register the StatusNotifierItem (D-Bus) tray used on
+     * Linux GNOME/KDE where the AWT {@link java.awt.SystemTray} is unavailable.
+     * The menu mirrors the AWT tray menu but invokes the operations directly, so
+     * the AWT path ({@link #initializeSystray()}) is left completely untouched.
+     * On any failure it falls back to exit-on-close.
+     */
+    private void initializeSniTray() {
+        String appId = System.getProperty("awt.appName");
+        if (appId == null || appId.trim().isEmpty()) {
+            appId = "powerfolder";
+        }
+        String title = Translation.get("general.application.name");
+        if (title == null || title.trim().isEmpty() || title.startsWith("- ")) {
+            title = "PowerFolder";
+        }
+        // Icon is resolved by freedesktop theme name; the client installs
+        // /usr/share/icons/hicolor/128x128/apps/<appId>.png (see PFC-3096
+        // packaging changes), so the app-id doubles as the icon name.
+        sniTray = new SniTray(appId, appId, title);
+
+        // Left-click brings the main window to front.
+        sniTray.setActivateAction(() -> mainFrame.toFront());
+
+        // Show / Hide toggle.
+        sniShowHideId = sniTray.addItem(Translation.get("systray.show"),
+            () -> {
+                if (mainFrame.getUIComponent().isVisible()) {
+                    mainFrame.getUIComponent().setVisible(false);
+                } else {
+                    mainFrame.toFront();
+                }
+            });
+
+        // Web interface.
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            sniTray.addItem(
+                Translation.get("action_open_web_interface.name"),
+                () -> BrowserLauncher.open(getController(),
+                    () -> getController().getOSClient()
+                        .getLoginURLWithCredentials()));
+        }
+
+        // Browse folders base.
+        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
+            sniTray.addItem(
+                Translation.get("action_open_folders_base.name"),
+                () -> {
+                    if (!PreferencesEntry.WEBDAV_ONLY
+                        .getValueBoolean(getController()))
+                    {
+                        getApplicationModel().openExplorer();
+                    } else {
+                        getApplicationModel().openExplorerWebDAVPath();
+                    }
+                });
+        }
+
+        // Pause / Resume.
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            sniPauseResumeId = sniTray.addItem(pauseResumeLabel(),
+                this::askToPauseResume);
+            getController().addPausedModeListener(new MyPausedModeListener());
+        }
+
+        // Preferences.
+        sniTray.addItem(Translation.get("action_open_preferences.name"),
+            () -> preferencesDialog.open());
+
+        sniTray.addSeparator();
+
+        // Sync & Exit (expert only).
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            sniTray.addItem(Translation.get("systray.sync_exit"), () -> {
+                getController().performFullSync();
+                getController().exitAfterSync(4);
+            });
+        }
+
+        // Exit.
+        sniTray.addItem(Translation.get("systray.exit"), () -> {
+            if (isShutdownAllowed()) {
+                getController().exit(0);
+            }
+        });
+
+        // Keep the Show/Hide label in sync with the window state.
+        mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                sniTray.updateItemLabel(sniShowHideId,
+                    Translation.get("systray.hide"));
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                sniTray.updateItemLabel(sniShowHideId,
+                    Translation.get("systray.show"));
+            }
+        });
+
+        try {
+            sniTray.show();
+        } catch (Exception e) {
+            logSevere("Failed to initialize SNI tray; falling back to no tray",
+                e);
+            sniTray = null;
+            OSUtil.setSNITrayAvailable(false);
+            mainFrame.getUIComponent()
+                .setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+    }
+
+    /** PFC-3096: current Pause/Resume menu label depending on paused state. */
+    private String pauseResumeLabel() {
+        return getController().isPaused()
+            ? Translation.get("action_resume_sync.name")
+            : Translation.get("action_pause_sync.name");
     }
 
     private void initializeSystray() {
@@ -1005,7 +1146,11 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().dispose();
 
             // Close systray
-            if (OSUtil.isSystraySupported() && trayIconManager != null) {
+            if (sniTray != null) {
+                // PFC-3096: SNI (D-Bus) tray teardown.
+                sniTray.dispose();
+                sniTray = null;
+            } else if (OSUtil.isSystraySupported() && trayIconManager != null) {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
             }
@@ -1176,14 +1321,21 @@ public class UIController extends PFComponent {
     }
 
     private void configurePauseResumeLink() {
-        if (getController().isPaused()) {
-            pauseResumeMenu.setLabel(Translation
-                .get("action_resume_sync.name"));
-            pauseResumeMenu.setActionCommand(COMMAND_RESUME);
-        } else {
-            pauseResumeMenu.setLabel(Translation
-                .get("action_pause_sync.name"));
-            pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
+        // AWT tray path.
+        if (pauseResumeMenu != null) {
+            if (getController().isPaused()) {
+                pauseResumeMenu.setLabel(Translation
+                    .get("action_resume_sync.name"));
+                pauseResumeMenu.setActionCommand(COMMAND_RESUME);
+            } else {
+                pauseResumeMenu.setLabel(Translation
+                    .get("action_pause_sync.name"));
+                pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
+            }
+        }
+        // PFC-3096: SNI tray path.
+        if (sniTray != null && sniPauseResumeId != -1) {
+            sniTray.updateItemLabel(sniPauseResumeId, pauseResumeLabel());
         }
     }
 
