@@ -82,8 +82,38 @@ public class SplashScreen extends JWindow {
 
         image = new JLabel(Icons.getIconById(Icons.SPLASH));
         image.setBorder(BorderFactory.createEmptyBorder());
-        bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
+        // PFC-3643: pixel / segmented loading bar in the PowerFolder brand colour
+        // (#34495c), on a light track, matching the new wallpaper splash. Custom
+        // paint (discrete cells) driven by the normal JProgressBar value, so the
+        // existing BarUpdater keeps working. Same on all platforms.
+        bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            protected void paintComponent(java.awt.Graphics g0) {
+                java.awt.Graphics2D g = (java.awt.Graphics2D) g0.create();
+                int w = getWidth(), h = getHeight();
+                g.setColor(new java.awt.Color(0xE9EEF3)); // track
+                g.fillRect(0, 0, w, h);
+                int cell = 8, gap = 3, pad = 2;
+                int cells = Math.max(1, (w - pad) / (cell + gap));
+                int range = getMaximum() - getMinimum();
+                double frac = range > 0
+                    ? (double) (getValue() - getMinimum()) / range : 0;
+                int filled = (int) Math.round(cells * frac);
+                java.awt.Color on = new java.awt.Color(0x34495c);   // brand
+                java.awt.Color off = new java.awt.Color(0xCFD8E0);  // empty cell
+                for (int i = 0; i < cells; i++) {
+                    g.setColor(i < filled ? on : off);
+                    g.fillRect(pad + i * (cell + gap), 2, cell, h - 4);
+                }
+                g.dispose();
+            }
+        };
         bar.setBorder(BorderFactory.createEmptyBorder());
+        bar.setBorderPainted(false);
+        bar.setStringPainted(false);
+        bar.setOpaque(true);
+        bar.setPreferredSize(new java.awt.Dimension(574, 12));
 
         getContentPane().add(image, BorderLayout.NORTH);
         getContentPane().add(bar, BorderLayout.SOUTH);
