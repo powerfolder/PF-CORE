@@ -84,7 +84,9 @@ public class IconOverlayHandler extends PFComponent implements
                 {
                     return IconOverlayIndex.NO_OVERLAY.getIndex();
                 }
-                return IconOverlayIndex.WARNING_OVERLAY.getIndex();
+                // PFC-3643: a loose file in the base dir (not inside a folder) is
+                // not synced -> no overlay (was WARNING_OVERLAY).
+                return IconOverlayIndex.NO_OVERLAY.getIndex();
             }
 
             Folder folder;
@@ -132,18 +134,18 @@ public class IconOverlayHandler extends PFComponent implements
 
         try {
             SyncStatus status = SyncStatus.of(getController(), fileInfo, folder);
-            // Pick the apropriate icon overlay
+            // PFC-3643: only two overlays remain - synced-and-on-device shows the
+            // green tick, actively-syncing shows the (blue) spinner. Every other
+            // state (not on device / not synced / ignored / locked / warning)
+            // shows NO overlay - the plain black/white file icon.
             switch (status) {
                 case SYNC_OK :
                     return IconOverlayIndex.OK_OVERLAY.getIndex();
                 case SYNCING :
                     return IconOverlayIndex.SYNCING_OVERLAY.getIndex();
                 case IGNORED :
-                    return IconOverlayIndex.IGNORED_OVERLAY.getIndex();
                 case LOCKED :
-                    return IconOverlayIndex.LOCKED_OVERLAY.getIndex();
                 case WARNING :
-                    return IconOverlayIndex.WARNING_OVERLAY.getIndex();
                 case NONE :
                 default :
                     return IconOverlayIndex.NO_OVERLAY.getIndex();

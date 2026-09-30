@@ -120,6 +120,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     // private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
+    /** PFC-3643: rotating folder-spinner animation while transferring. */
+    private javax.swing.Timer folderSpinTimer;
+    private int folderSpinFrame;
     private SyncIconButtonMini upperSyncFolderButton;
     private JButtonMini lowerSyncFolderButton;
 
@@ -707,6 +710,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateSyncButton() {
         if (type != Type.Local) {
+            stopFolderSpin();
             upperSyncFolderButton.setVisible(false);
             upperSyncFolderButton.spin(false);
             primaryButton.setVisible(true);
@@ -719,17 +723,51 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (folder == null) {
                     return;
                 }
+                // PFC-3643: while syncing, show the folder icon WITH a rotating
+                // blue spinner badge (not a separate base-less spinner). The
+                // legacy spinner button stays hidden. Idle states keep the static
+                // icon set by updateIconAndOS().
+                upperSyncFolderButton.setVisible(false);
+                upperSyncFolderButton.spin(false);
+                primaryButton.setVisible(true);
                 if (folder.isTransferring()) {
-                    primaryButton.setVisible(false);
-                    upperSyncFolderButton.setVisible(true);
-                    upperSyncFolderButton.spin(true);
+                    startFolderSpin();
                 } else {
-                    primaryButton.setVisible(true);
-                    upperSyncFolderButton.setVisible(false);
-                    upperSyncFolderButton.spin(false);
+                    stopFolderSpin();
+                    updateIconAndOS();
                 }
             }
         });
+    }
+
+    /**
+     * PFC-3643: animate the folder icon with a rotating spinner badge while the
+     * folder is transferring. Runs on the EDT (javax.swing.Timer).
+     */
+    private void startFolderSpin() {
+        if (folderSpinTimer == null) {
+            folderSpinTimer = new javax.swing.Timer(100, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    folderSpinFrame =
+                        (folderSpinFrame + 1) % Icons.SYNC_ANIMATION.length;
+                    primaryButton.setIcon(Icons.getFolderWithBadge(
+                        Icons.SYNC_ANIMATION[folderSpinFrame]));
+                }
+            });
+            folderSpinTimer.setRepeats(true);
+        }
+        if (!folderSpinTimer.isRunning()) {
+            primaryButton.setIcon(Icons.getFolderWithBadge(
+                Icons.SYNC_ANIMATION[folderSpinFrame]));
+            folderSpinTimer.start();
+        }
+    }
+
+    /** PFC-3643: stop the folder spinner animation. */
+    private void stopFolderSpin() {
+        if (folderSpinTimer != null && folderSpinTimer.isRunning()) {
+            folderSpinTimer.stop();
+        }
     }
 
     private void registerListeners() {
@@ -754,6 +792,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
+        stopFolderSpin(); // PFC-3643: stop the folder-spinner animation timer
         if (myToSListener != null) {
             getController().getOSClient().removeListener(myToSListener);
         }
@@ -1058,8 +1097,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
             } else if (Double.compare(sync, 100.0d) < 0) {
-                // Not synced and not syncing -> folder + incomplete badge.
-                primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_INCOMPLETE));
+                // PFC-3643: not fully synced and not actively transferring ->
+                // plain black/white folder icon, no badge (no cloud/incomplete).
+                // The rotating spinner is shown only while transferring, see
+                // updateSyncButton().
+                primaryButton.setIcon(Icons.getIconById(Icons.FOLDER));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
             } else {
@@ -1081,8 +1123,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
-        } else { // CloudOnly -> black folder + blue cloud badge.
-            primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_CLOUD));
+        } else { // PFC-3643: CloudOnly / not on device -> plain folder icon, no
+                 // badge (no blue cloud).
+            primaryButton.setIcon(Icons.getIconById(Icons.FOLDER));
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);

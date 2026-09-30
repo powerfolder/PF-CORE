@@ -281,13 +281,17 @@ public class FilesTable extends JTable {
                                     }
                                     b.append(d.getPartner().getNick());
                                 }
+                                // PFC-3643: syncing -> blue spinner glyph (a
+                                // table cell cannot animate per row, so a static
+                                // spinner frame is used).
                                 setIcon(Icons
-                                    .getIconById(Icons.DOWNLOAD_ACTIVE));
+                                    .getIconById(Icons.SYNC_ANIMATION[0]));
                                 statusForTooltip = Translation.get(
                                     "file_info.downloading_from_member",
                                     b.toString());
                             } else {
-                                setIcon(Icons.getIconById(Icons.DOWNLOAD));
+                                setIcon(Icons
+                                    .getIconById(Icons.SYNC_ANIMATION[0]));
                                 statusForTooltip = Translation
                                     .get("transfers.queued");
                             }
@@ -309,10 +313,10 @@ public class FilesTable extends JTable {
                         } else if (fileInfo.isExpected(controller
                             .getFolderRepository()))
                         {
-                            // Remote-only / not on this device yet -> Android-style
-                            // blue cloud glyph.
+                            // PFC-3643: remote-only / not on this device yet ->
+                            // plain black/white file icon, no badge (no cloud).
                             setForeground(AVAILABLE);
-                            setIcon(Icons.getIconById(Icons.SYNC_CLOUD));
+                            setIcon(null);
                             statusForTooltip = Translation
                                 .get("file_info.expected");
 
@@ -340,7 +344,9 @@ public class FilesTable extends JTable {
                                     }
                                 }
                             } else {
-                                setIcon(Icons.getIconById(Icons.EXPECTED));
+                                // PFC-3643: a newer version exists locally but is
+                                // not synced yet -> plain file icon, no badge.
+                                setIcon(null);
                                 statusForTooltip = Translation
                                     .get("file_info.new_version_available");
                             }
