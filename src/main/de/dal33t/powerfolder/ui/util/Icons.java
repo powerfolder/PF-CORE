@@ -451,34 +451,40 @@ public class Icons {
         if (cached != null) {
             return cached;
         }
-        Icon base = getIconById(FOLDER);
-        if (base == null) {
+        // PFC-3643: composite from the underlying (multi-resolution) images and
+        // build 1x/2x/3x variants so the folder+badge glyph is crisp on HiDPI
+        // instead of a blocky upscaled 24px bitmap. drawImage(..., w, h) picks the
+        // matching resolution variant of each source automatically.
+        Image baseImg = getImageById(FOLDER);
+        if (baseImg == null) {
             return getIconById(badgeIconId);
         }
-        Icon badge = getIconById(badgeIconId);
-        int w = base.getIconWidth(), h = base.getIconHeight();
-        if (badge == null || w <= 0 || h <= 0) {
-            return base;
+        Image badgeImg = getImageById(badgeIconId);
+        int w = baseImg.getWidth(null), h = baseImg.getHeight(null);
+        if (badgeImg == null || w <= 0 || h <= 0) {
+            return new ImageIcon(baseImg);
         }
-        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
-            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
-        java.awt.Graphics2D g = img.createGraphics();
-        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
-            java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        base.paintIcon(null, g, 0, 0);
-        // Render the badge to its own image, then draw it scaled into the corner.
-        java.awt.image.BufferedImage badgeImg = new java.awt.image.BufferedImage(
-            badge.getIconWidth(), badge.getIconHeight(),
-            java.awt.image.BufferedImage.TYPE_INT_ARGB);
-        java.awt.Graphics2D bg = badgeImg.createGraphics();
-        badge.paintIcon(null, bg, 0, 0);
-        bg.dispose();
-        int bs = Math.round(w * 0.66f);
-        g.drawImage(badgeImg, w - bs, h - bs, bs, bs, null);
-        g.dispose();
-        Icon result = new ImageIcon(img);
+        Image[] variants = new Image[3];
+        for (int i = 0; i < variants.length; i++) {
+            int s = i + 1;
+            int cw = w * s, ch = h * s;
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+                cw, ch, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = img.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,
+                java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g.drawImage(baseImg, 0, 0, cw, ch, null);
+            int bs = Math.round(cw * 0.66f);
+            g.drawImage(badgeImg, cw - bs, ch - bs, bs, bs, null);
+            g.dispose();
+            variants[i] = img;
+        }
+        Icon result = new ImageIcon(
+            new java.awt.image.BaseMultiResolutionImage(variants));
         FOLDER_BADGE_MAP.put(key, result);
         return result;
     }
@@ -681,13 +687,69 @@ public class Icons {
             }
         }
 
-        image = Toolkit.getDefaultToolkit().getImage(imageURL);
+        // PFC-3643: wrap small bitmap icons in a multi-resolution image so they
+        // render smoothly on HiDPI/scaled displays instead of upscaling the bare
+        // low-res PNG (which looked blocky/"destroyed" on Windows scaling). Large
+        // images (logos, splash) keep the original async Toolkit loading.
+        image = loadHiDpiImage(imageURL);
+        if (image == null) {
+            image = Toolkit.getDefaultToolkit().getImage(imageURL);
+        }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached image " + id);
         }
         ID_IMAGE_MAP.put(id, image);
 
         return image;
+    }
+
+    /** Max base size (px) for which we generate HiDPI resolution variants. */
+    private static final int HIDPI_MAX_BASE = 128;
+
+    /**
+     * PFC-3643: load a small icon as a {@link java.awt.image.BaseMultiResolutionImage}
+     * with 2x and 3x bicubic-upscaled variants, so a scaled (HiDPI) display picks a
+     * higher-resolution variant and the icon no longer looks pixelated. Returns
+     * {@code null} for large images or on any failure, so the caller falls back to
+     * the plain {@code Toolkit.getImage} path.
+     *
+     * @param url the icon resource/file URL.
+     * @return a multi-resolution image, or {@code null} to use the fallback loader.
+     */
+    private static Image loadHiDpiImage(URL url) {
+        try {
+            java.awt.image.BufferedImage base = javax.imageio.ImageIO.read(url);
+            if (base == null) {
+                return null;
+            }
+            int w = base.getWidth(), h = base.getHeight();
+            if (w <= 0 || h <= 0 || w > HIDPI_MAX_BASE || h > HIDPI_MAX_BASE) {
+                return null; // large image -> original loader
+            }
+            return new java.awt.image.BaseMultiResolutionImage(base,
+                upscale(base, 2), upscale(base, 3));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** High-quality (bicubic) integer upscale used for HiDPI icon variants. */
+    private static java.awt.image.BufferedImage upscale(
+        java.awt.image.BufferedImage src, int factor)
+    {
+        int w = src.getWidth() * factor, h = src.getHeight() * factor;
+        java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(
+            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = out.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+            java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,
+            java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.drawImage(src, 0, 0, w, h, null);
+        g.dispose();
+        return out;
     }
 
     /**

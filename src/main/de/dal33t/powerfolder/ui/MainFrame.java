@@ -284,16 +284,12 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
 
-        // On macOS the native title bar already provides close/minimize/zoom, so
-        // don't add the app's own window buttons (that would duplicate them). On
-        // Windows/Linux (Synthetica-decorated, title pane hidden) they are needed.
-        if (!OSUtil.isMacOS()) {
-            ButtonBarBuilder b = new ButtonBarBuilder();
-            b.addFixed(minusButton);
-            b.addFixed(plusButton);
-            b.addFixed(closeButton);
-            builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
-        }
+        // PFC-3643: With the FlatLaf migration every platform now uses the native
+        // window title bar (which already provides minimize/maximize/close), so we
+        // no longer add the app's own window buttons - they were a leftover from
+        // the Synthetica era (title pane hidden) and showed up as a duplicate set
+        // of controls under the native title bar on Windows/Linux. The button
+        // objects are kept (referenced elsewhere) but simply not placed in the UI.
 
         builder.add(logoLabel, cc.xyw(1, 1, 4));
         builder.add(inlineInfoLabel,
@@ -877,11 +873,10 @@ public class MainFrame extends PFUIComponent {
         title.append(appName);
 
         if (getController().isVerbose()) {
-            // Append in front of program name in verbose mode
+            // Append in front of program name in verbose mode. PFC-3643: the build
+            // timestamp is intentionally NOT shown in the title on any platform;
+            // only the version and node name are appended.
             title.append(" v" + Controller.PROGRAM_VERSION);
-            if (getController().getBuildTime() != null) {
-                title.append(" | build: " + getController().getBuildTime());
-            }
             title.append(" | " + getController().getMySelf().getNick());
         }
         /* No idea who archi is ;)
