@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.AvatarLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -117,6 +118,9 @@ public class MainFrame extends PFUIComponent {
     private JProgressBar usagePB;
     private JLabel noStorageText;
     private ActionLabel noticesActionLabel;
+    /** PFC-3643: account header - avatar (from server, initials fallback) + email. */
+    private AvatarLabel avatarLabel;
+    private JLabel accountEmailLabel;
 
     private DelayedUpdater mainStatusUpdater;
     private DelayedUpdater osStatusUpdater;
@@ -201,19 +205,18 @@ public class MainFrame extends PFUIComponent {
         }
         // UPPER PART END
 
-        // LOWER PART
-        FormLayout layoutLower = new FormLayout("pref, 100dlu",
-            "pref, pref, pref");
+        // LOWER PART - PFC-3643: account header = avatar (from server, initials
+        // fallback) in column 1, with name + email + storage bar + notices in
+        // column 3.
+        FormLayout layoutLower = new FormLayout("pref, 6dlu, 100dlu",
+            "pref, pref, pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
-        // Include a spacer icon that lines up the pair with builderUpper
-        // when allInSyncLabel has null icon.
-        builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
-        builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
-        builderLower.add(usagePB, cc.xy(2, 2));
-        builderLower.add(noStorageText, cc.xy(2, 2));
-        // Make sure the noticesActionLabel vertical space is maintained.
-        builderLower.add(new JLabel(" "), cc.xy(1, 3));
-        builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(2, 3));
+        builderLower.add(avatarLabel, cc.xywh(1, 1, 1, 4, "left, top"));
+        builderLower.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
+        builderLower.add(accountEmailLabel, cc.xy(3, 2));
+        builderLower.add(usagePB, cc.xy(3, 3));
+        builderLower.add(noStorageText, cc.xy(3, 3));
+        builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(3, 4));
         // LOWER PART END
 
         // PUT TOGETHER
@@ -228,6 +231,17 @@ public class MainFrame extends PFUIComponent {
     }
 
     private Component createRightMiniPanel() {
+        // PFC-3643: give each action a modern monochrome vector icon (black in
+        // light mode / white in dark mode, following the label foreground). Same
+        // order and position as before.
+        applyMenuIcon(openWebInterfaceActionLabel, ActionIcons.Type.WEB);
+        applyMenuIcon(openFoldersBaseActionLabel, ActionIcons.Type.EXPLORE);
+        applyMenuIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
+        applyMenuIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
+        applyMenuIcon(openDebugActionLabel, ActionIcons.Type.LOGGING);
+        applyMenuIcon(openTransfersActionLabel, ActionIcons.Type.TRANSFERS);
+        applyMenuIcon(createFolderActionLabel, ActionIcons.Type.CREATE_FOLDER);
+
         FormLayout layout = new FormLayout("pref:grow",
             "pref, pref, pref, pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -258,6 +272,24 @@ public class MainFrame extends PFUIComponent {
         }
 
         return builder.getPanel();
+    }
+
+    /**
+     * PFC-3643: attach a vector icon to a right-column action label, with the
+     * icon placed after the text (so it sits at the far right of the
+     * right-aligned column) and the label foreground driving the icon colour.
+     */
+    private void applyMenuIcon(ActionLabel label, ActionIcons.Type type) {
+        if (label == null) {
+            return;
+        }
+        label.setIcon(ActionIcons.get(type, 18));
+        JComponent ui = label.getUIComponent();
+        if (ui instanceof JLabel) {
+            JLabel jl = (JLabel) ui;
+            jl.setHorizontalTextPosition(SwingConstants.LEADING);
+            jl.setIconTextGap(8);
+        }
     }
 
     private void configureUi() {
@@ -555,6 +587,14 @@ public class MainFrame extends PFUIComponent {
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(accountLoginOpener);
         styleUsageBar();
+
+        // PFC-3643: account header avatar (initials until the server image loads)
+        // and the account email line.
+        avatarLabel = new AvatarLabel(46);
+        avatarLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        avatarLabel.addMouseListener(accountLoginOpener);
+        accountEmailLabel = SimpleComponentFactory.createLabel(" ");
+        accountEmailLabel.setForeground(new Color(0x8a97a5));
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
@@ -1288,6 +1328,12 @@ public class MainFrame extends PFUIComponent {
                     text = s;
                 }
                 loginActionLabel.setText(text);
+                // PFC-3643: fill the account header avatar (initials now, real
+                // avatar loaded async from the server) + email.
+                avatarLabel.setName(ad.getAccount().getDisplayName());
+                accountEmailLabel.setText(ad.getAccount().getUsername());
+                avatarLabel.loadAvatar(
+                    client.getAvatarURL(client.getAccountInfo(), true));
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));
