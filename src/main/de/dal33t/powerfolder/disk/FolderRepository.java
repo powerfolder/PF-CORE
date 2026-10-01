@@ -3509,6 +3509,32 @@ public class FolderRepository extends PFComponent implements Runnable {
         return moveLocalFolder(folder, targetPath, false);
     }
 
+    /**
+     * PFS-5926: mounts a folder anew at the place its data already is - nothing on disk moves. A subfolder nested in
+     * a moved one travelled with the parent directory while its base kept naming the old place.
+     *
+     * @return the folder mounted at {@code newBase}, or the folder as it is when there is nothing to rebase
+     */
+    public Folder rebaseLocalFolder(Folder folder, Path newBase) {
+        if (folder.getLocalBase().equals(newBase) || !Files.isDirectory(newBase)) {
+            return folder;
+        }
+        basedirScanLock.readLock().lock();
+        try {
+            FolderSettings fs = FolderSettings.load(getController(), folder.getConfigEntryId()).changeBaseDir(newBase);
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
+            removeFolder(folder, false, false);
+            Folder rebased = createFolder(folder.getInfo().intern(), fs, false);
+            for (String pattern : patterns) {
+                rebased.addPattern(pattern);
+            }
+            fireFolderMoved(rebased, folder);
+            return rebased;
+        } finally {
+            basedirScanLock.readLock().unlock();
+        }
+    }
+
     public Folder moveLocalFolder(Folder folder, Path targetPath, boolean atomic) {
 
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
