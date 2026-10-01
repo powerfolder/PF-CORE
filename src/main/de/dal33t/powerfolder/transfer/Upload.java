@@ -427,11 +427,25 @@ public class Upload extends Transfer {
                 pendingRequests.remove();
                 return false;
             }
-            pr = (RequestPart) pendingRequests.remove();
+            // PFC-3644: The downloader asks for the parts record again when the file changed under it. Answered
+            // below, outside the lock - building the record hashes the file. Cast to RequestPart, the request
+            // ended the whole upload with a ClassCastException.
+            if (!(pendingRequests.peek() instanceof RequestFilePartsRecord)) {
+                Message next = pendingRequests.remove();
+                if (!(next instanceof RequestPart)) {
+                    logWarning(getFile() + ": Dropping unexpected request in upload to " + getPartner() + ": " + next);
+                    return true;
+                }
+                pr = (RequestPart) next;
+            }
 
             if (isAborted() || isBroken()) {
                 return false;
             }
+        }
+        if (pr == null) {
+            checkForFilePartsRecordRequest();
+            return true;
         }
         Path f = pr.getFile()
             .getDiskFile(getController().getFolderRepository());
