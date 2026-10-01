@@ -196,6 +196,25 @@ public class SubFolderMoveTest extends ControllerTestCase {
     }
 
     /**
+     * PFS-5926: the nested share is mounted where its data now is. Its identity followed the move, its base did
+     * not - opened by its own id it read the old place, and every file of it failed.
+     */
+    public void testANestedShareIsMountedAtItsNewPlace() throws IOException {
+        Folder outer = shareSubDirectory(SHARED_DIR);
+        Folder inner = shareSubDirectory(SHARED_DIR + "/inner");
+        TestHelper.createRandomFile(inner.getLocalBase(), "deep.txt");
+        scanFolder(getFolder());
+
+        assertNotNull("The move must not be refused", outer.move("moved"));
+
+        Folder mounted = getController().getFolderRepository().getFolder(inner.getInfo());
+        assertNotNull("The nested share stays mounted", mounted);
+        assertEquals("...at the new place", getFolder().getLocalBase().resolve("moved/inner").toAbsolutePath(),
+            mounted.getLocalBase().toAbsolutePath());
+        assertTrue("...where its content is", Files.exists(mounted.getLocalBase().resolve("deep.txt")));
+    }
+
+    /**
      * An interrupted subfolder owns its rows, so its directory row leaves the top folder (PFC-3575) -
      * it cannot be addressed through a row of its parent any more. What must stay is the resolution by
      * LOCATION: that is how a file operation names the subfolder it is about to move or copy.
