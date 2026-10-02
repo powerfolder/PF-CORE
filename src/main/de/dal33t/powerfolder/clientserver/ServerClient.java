@@ -841,7 +841,11 @@ public class ServerClient extends PFComponent {
             return null;
         }
         StringBuilder url = new StringBuilder();
-        url.append("/avatars/user/");
+        // The server (ThumbnailServlet) treats everything after "/avatars/" as the
+        // account OID (findByID). A "user/" path segment would make the OID
+        // "user/<oid>" -> no match -> 403, so the avatar never loads. Match the
+        // server and the Android client: /avatars/<oid>.
+        url.append("/avatars/");
         url.append(aInfo.getOID());
         if (thumbnail) {
             url.append("?thumbnail=true");

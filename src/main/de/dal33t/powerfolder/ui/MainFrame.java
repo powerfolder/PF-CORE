@@ -127,12 +127,16 @@ public class MainFrame extends PFUIComponent {
 
     // Right mini panel
     private ActionLabel createFolderActionLabel;
-    private ActionLabel openWebInterfaceActionLabel;
-    private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
     private ActionLabel configurationActionLabel;
     private ActionLabel openDebugActionLabel;
     private ActionLabel openTransfersActionLabel;
+    /**
+     * PFC-3643: the "open PowerFolders base dir" (Explore) action. Reused by the
+     * sync-status glyph and by the "All folders synchronized" text hyperlink
+     * (the standalone Explore tray icon was removed in favour of that link).
+     */
+    private MyOpenFoldersBaseAction myOpenFoldersBaseAction;
 
     private FrameMode frameMode = FrameMode.NORMAL;
     private JButton3Icons closeButton;
@@ -180,10 +184,19 @@ public class MainFrame extends PFUIComponent {
     private Component createLeftMiniPanel() {
         CellConstraints cc = new CellConstraints();
 
-        // UPPER PART
-        FormLayout layoutUpper = new FormLayout("pref, 3dlu, pref:grow",
-            "pref, pref");
-        DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
+        // PFC-3643: one shared grid for the whole account/status block so that
+        //  - the icon column lines up the avatar and the sync-status glyph, and
+        //  - the text column lines up the name, email, storage bar, the folder
+        //    sync status and the "last check" line
+        // all on a single left edge. (Previously these were two separate
+        // FormLayouts with different icon widths + gaps, so the columns drifted.)
+        // col1 = icons, col2 = gap, col3 = text / storage bar.
+        FormLayout layout = new FormLayout("pref, 6dlu, 100dlu",
+            "pref, pref, pref, pref, 5dlu, pref, pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
+
+        // Sync-status glyph: all states stacked in one cell, only one visible.
         PanelBuilder b = new PanelBuilder(new FormLayout("pref:grow",
             "pref:grow"));
         b.add(allInSyncButton, cc.xy(1, 1));
@@ -193,44 +206,28 @@ public class MainFrame extends PFUIComponent {
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         b.add(noticeWarningButton, cc.xy(1, 1));
         b.add(noticeInfoButton, cc.xy(1, 1));
-        builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
-        builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper
-            .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
+
+        // Account header (rows 1-4): avatar in the icon column; name, email,
+        // storage bar and notices in the text column.
+        builder.add(avatarLabel, cc.xywh(1, 1, 1, 4, "left, top"));
+        builder.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
+        builder.add(accountEmailLabel, cc.xy(3, 2));
+        builder.add(usagePB, cc.xy(3, 3));
+        builder.add(noStorageText, cc.xy(3, 3));
+        builder.add(noticesActionLabel.getUIComponent(), cc.xy(3, 4));
+
+        // Folder sync status (rows 6-7): glyph in the icon column; status + last
+        // check in the text column - same two columns as the account header.
+        builder.add(b.getPanel(), cc.xywh(1, 6, 1, 2, "left, center"));
+        builder.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 6));
+        builder.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 7));
         if (getController().getOSClient().isAllowedToCreateFolders()
             && setupLabel != null)
         {
-            builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
-        } else {
-            builderUpper.add(new JLabel(" "), cc.xy(3, 2));
+            builder.add(setupLabel.getUIComponent(), cc.xy(3, 7));
         }
-        // UPPER PART END
 
-        // LOWER PART - PFC-3643: account header = avatar (from server, initials
-        // fallback) in column 1, with name + email + storage bar + notices in
-        // column 3.
-        FormLayout layoutLower = new FormLayout("pref, 6dlu, 100dlu",
-            "pref, pref, pref, pref");
-        DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
-        builderLower.add(avatarLabel, cc.xywh(1, 1, 1, 4, "left, top"));
-        builderLower.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderLower.add(accountEmailLabel, cc.xy(3, 2));
-        builderLower.add(usagePB, cc.xy(3, 3));
-        builderLower.add(noStorageText, cc.xy(3, 3));
-        builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(3, 4));
-        // LOWER PART END
-
-        // PUT TOGETHER
-        // PFC-3643: account header + storage bar first, folder-sync status after
-        // the storage bar (was: sync status on top).
-        FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
-        DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderUpper.getPanel(), cc.xy(1, 3));
-        // PUT TOGETHER END
-
-        return builderMain.getPanel();
+        return builder.getPanel();
     }
 
     /**
@@ -242,8 +239,9 @@ public class MainFrame extends PFUIComponent {
      * sizes itself to however many actions are enabled.
      */
     private Component createBottomTrayPanel() {
-        applyTrayIcon(openFoldersBaseActionLabel, ActionIcons.Type.EXPLORE);
-        applyTrayIcon(openWebInterfaceActionLabel, ActionIcons.Type.WEB);
+        // PFC-3643: Explore moved to the "All folders synchronized" hyperlink and
+        // the web interface moved to the logo / account name / email links, so
+        // neither is a tray icon any more.
         applyTrayIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
         applyTrayIcon(openTransfersActionLabel, ActionIcons.Type.TRANSFERS);
         applyTrayIcon(openDebugActionLabel, ActionIcons.Type.LOGGING);
@@ -251,12 +249,6 @@ public class MainFrame extends PFUIComponent {
         applyTrayIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
 
         java.util.List<ActionLabel> items = new java.util.ArrayList<ActionLabel>();
-        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
-            items.add(openFoldersBaseActionLabel);
-        }
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED.getValueBoolean(getController())) {
-            items.add(openWebInterfaceActionLabel);
-        }
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
             items.add(pauseResumeActionLabel);
         }
@@ -266,10 +258,11 @@ public class MainFrame extends PFUIComponent {
         if (getController().isVerbose()) {
             items.add(openDebugActionLabel);
         }
+        // PFC-3643: tray order - Pause, Transfers, Logging, Preferences, Create Folder.
+        items.add(configurationActionLabel);
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
             items.add(createFolderActionLabel);
         }
-        items.add(configurationActionLabel);
 
         StringBuilder colSpec = new StringBuilder();
         for (int i = 0; i < items.size(); i++) {
@@ -320,47 +313,6 @@ public class MainFrame extends PFUIComponent {
             jl.setHorizontalAlignment(SwingConstants.CENTER);
             jl.setIconTextGap(3);
         }
-    }
-
-    /**
-     * PFC-3643: a small plain green check (the "verified" tick shown before the
-     * account email in the header), drawn as a vector so it stays crisp at any
-     * HiDPI scale and keeps its green in both light and dark mode.
-     */
-    private static javax.swing.Icon greenCheckIcon(final int size) {
-        return new javax.swing.Icon() {
-            public int getIconWidth() {
-                return size;
-            }
-
-            public int getIconHeight() {
-                return size;
-            }
-
-            public void paintIcon(java.awt.Component c, java.awt.Graphics g0,
-                int x, int y)
-            {
-                java.awt.Graphics2D g = (java.awt.Graphics2D) g0.create();
-                try {
-                    g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                    g.translate(x, y);
-                    double s = size / 22.0;
-                    g.scale(s, s);
-                    g.setColor(new Color(0x1f9d57));
-                    g.setStroke(new java.awt.BasicStroke(2.6f,
-                        java.awt.BasicStroke.CAP_ROUND,
-                        java.awt.BasicStroke.JOIN_ROUND));
-                    java.awt.geom.GeneralPath p = new java.awt.geom.GeneralPath();
-                    p.moveTo(4.5, 12);
-                    p.lineTo(9.5, 16.5);
-                    p.lineTo(17.5, 6.5);
-                    g.draw(p);
-                } finally {
-                    g.dispose();
-                }
-            }
-        };
     }
 
     private void configureUi() {
@@ -567,8 +519,7 @@ public class MainFrame extends PFUIComponent {
             mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
         }
 
-        MyOpenFoldersBaseAction myOpenFoldersBaseAction =
-                new MyOpenFoldersBaseAction(getController());
+        myOpenFoldersBaseAction = new MyOpenFoldersBaseAction(getController());
         myOpenFoldersBaseAction.setEnabled(PreferencesEntry.SHOW_BROWSE
             .getValueBoolean(getController()));
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
@@ -633,20 +584,23 @@ public class MainFrame extends PFUIComponent {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
 
-        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(getController()));
+        // PFC-3643: the account name opens the web account (see openMyAccountOnWeb).
+        loginActionLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                openMyAccountOnWeb();
+            }
+        });
         noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));
         updateNoticesLabel();
 
+        // PFC-3643: the avatar, logo, account name, email and storage bar all open
+        // the account on the web (pre-authenticated, landing on /myaccount). The
+        // standalone "Web" tray icon was removed in favour of these links.
         MouseListener accountLoginOpener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
-                    if (StringUtils.isBlank(client.getUsername())) {
-                        PFWizard.openLoginWizard(getController(), client);
-                    } else {
-                        BrowserLauncher.open(getController(), () -> client.getWebURL(
-                                Constants.MY_ACCOUNT_URI, true));
-                    }
+                    openMyAccountOnWeb();
                 }
             }
         };
@@ -668,21 +622,16 @@ public class MainFrame extends PFUIComponent {
         avatarLabel.addMouseListener(accountLoginOpener);
         accountEmailLabel = SimpleComponentFactory.createLabel(" ");
         accountEmailLabel.setForeground(new Color(0x8a97a5));
+        accountEmailLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        accountEmailLabel.addMouseListener(accountLoginOpener);
 
-        // PFC-3643: match the prototype account header - a bold, plain account
-        // name and a small green "verified" check in front of the email.
+        // PFC-3643: account header - a bold, plain account name above the email.
         loginActionLabel.setNeverUnderline(true);
         loginActionLabel.setFontSize(de.dal33t.powerfolder.ui.util.UIUtil.MED_FONT_SIZE);
         loginActionLabel.setFontStyle(java.awt.Font.BOLD);
-        accountEmailLabel.setIcon(greenCheckIcon(14));
-        accountEmailLabel.setIconTextGap(6);
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
-        openWebInterfaceActionLabel = new ActionLabel(getController(),
-            new MyOpenWebInterfaceAction(getController()));
-        openFoldersBaseActionLabel = new ActionLabel(getController(),
-            myOpenFoldersBaseAction);
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActionLabel = new ActionLabel(getController(),
@@ -711,6 +660,10 @@ public class MainFrame extends PFUIComponent {
         MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
         logoLabel.addMouseListener(logoMouseListener);
         logoLabel.addMouseMotionListener(logoMouseListener);
+        // PFC-3643: the logo doubles as a link to the web account (a plain click;
+        // dragging the window still works via the drag listener above).
+        logoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        logoLabel.addMouseListener(accountLoginOpener);
 
         closeButton = new JButton3Icons(
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
@@ -802,6 +755,22 @@ public class MainFrame extends PFUIComponent {
         getController().addPausedModeListener(new MyPausedModeListener());
     }
 
+    /**
+     * PFC-3643: open the user's account on the web pre-authenticated - a one-time
+     * token is put in the URL and the browser is redirected to {@code /myaccount}
+     * (see {@link ServerClient#getWebURL(String, boolean)}). If no user is logged
+     * in yet, open the login wizard instead. Shared by the avatar, logo, account
+     * name, email and storage-bar click targets (replaces the old "Web" tray icon).
+     */
+    private void openMyAccountOnWeb() {
+        if (StringUtils.isBlank(client.getUsername())) {
+            PFWizard.openLoginWizard(getController(), client);
+        } else {
+            BrowserLauncher.open(getController(),
+                () -> client.getWebURL(Constants.MY_ACCOUNT_URI, true));
+        }
+    }
+
     private void handleSyncTextClick() {
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
@@ -823,6 +792,14 @@ public class MainFrame extends PFUIComponent {
                     }
                 }
             }
+        } else if (myOpenFoldersBaseAction != null
+            && myOpenFoldersBaseAction.isEnabled())
+        {
+            // PFC-3643: with no pending notices/problems, the sync-status text
+            // ("All folders synchronized") acts as the Explore hyperlink and
+            // opens the PowerFolders base directory - same action as the former
+            // tray Explore icon and the sync-status glyph.
+            myOpenFoldersBaseAction.actionPerformed(null);
         }
         // setLinkTooltips();
     }
@@ -1622,22 +1599,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyOpenWebInterfaceAction extends BaseAction {
-
-        private MyOpenWebInterfaceAction(Controller controller) {
-            super("action_open_web_interface", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // PFC-2349 : Don't freeze UI
-            BrowserLauncher.open(getController(), new URLProducer() {
-                public String url() {
-                    return client.getLoginURLWithCredentials();
-                }
-            });
-        }
-    }
-
     private static class MyOpenFoldersBaseAction extends BaseAction {
 
         private MyOpenFoldersBaseAction(Controller controller) {
@@ -1744,33 +1705,6 @@ public class MainFrame extends PFUIComponent {
         @Override
         public void childClientSpawned(ServerClientEvent event) {
             updateOnlineStorageDetails();
-        }
-    }
-
-    private class MyLoginAction extends BaseAction {
-
-        MyLoginAction(Controller controller) {
-            super("action_login", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (client.isLoggedIn()) {
-                AccountDetails ad = client.getAccountDetails();
-
-                if (ad.isSpaceExceededOrDisabled()) {
-                    getController().getIOProvider().startIO(CloudStorageNotice.full().getPayload(getController()));
-                    return;
-                }
-            }
-
-            if (getController().getNodeManager().isStarted() || getApplicationModel().getLicenseModel()
-                    .getActivationAction() == null) {
-                PFWizard.openLoginWizard(getController(), client);
-            } else {
-                // Activate if not running
-                getApplicationModel().getLicenseModel().getActivationAction()
-                    .actionPerformed(e);
-            }
         }
     }
 

@@ -95,7 +95,7 @@ public class AvatarLabel extends JComponent {
      * Asynchronously load the avatar image from {@code url}. No-op on a blank
      * URL; failures are swallowed (initials remain).
      * <p>
-     * The server avatar endpoint ({@code /avatars/user/...}) is registered
+     * The server avatar endpoint ({@code /avatars/<oid>}) is registered
      * "unsecured" but its handler still requires an authenticated caller for
      * non-public avatars, so a bare request gets a 403 ("Can't get input stream
      * from URL"). We therefore authenticate with the device token via the
