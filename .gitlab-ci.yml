@@ -6,12 +6,6 @@ variables:
 
 security-java-scan:
   stage: test
-  rules:
-    # Dev tag: test jobs are manual (start what you want). Auto everywhere else.
-    - if: '$CI_COMMIT_TAG =~ /^Dev/'
-      when: manual
-      allow_failure: true
-    - when: on_success
   tags:
     - Linux
     - Development
@@ -31,11 +25,6 @@ security-java-scan:
 
 test-Linux:
   stage: test
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^Dev/'
-      when: manual
-      allow_failure: true
-    - when: on_success
   resource_group: tests-Linux
   tags:
     - Linux
@@ -50,11 +39,6 @@ test-Linux:
 
 test-macOS:
   stage: test
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^Dev/'
-      when: manual
-      allow_failure: true
-    - when: on_success
   resource_group: tests-macOS
   tags:
     - macOS
@@ -87,11 +71,6 @@ test-macOS:
 
 test-Windows:
   stage: test
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^Dev/'
-      when: manual
-      allow_failure: true
-    - when: on_success
   resource_group: tests-Windows
   tags:
     - Windows

@@ -2702,6 +2702,11 @@ public class Folder extends PFComponent {
                     restoreLocation(topFolder, oldLocation, nestedBefore);
                     return null;
                 }
+                // PFS-5926: the nested ones moved with the directory, their base still names the old place
+                for (Folder child : nested.keySet()) {
+                    Path childBase = topFolder.getLocalBase().resolve(child.getInfo().locationPath());
+                    repository.rebaseLocalFolder(child, childBase);
+                }
                 logInfo(moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
                     + movedRows.size() + " rows re-addressed, " + nested.size() + " nested subfolder(s)");
                 return moved;

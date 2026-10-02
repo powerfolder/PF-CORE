@@ -117,7 +117,35 @@ public final class FileInfoFactory {
         }
         FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(addressed.getFolderInfo(),
             addressed.getRelativeName());
-        return innermost == null ? addressed : mapToSubFolder(addressed, innermost);
+        return innermost == null ? addressed : mapInto(addressed, innermost);
+    }
+
+    /**
+     * PFS-5927: the addressed location in the coordinates of {@code innermost}. The location comes in the
+     * coordinates of whatever folder the caller addressed - a WebDAV drive mapped onto a shared subfolder
+     * addresses that subfolder - while {@link #mapToSubFolder} expects top-folder coordinates. Handed a
+     * subfolder's path, it threw "FileInfo not in subfolder" for every entry of the listing.
+     *
+     * @return the location in the subfolder that stores it, or {@code addressed} when it already is there
+     */
+    static FileInfo mapInto(FileInfo addressed, FolderInfo innermost) {
+        FolderInfo folder = addressed.getFolderInfo();
+        if (innermost.equals(folder)) {
+            return addressed;
+        }
+        if (folder == null || !folder.isSubFolder()) {
+            return mapToSubFolder(addressed, innermost);
+        }
+        String inner = FolderInfo.relativeNameIn(innermost, folder, addressed.getRelativeName());
+        if (inner == null || !addressed.isLookupInstance()) {
+            // Not inside it after all, or a stored row: leave it where the caller found it.
+            return addressed;
+        }
+        if (inner.isEmpty()) {
+            return createBaseDirectoryInfo(innermost);
+        }
+        return addressed instanceof DirectoryInfo ? lookupDirectory(innermost, inner)
+            : lookupInstance(innermost, inner);
     }
 
     public static DirectoryInfo mapToTopFolder(DirectoryInfo directoryInfo) {

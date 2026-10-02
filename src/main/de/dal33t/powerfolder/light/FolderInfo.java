@@ -75,7 +75,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * exactly this reason). Wire-format evolution is versioned separately via extVersionUID.
      */
     private static final long serialVersionUID = 102L;
-    private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
+    private static final FolderInfoInternalizer INTERNALIZER = new FolderInfoInternalizer();
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
@@ -525,9 +525,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         FolderInfo innermost = current;
         int innermostLength = enclosingPathLength(current, top, path);
         for (FolderInfo candidate : candidates) {
-            int length = enclosingPathLength(candidate, top, path);
+            // PFS-5926: a permission carries a snapshot of its folder - the location counts where it is now
+            FolderInfo latest = candidate != null ? candidate.latest() : null;
+            int length = enclosingPathLength(latest, top, path);
             if (length > innermostLength) {
-                innermost = candidate;
+                innermost = latest;
                 innermostLength = length;
             }
         }
@@ -700,6 +702,16 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     private static String topFolderId(FolderInfo foInfo) {
         return foInfo.getTopFolder() != null ? foInfo.getTopFolder().getId() : null;
+    }
+
+    /**
+     * PFS-5926: this folder as the repository holds it now. A copy kept elsewhere - in a permission, for instance -
+     * is a snapshot, and the location in it may have moved on since.
+     *
+     * @return the held instance, or this one when none is held - nothing is put into the pool
+     */
+    public FolderInfo latest() {
+        return INTERNALIZER.peek(this);
     }
 
     public FolderInfo intern() {
