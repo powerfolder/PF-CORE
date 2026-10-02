@@ -164,14 +164,15 @@ public class MainFrame extends PFUIComponent {
     }
 
     private JPanel createMiniPanel() {
-        FormLayout layout = new FormLayout("left:pref:grow, left:pref",
-            "top:pref:grow");
+        // PFC-3643 follow-up: the action column that used to sit on the right of
+        // this mini panel now lives in the horizontal bottom tray (see
+        // createBottomTrayPanel()), so only the account/status block remains here.
+        FormLayout layout = new FormLayout("left:pref:grow", "top:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(createLeftMiniPanel(), cc.xy(1, 1));
-        builder.add(createRightMiniPanel(), cc.xy(2, 1));
 
         return builder.getPanel();
     }
@@ -232,65 +233,92 @@ public class MainFrame extends PFUIComponent {
         return builderMain.getPanel();
     }
 
-    private Component createRightMiniPanel() {
-        // PFC-3643: give each action a modern monochrome vector icon (black in
-        // light mode / white in dark mode, following the label foreground). Same
-        // order and position as before.
-        applyMenuIcon(openWebInterfaceActionLabel, ActionIcons.Type.WEB);
-        applyMenuIcon(openFoldersBaseActionLabel, ActionIcons.Type.EXPLORE);
-        applyMenuIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
-        applyMenuIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
-        applyMenuIcon(openDebugActionLabel, ActionIcons.Type.LOGGING);
-        applyMenuIcon(openTransfersActionLabel, ActionIcons.Type.TRANSFERS);
-        applyMenuIcon(createFolderActionLabel, ActionIcons.Type.CREATE_FOLDER);
+    /**
+     * The bottom tray: the seven former right-column actions re-laid-out as a
+     * flat horizontal dock at the bottom of the main window. Each item is the
+     * existing {@link ActionLabel} (same action, label and tooltip as before)
+     * shown as icon-above-label, centred, with a theme-aware monochrome vector
+     * glyph. Visibility gating matches the former right column, so the tray
+     * sizes itself to however many actions are enabled.
+     */
+    private Component createBottomTrayPanel() {
+        applyTrayIcon(openFoldersBaseActionLabel, ActionIcons.Type.EXPLORE);
+        applyTrayIcon(openWebInterfaceActionLabel, ActionIcons.Type.WEB);
+        applyTrayIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
+        applyTrayIcon(openTransfersActionLabel, ActionIcons.Type.TRANSFERS);
+        applyTrayIcon(openDebugActionLabel, ActionIcons.Type.LOGGING);
+        applyTrayIcon(createFolderActionLabel, ActionIcons.Type.CREATE_FOLDER);
+        applyTrayIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
 
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref, pref, pref, pref, pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-            .getValueBoolean(getController()))
-        {
-            builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 1, "right, top"));
-        }
+        java.util.List<ActionLabel> items = new java.util.ArrayList<ActionLabel>();
         if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
-            builder.add(openFoldersBaseActionLabel.getUIComponent(),
-                cc.xy(1, 2, "right, top"));
+            items.add(openFoldersBaseActionLabel);
+        }
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED.getValueBoolean(getController())) {
+            items.add(openWebInterfaceActionLabel);
         }
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3, "right, top"));
-        }
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4, "right, top"));
-        if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5, "right, top"));
+            items.add(pauseResumeActionLabel);
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6, "right, top"));
+            items.add(openTransfersActionLabel);
+        }
+        if (getController().isVerbose()) {
+            items.add(openDebugActionLabel);
         }
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            builder.add(createFolderActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
+            items.add(createFolderActionLabel);
+        }
+        items.add(configurationActionLabel);
+
+        StringBuilder colSpec = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0) {
+                colSpec.append(", ");
+            }
+            colSpec.append("center:pref:grow");
+        }
+        FormLayout layout = new FormLayout(colSpec.toString(), "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        for (int i = 0; i < items.size(); i++) {
+            builder.add(items.get(i).getUIComponent(),
+                cc.xy(i + 1, 1, "center, center"));
         }
 
-        return builder.getPanel();
+        JPanel panel = builder.getPanel();
+        java.awt.Color sep = javax.swing.UIManager.getColor("Separator.foreground");
+        if (sep == null) {
+            sep = javax.swing.UIManager.getColor("controlShadow");
+        }
+        if (sep == null) {
+            sep = java.awt.Color.GRAY;
+        }
+        panel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, sep),
+            javax.swing.BorderFactory.createEmptyBorder(6, 8, 6, 8)));
+        return panel;
     }
 
     /**
-     * PFC-3643: attach a vector icon to a right-column action label, with the
-     * icon placed after the text (so it sits at the far right of the
-     * right-aligned column) and the label foreground driving the icon colour.
+     * Attach a vector icon to a bottom-tray action label as icon-above-label,
+     * centred. The label foreground drives the glyph colour (black in light
+     * mode / white in dark mode). The link underline-on-hover is disabled so the
+     * tray stays flat - no highlight.
      */
-    private void applyMenuIcon(ActionLabel label, ActionIcons.Type type) {
+    private void applyTrayIcon(ActionLabel label, ActionIcons.Type type) {
         if (label == null) {
             return;
         }
-        label.setIcon(ActionIcons.get(type, 18));
+        label.setNeverUnderline(true);
+        label.setIcon(ActionIcons.get(type, 22));
         JComponent ui = label.getUIComponent();
         if (ui instanceof JLabel) {
             JLabel jl = (JLabel) ui;
-            jl.setHorizontalTextPosition(SwingConstants.LEADING);
-            jl.setIconTextGap(8);
+            jl.setHorizontalTextPosition(SwingConstants.CENTER);
+            jl.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jl.setHorizontalAlignment(SwingConstants.CENTER);
+            jl.setIconTextGap(3);
         }
     }
 
@@ -313,7 +341,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, pref, fill:0:grow");
+            "pref, pref, fill:0:grow, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -334,6 +362,8 @@ public class MainFrame extends PFUIComponent {
         builder.add(centralPanel, cc.xyw(1, 3, 4));
 
         builder.add(createMiniPanel(), cc.xyw(1, 2, 4));
+
+        builder.add(createBottomTrayPanel(), cc.xyw(1, 4, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
