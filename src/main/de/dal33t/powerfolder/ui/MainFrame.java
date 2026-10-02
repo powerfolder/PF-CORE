@@ -322,6 +322,47 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    /**
+     * PFC-3643: a small plain green check (the "verified" tick shown before the
+     * account email in the header), drawn as a vector so it stays crisp at any
+     * HiDPI scale and keeps its green in both light and dark mode.
+     */
+    private static javax.swing.Icon greenCheckIcon(final int size) {
+        return new javax.swing.Icon() {
+            public int getIconWidth() {
+                return size;
+            }
+
+            public int getIconHeight() {
+                return size;
+            }
+
+            public void paintIcon(java.awt.Component c, java.awt.Graphics g0,
+                int x, int y)
+            {
+                java.awt.Graphics2D g = (java.awt.Graphics2D) g0.create();
+                try {
+                    g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                    g.translate(x, y);
+                    double s = size / 22.0;
+                    g.scale(s, s);
+                    g.setColor(new Color(0x1f9d57));
+                    g.setStroke(new java.awt.BasicStroke(2.6f,
+                        java.awt.BasicStroke.CAP_ROUND,
+                        java.awt.BasicStroke.JOIN_ROUND));
+                    java.awt.geom.GeneralPath p = new java.awt.geom.GeneralPath();
+                    p.moveTo(4.5, 12);
+                    p.lineTo(9.5, 16.5);
+                    p.lineTo(17.5, 6.5);
+                    g.draw(p);
+                } finally {
+                    g.dispose();
+                }
+            }
+        };
+    }
+
     private void configureUi() {
 
         // Refresh set-once icons (logo, header/status buttons) when the user
@@ -627,6 +668,14 @@ public class MainFrame extends PFUIComponent {
         avatarLabel.addMouseListener(accountLoginOpener);
         accountEmailLabel = SimpleComponentFactory.createLabel(" ");
         accountEmailLabel.setForeground(new Color(0x8a97a5));
+
+        // PFC-3643: match the prototype account header - a bold, plain account
+        // name and a small green "verified" check in front of the email.
+        loginActionLabel.setNeverUnderline(true);
+        loginActionLabel.setFontSize(de.dal33t.powerfolder.ui.util.UIUtil.MED_FONT_SIZE);
+        loginActionLabel.setFontStyle(java.awt.Font.BOLD);
+        accountEmailLabel.setIcon(greenCheckIcon(14));
+        accountEmailLabel.setIconTextGap(6);
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
