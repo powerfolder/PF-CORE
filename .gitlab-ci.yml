@@ -4,8 +4,19 @@ stages:
 variables:
   GIT_DEPTH: "1"
 
+# On a Dev build tag the PF-CORE tests are started manually (a Dev client build does
+# not need to re-run the full suite) and are non-blocking; on every other ref
+# (branches, MRs, QA/Release/Hotfix) they keep running automatically.
+.rules-test:
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^Dev/'
+      when: manual
+      allow_failure: true
+    - when: on_success
+
 security-java-scan:
   stage: test
+  extends: .rules-test
   tags:
     - Linux
     - Development
@@ -25,6 +36,7 @@ security-java-scan:
 
 test-Linux:
   stage: test
+  extends: .rules-test
   resource_group: tests-Linux
   tags:
     - Linux
@@ -39,6 +51,7 @@ test-Linux:
 
 test-macOS:
   stage: test
+  extends: .rules-test
   resource_group: tests-macOS
   tags:
     - macOS
@@ -71,6 +84,7 @@ test-macOS:
 
 test-Windows:
   stage: test
+  extends: .rules-test
   resource_group: tests-Windows
   tags:
     - Windows
