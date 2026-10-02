@@ -209,7 +209,7 @@ public class MainFrame extends PFUIComponent {
 
         // Account header (rows 1-4): avatar in the icon column; name, email,
         // storage bar and notices in the text column.
-        builder.add(avatarLabel, cc.xywh(1, 1, 1, 4, "left, top"));
+        builder.add(avatarLabel, cc.xywh(1, 1, 1, 4, "center, top"));
         builder.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builder.add(accountEmailLabel, cc.xy(3, 2));
         builder.add(usagePB, cc.xy(3, 3));
@@ -218,7 +218,10 @@ public class MainFrame extends PFUIComponent {
 
         // Folder sync status (rows 6-7): glyph in the icon column; status + last
         // check in the text column - same two columns as the account header.
-        builder.add(b.getPanel(), cc.xywh(1, 6, 1, 2, "left, center"));
+        // Centre the sync-status glyph under the avatar so the two icons share a
+        // vertical centreline (they are different widths, so left-aligning leaves
+        // the smaller glyph looking off to one side).
+        builder.add(b.getPanel(), cc.xywh(1, 6, 1, 2, "center, center"));
         builder.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 6));
         builder.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 7));
         if (getController().getOSClient().isAllowedToCreateFolders()
