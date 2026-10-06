@@ -2913,11 +2913,11 @@ public class Folder extends PFComponent {
                 /* PFS-5306: last chance to save the tags of the directory this folder occupies - its
                  * row is about to leave the top folder and is not representable in this folder's own
                  * coordinates (blank name), so nothing would carry them. Tagging travels onto the
-                 * FolderInfo, where the tags of a subfolder belong anyway; a directory tagged before
-                 * it was shared brought them along already (FolderInfoFactory#newFolder). */
-                String rootTags = tagsOfRootRow(toMigrate);
-                if (StringUtils.isNotBlank(rootTags) && StringUtils.isBlank(newInfo.getTags())) {
-                    newInfo = FolderInfoFactory.changeTags(newInfo, rootTags);
+                 * FolderInfo, where the tags of an interrupted subfolder belong. */
+                // PFS-5911: always - the copy the FolderInfo got when shared is stale, the directory led until now
+                FileInfo baseDirectory = baseDirectoryIn(toMigrate);
+                if (baseDirectory != null) {
+                    newInfo = FolderInfoFactory.changeTags(newInfo, baseDirectory.getTags());
                 }
             }
 
@@ -2962,7 +2962,7 @@ public class Folder extends PFComponent {
                  * without it the parent has no row for that directory until the next scan, and
                  * everything that resolves a directory by its row (unshare, versions, links) fails in
                  * the meantime. */
-                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion()));
+                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion(), currentInfo.getTags()));
 
                 List<FileInfo> ownerInfos = topInfos;
                 if (owner != topFolder) {
@@ -3142,8 +3142,9 @@ public class Folder extends PFComponent {
      * @param topFolder  the top folder the row belongs into
      * @param minVersion the version this step justifies - the result is at least this, and at least
      *                   the version of a row already present
+     * @param tags       the tags of the directory - PFS-5911: from wherever they led until now
      */
-    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion) {
+    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion, String tags) {
         DirectoryInfo location = currentInfo.getLocation();
         FileInfo present = topFolder.getFile(
             FileInfoFactory.lookupDirectory(topFolder.getInfo(), location.getRelativeName()));
@@ -3154,8 +3155,6 @@ public class Folder extends PFComponent {
             logFine(this + ": Unable to read the modification date of " + getLocalBase()
                 + " - writing its directory row with the epoch. " + e);
         }
-        String tags = StringUtils.isNotBlank(currentInfo.getTags())
-            ? currentInfo.getTags() : (present != null ? present.getTags() : null);
         return FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), location.getRelativeName(),
             present != null ? present.getOID() : null, 0L, getMySelf().getInfo(),
             getController().getMySelf().getAccountInfo(), modified,
@@ -3163,20 +3162,19 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * PFS-5306: The tags of the row that IS this subfolder - the directory it occupies in the top
-     * folder, named by its location.
+     * PFS-5306: The directory that IS this subfolder - the one it occupies in the top folder, named by its location.
      *
      * @param topRows the rows about to be migrated out of the top folder, in top coordinates
-     * @return the tags as a raw JSON array string, {@code null} when the row is untagged or absent
+     * @return the directory, {@code null} when absent
      */
-    private String tagsOfRootRow(Collection<FileInfo> topRows) {
+    private FileInfo baseDirectoryIn(Collection<FileInfo> topRows) {
         DirectoryInfo location = currentInfo.getLocation();
         if (location == null) {
             return null;
         }
         for (FileInfo row : topRows) {
             if (row.isDiretory() && location.getRelativeName().equals(row.getRelativeName())) {
-                return row.getTags();
+                return row;
             }
         }
         return null;
@@ -7167,7 +7165,14 @@ public class Folder extends PFComponent {
          * falling back to whatever its old row said (PFS-5306). */
         // PFC-3646: into the folder that owns the place - inside an interrupted subfolder that is not this one
         Folder owner = ownerOfPlace(subFolder.getInfo().locationPath());
-        FileInfo baseDirectory = subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1);
+        // PFS-5911: the directory's own tags - the restore above handed back those of an interrupted folder
+        FileInfo place = FileInfoFactory.lookupDirectory(getInfo(), subFolder.getInfo().locationPath());
+        if (owner != this) {
+            place = FileInfoFactory.mapToSubFolder(place, owner.getInfo());
+        }
+        FileInfo directory = owner.getFile(place);
+        FileInfo baseDirectory = subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1,
+            directory != null ? directory.getTags() : null);
         if (owner != this) {
             baseDirectory = FileInfoFactory.mapToSubFolder(baseDirectory, owner.getInfo());
         }
