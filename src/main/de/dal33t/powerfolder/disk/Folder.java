@@ -2318,22 +2318,31 @@ public class Folder extends PFComponent {
              * So the whole deletion is handed up, in the top folder's coordinates: it dissolves the
              * share - which hands the rows, the index and the archived versions back - and then deletes
              * an ordinary directory of its own. */
-            if (isSubFolder() && containsOwnBaseDirectory(fInfos)) {
-                Folder topFolder = getTopFolder();
-                if (topFolder != null && topFolder != this) {
-                    List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
-                    for (FileInfo fInfo : fInfos) {
-                        inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
-                    }
+            Folder topFolder = isSubFolder() ? getTopFolder() : null;
+            if (topFolder != null && topFolder != this) {
+                List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
+                for (FileInfo fInfo : fInfos) {
+                    inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
+                }
+                if (containsOwnBaseDirectory(fInfos)) {
                     logFine(this + ": Deleting the directory of this subfolder through " + topFolder);
                     topFolder.removeFilesLocal(deletingAccount, inTopCoordinates);
                     return;
                 }
+                // PFC-3646: the shares below the deleted directories - only the top folder dissolves them
+                topFolder.unshareSubFoldersIn(inTopCoordinates, deletingAccount);
+            } else {
+                /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
+                 * to be done before anything is read from the database - the content of an interrupted
+                 * subfolder only becomes ours again with the restore inside unshare. */
+                unshareSubFoldersIn(fInfos, deletingAccount);
+                if (isTopFolder()) {
+                    fInfos = handOverToOwners(fInfos, deletingAccount);
+                    if (fInfos.isEmpty()) {
+                        return;
+                    }
+                }
             }
-            /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
-             * to be done before anything is read from the database - the content of an interrupted
-             * subfolder only becomes ours again with the restore inside unshare. */
-            unshareSubFoldersIn(fInfos, deletingAccount);
         }
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
@@ -7156,10 +7165,16 @@ public class Folder extends PFComponent {
         /* The folder carried the directory's tags and version while it WAS that directory - hand them
          * back, advanced by this step, so the directory continues where the folder left off instead of
          * falling back to whatever its old row said (PFS-5306). */
-        synchronized (dbAccessLock) {
-            getDAO().store(null, subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1));
+        // PFC-3646: into the folder that owns the place - inside an interrupted subfolder that is not this one
+        Folder owner = ownerOfPlace(subFolder.getInfo().locationPath());
+        FileInfo baseDirectory = subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1);
+        if (owner != this) {
+            baseDirectory = FileInfoFactory.mapToSubFolder(baseDirectory, owner.getInfo());
         }
-        setDBDirty();
+        synchronized (owner.dbAccessLock) {
+            owner.getDAO().store(null, baseDirectory);
+        }
+        owner.setDBDirty();
 
         /* PFC-3536: the subfolder's own .PowerFolder directory goes with it - index, meta folder and the
          * database it owned while interrupted are stale copies now that the directory is the top folder's
@@ -7245,6 +7260,44 @@ public class Folder extends PFComponent {
                 break;
             }
         }
+    }
+
+    /**
+     * PFC-3646: the folder that owns the place {@code relativeName} of this top folder - the innermost interrupted
+     * subfolder around it, otherwise this one.
+     */
+    private Folder ownerOfPlace(String relativeName) {
+        String parent = FileInfo.parentOfRelativeName(relativeName);
+        FolderInfo enclosing = parent.isEmpty() ? null
+            : FolderInfo.findEnclosingInterruptedSubFolder(currentInfo, parent);
+        Folder owner = enclosing != null ? getController().getFolderRepository().getFolder(enclosing) : null;
+        return owner != null ? owner : this;
+    }
+
+    /**
+     * PFC-3646: An entry of this top folder that lies inside an interrupted subfolder belongs to that subfolder -
+     * this folder may not touch it there. A share dissolved just before is one. Only what this folder does not know
+     * itself is handed over; a row it still holds there is its own to delete.
+     *
+     * @return the entries this folder deletes itself
+     */
+    private Collection<FileInfo> handOverToOwners(Collection<FileInfo> fInfos, AccountInfo deletingAccount) {
+        List<FileInfo> own = new ArrayList<>(fInfos.size());
+        Map<Folder, List<FileInfo>> handedOver = new LinkedHashMap<>(0);
+        for (FileInfo fInfo : fInfos) {
+            Folder owner = ownerOfPlace(fInfo.getRelativeName());
+            if (owner == this || getFile(fInfo) != null) {
+                own.add(fInfo);
+                continue;
+            }
+            handedOver.computeIfAbsent(owner, o -> new ArrayList<>())
+                .add(FileInfoFactory.mapToSubFolder(fInfo, owner.getInfo()));
+        }
+        for (Map.Entry<Folder, List<FileInfo>> entry : handedOver.entrySet()) {
+            logFine(this + ": Deleting " + entry.getValue() + " through " + entry.getKey());
+            entry.getKey().removeFilesLocal(deletingAccount, entry.getValue(), false);
+        }
+        return own;
     }
 
     /** @return whether one of the given files is the base directory of this folder */
