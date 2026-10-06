@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +42,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  */
 public class PerformanceTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         makeFriends();
@@ -47,6 +50,7 @@ public class PerformanceTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
     }
 
+    @Test
     public void testManyFilelistDeltas() throws ConnectionException {
         FolderInfo foInfo = getFolderAtBart().getInfo();
         for (int i = 0; i < 100000; i++) {

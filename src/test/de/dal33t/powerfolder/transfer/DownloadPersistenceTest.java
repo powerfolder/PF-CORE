@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -28,6 +31,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Primary because of #1399
@@ -37,13 +41,17 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  */
 public class DownloadPersistenceTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+        // PFS-5561: also mute Lisa's watcher. The test asserts the downloaded
+        // files stay at version 0; a background watcher scan would re-process a
+        // file and bump it to 1, flaking "expected 0 but was 1" on loaded runners.
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
     }
 
     public void xtestStoreCompletedDownloadsMultiple() throws Exception {
@@ -54,6 +62,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testStoreCompletedDownloads() throws IOException {
         final int nFiles = 10;
         for (int i = 0; i < nFiles; i++) {
@@ -84,13 +93,16 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             .getTransferManager().getCompletedDownloadsCollection())
         {
             assertTrue(dlManager.getTempFile() == null);
-            assertTrue("Got state on completed download: "
-                + dlManager.getState().getState().toString(),
-                dlManager.isCompleted());
+            assertTrue(
+                dlManager.isCompleted(),"Got state on completed download: "
+                + dlManager.getState().getState().toString());
         }
 
         startControllerLisa();
         connectBartAndLisa();
+        // PFS-5561: the restart created a fresh Lisa with an active watcher -
+        // mute it again so a background scan does not bump the version.
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
 
         TestHelper.waitMilliSeconds(2500);
 
@@ -102,16 +114,16 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             assertEquals(0, f.getVersion());
         }
 
-        assertEquals("Invalid number of completed downloads: "
+        assertEquals( nFiles, getContollerLisa()
+            .getTransferManager().getCompletedDownloadsCollection().size(),"Invalid number of completed downloads: "
             + getContollerLisa().getTransferManager()
-                .getCompletedDownloadsCollection(), nFiles, getContollerLisa()
-            .getTransferManager().getCompletedDownloadsCollection().size());
+                .getCompletedDownloadsCollection());
 
         for (DownloadManager dlManager : getContollerLisa()
             .getTransferManager().getCompletedDownloadsCollection())
         {
-            assertFalse("Tempfile existing for completed download: "
-                + dlManager.getTempFile(), Files.exists(dlManager.getTempFile()));
+            assertFalse( Files.exists(dlManager.getTempFile()),"Tempfile existing for completed download: "
+                + dlManager.getTempFile());
             try {
                 Files.createFile(dlManager.getTempFile());
             } catch (IOException ioe) {

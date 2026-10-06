@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Constants;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
@@ -30,8 +32,9 @@ import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
 import de.dal33t.powerfolder.util.pattern.StartMatchPattern;
 
-public class PatternMatchTest extends TestCase {
+public class PatternMatchTest {
 
+    @Test
     public void testPatternFactory() {
         Pattern p = PatternFactory.createPattern("dsdkjskj");
         assertTrue(p instanceof ExactMatchPattern);
@@ -46,6 +49,7 @@ public class PatternMatchTest extends TestCase {
         assertTrue(p instanceof OfficeTempFilesMatchPattern);
     }
 
+    @Test
     public void testPatterns() {
         assertTrue(new CompiledPattern("sdfgkjh").isMatch("sdfgkjh"));
         assertTrue(new CompiledPattern("sdfgkjh").isMatch("SdFgKjH"));
@@ -74,6 +78,7 @@ public class PatternMatchTest extends TestCase {
         assertTrue(new CompiledPattern("c:\\*").isMatch("c:\\test\\file.name"));
     }
 
+    @Test
     public void testCompiledPatterns() {
         assertTrue(new CompiledPattern("sdfgkjh").isMatch("sdfgkjh"));
         assertTrue(new CompiledPattern("sdfgkjh").isMatch("SdFgKjH"));
@@ -116,6 +121,7 @@ public class PatternMatchTest extends TestCase {
             .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
     }
 
+    @Test
     public void testEndMatchPattern() {
         try {
             new EndMatchPattern("sdfgkjh");
@@ -178,6 +184,7 @@ public class PatternMatchTest extends TestCase {
             .isMatch("Eigene Musik/iTunes/iT 3.tmp"));
     }
 
+    @Test
     public void testStartMatchPattern() {
         try {
             new StartMatchPattern("sdfgkjh");
@@ -240,6 +247,7 @@ public class PatternMatchTest extends TestCase {
                 .isMatch("Friesenstraße 36-Papenburg/*"));
     }
 
+    @Test
     public void testPerformance() {
         Profiling.setEnabled(true);
 

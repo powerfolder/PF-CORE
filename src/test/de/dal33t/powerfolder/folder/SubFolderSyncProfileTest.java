@@ -25,6 +25,10 @@ import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 import java.nio.file.Files;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFS-5889: the subfolders of a tree follow its top folder's sync profile.
  * <p>
@@ -35,6 +39,7 @@ import java.nio.file.Files;
  */
 public class SubFolderSyncProfileTest extends ControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -42,20 +47,23 @@ public class SubFolderSyncProfileTest extends ControllerTestCase {
     }
 
     /** The migration's sequence: workspace on manual, share, workspace back - the subfolder has to come along. */
+    @Test
     public void testASubFolderSharedOnTheManualProfileFollowsTheRestore() throws Exception {
         Folder top = getFolder();
         top.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         Folder sub = share("projects/reports");
-        assertEquals("Sanity: a share takes the top folder's profile of the moment",
-            SyncProfile.MANUAL_SYNCHRONIZATION, sub.getSyncProfile());
+        assertEquals(SyncProfile.MANUAL_SYNCHRONIZATION, sub.getSyncProfile(),
+            "Sanity: a share takes the top folder's profile of the moment");
 
         top.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        assertEquals("The subfolder follows the top folder", SyncProfile.AUTOMATIC_SYNCHRONIZATION, sub.getSyncProfile());
+        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, sub.getSyncProfile(),
+            "The subfolder follows the top folder");
     }
 
     /** The other direction as well - a workspace put on manual takes its subfolders with it. */
+    @Test
     public void testASubFolderFollowsTheTopFolderOntoTheManualProfile() throws Exception {
         Folder top = getFolder();
         Folder sub = share("projects/reports");
@@ -67,6 +75,7 @@ public class SubFolderSyncProfileTest extends ControllerTestCase {
     }
 
     /** A subfolder that is set on its own stays where it was put - only the top folder pulls the others. */
+    @Test
     public void testASubFolderSetOnItsOwnMovesNobodyElse() throws Exception {
         Folder top = getFolder();
         Folder first = share("projects/reports");
@@ -83,9 +92,9 @@ public class SubFolderSyncProfileTest extends ControllerTestCase {
         Files.createDirectories(getFolder().getPhysicalDir().resolve(relativeName));
         scanFolder(getFolder());
         DirectoryInfo dirInfo = (DirectoryInfo) getFolder().getFileInfo(relativeName);
-        assertNotNull(relativeName + ": not scanned in", getFolder().getFile(dirInfo));
+        assertNotNull(getFolder().getFile(dirInfo), relativeName + ": not scanned in");
         Folder sub = getFolder().share(dirInfo);
-        assertNotNull(relativeName + ": not shared", sub);
+        assertNotNull(sub, relativeName + ": not shared");
         return sub;
     }
 }

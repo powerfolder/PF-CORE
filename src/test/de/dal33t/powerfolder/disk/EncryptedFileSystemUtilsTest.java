@@ -21,13 +21,9 @@ package de.dal33t.powerfolder.disk;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
@@ -35,8 +31,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 /**
 * EncryptedFileSystemUtils Test.
 *
@@ -47,20 +44,15 @@ import static org.junit.Assert.*;
 public class EncryptedFileSystemUtilsTest {
 
     private Path vaultPath;
-    private Mockery mockery = new Mockery();
     private Controller controller;
     private Properties config;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
-        mockery.setImposteriser(ClassImposteriser.INSTANCE);
-        controller = mockery.mock(Controller.class);
+        controller = mock(Controller.class);
         config = new Properties();
 
-        mockery.checking(new Expectations() {{
-            allowing(controller).getConfig(); will(returnValue(config));
-            allowing(controller).saveConfig();
-        }});
+        when(controller.getConfig()).thenReturn(config);
 
         // Cleanup
         TestHelper.cleanTestDir();
@@ -81,7 +73,7 @@ public class EncryptedFileSystemUtilsTest {
         assertTrue(PathUtils.isEmptyDir(vaultPath));
     }
 
-    @After
+    @AfterEach
     public void after() throws IOException {
         try {
             EncryptedFileSystemUtils.getCryptoPath(vaultPath).getFileSystem().close();

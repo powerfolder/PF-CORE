@@ -38,6 +38,10 @@ test-Linux:
   stage: test
   extends: .rules-test
   resource_group: tests-Linux
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Linux
   script:
@@ -48,11 +52,16 @@ test-Linux:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always
 
 test-macOS:
   stage: test
   extends: .rules-test
   resource_group: tests-macOS
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - macOS
   script:
@@ -86,6 +95,10 @@ test-Windows:
   stage: test
   extends: .rules-test
   resource_group: tests-Windows
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Windows
   script:
@@ -96,3 +109,4 @@ test-Windows:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always

@@ -26,12 +26,8 @@ import static de.dal33t.powerfolder.util.UserDirectories.getPicturesReported;
 import static de.dal33t.powerfolder.util.UserDirectories.getUserDirectories;
 import static de.dal33t.powerfolder.util.UserDirectories.getUserDirectoriesFiltered;
 import static de.dal33t.powerfolder.util.UserDirectories.getVideosReported;
-import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,12 +41,12 @@ import java.util.Map;
 import java.util.Properties;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserDirectoriesTest {
     private Controller mockedController = mock(Controller.class);
@@ -58,6 +54,21 @@ public class UserDirectoriesTest {
     private FolderRepository mockedFolderRepository = mock(FolderRepository.class);
     private Folder mockedFolder = mock(Folder.class);
     private Path mockedPath = mock(Path.class);
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        java.util.Locale.setDefault(java.util.Locale.US);
+        java.util.prefs.Preferences.userNodeForPackage(Translation.class).put("locale", "en");
+        Translation.resetResourceBundle();
+        String realHome = System.getProperty("user.dir");
+        java.nio.file.Path candidate = Paths.get(System.getenv("USERPROFILE") != null
+                ? System.getenv("USERPROFILE")
+                : (System.getenv("HOME") != null ? System.getenv("HOME") : realHome));
+        System.setProperty("user.home", candidate.toString());
+        java.lang.reflect.Field f = UserDirectories.class.getDeclaredField("userDirectories");
+        f.setAccessible(true);
+        ((Map<?, ?>) f.get(null)).clear();
+    }
 
     @Test
     public void testGetUserDirectoriesFilteredShouldReturnEmptyCollection() {
@@ -105,7 +116,7 @@ public class UserDirectoriesTest {
         if (!isWindows()) {
             return;
         }
-        assumeTrue("Windows system required to run this test", isWindows());
+        assumeTrue( isWindows(),"Windows system required to run this test");
         assertNotNull(getDocumentsReported());
         assertNotNull(getMusicReported());
         assertNotNull(getVideosReported());
@@ -117,7 +128,7 @@ public class UserDirectoriesTest {
         if (isWindows()) {
             return;
         }
-        assumeFalse("Not able to run this test on Windows", isWindows());
+        assumeFalse( isWindows(),"Not able to run this test on Windows");
         assertNull(getDocumentsReported());
         assertNull(getVideosReported());
         assertNull(getPicturesReported());

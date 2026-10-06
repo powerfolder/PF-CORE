@@ -27,12 +27,18 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import java.nio.file.Path;
 
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFC-3641: A FileInfo of an interrupted subfolder that got into the top folder's database while the barrier
  * was missing is erased by the next scan of the top folder - the root directory's too (PFC-3575).
  */
 public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -41,12 +47,14 @@ public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testAScanOfTheTopFolderErasesAStrayFileInfo() {
         Folder topFolder = getFolderAtBart();
         Path reports = topFolder.getPhysicalDir().resolve("projects/reports");
@@ -54,7 +62,7 @@ public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
         scanFolder(topFolder);
         Folder subFolder = topFolder.share((DirectoryInfo) topFolder.getFileInfo("projects/reports"));
         subFolder.setInheritsPermissions(false);
-        assertFalse("Sanity: the subfolder is interrupted", subFolder.getInfo().inheritsPermissions());
+        assertFalse(subFolder.getInfo().inheritsPermissions(), "Sanity: the subfolder is interrupted");
 
         // What a scan without the barrier recorded: a file of the subfolder as a FileInfo of the top folder.
         Path strayFile = TestHelper.createRandomFile(reports, "Stray.txt");
@@ -66,19 +74,21 @@ public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
         topFolder.getDAO().store(null, FileInfoFactory.newFile(topFolder, reports, null,
             getContollerBart().getMySelf().getInfo(), getContollerBart().getMySelf().getAccountInfo(), null, true,
             null));
-        assertNotNull("Sanity: the stray FileInfo is in the top database", topFolder.getDAO().find(stray, null));
-        assertNotNull("Sanity: ... and so is a stray FileInfo of the subfolder's root", topFolder.getDAO().find(root, null));
+        assertNotNull(topFolder.getDAO().find(stray, null), "Sanity: the stray FileInfo is in the top database");
+        assertNotNull(topFolder.getDAO().find(root, null),
+            "Sanity: ... and so is a stray FileInfo of the subfolder's root");
 
         scanFolder(topFolder);
 
-        assertNull("The stray FileInfo is erased from the top database", topFolder.getDAO().find(stray, null));
-        assertNull("... and so is the root's - it has no FileInfo in the top folder (PFC-3575)",
-            topFolder.getDAO().find(root, null));
-        assertTrue("Nothing is deleted on disk", strayFile.toFile().exists());
-        assertNotNull("... and the subfolder still has its file", subFolder.getFileInfo("Report.txt"));
+        assertNull(topFolder.getDAO().find(stray, null), "The stray FileInfo is erased from the top database");
+        assertNull(topFolder.getDAO().find(root, null),
+            "... and so is the root's - it has no FileInfo in the top folder (PFC-3575)");
+        assertTrue(strayFile.toFile().exists(), "Nothing is deleted on disk");
+        assertNotNull(subFolder.getFileInfo("Report.txt"), "... and the subfolder still has its file");
     }
 
     /** A tree unmounts its subfolders first: the top folder scanning in between must not take their content. */
+    @Test
     public void testTheBarrierHoldsWhileTheTopFolderOutlivesItsSubfolder() {
         Folder topFolder = getFolderAtBart();
         Path reports = topFolder.getPhysicalDir().resolve("projects/reports");
@@ -92,14 +102,14 @@ public class SubFolderStrayFileInfoTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(reports, "Later.txt");
         scanFolder(topFolder);
 
-        assertNull("The top folder did not take the subfolder's content",
-            topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(), "projects/reports/Later.txt"),
-                null));
-        assertNull("... nor the file that was there before",
-            topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(), "projects/reports/Report.txt"),
-                null));
+        assertNull(topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(),
+            "projects/reports/Later.txt"), null),
+            "The top folder did not take the subfolder's content");
+        assertNull(topFolder.getDAO().find(FileInfoFactory.lookupInstance(topFolder.getInfo(),
+            "projects/reports/Report.txt"), null),
+            "... nor the file that was there before");
 
         repository.removeFolder(topFolder, false);
-        assertTrue("The barrier goes with the top folder", repository.getInterruptedSubFolders().isEmpty());
+        assertTrue(repository.getInterruptedSubFolders().isEmpty(), "The barrier goes with the top folder");
     }
 }

@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,11 +34,13 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FolderScannerTest extends ControllerTestCase {
 
     private FolderScanner folderScanner;
 
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         setupTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -49,18 +54,20 @@ public class FolderScannerTest extends ControllerTestCase {
             setUp();
         }
     }
+    @Test
     public void testSkipScanOfReplicatedSubdirs() throws Exception {
         Path replicatedDir = getFolder().getLocalBase().resolve("dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir");
         Files.createDirectories(replicatedDir);
         ScanResult result = scanFolderWaitIfBusy(folderScanner);
         assertTrue(result.isChangeDetected());
-        assertEquals(result.getNewFiles().toString(), 10, result.getNewFiles().size());
-        assertEquals(result.getChangedFiles().toString(), 0, result.getChangedFiles().size());
-        assertEquals(result.getDeletedFiles().toString(), 0, result.getDeletedFiles().size());
-        assertEquals(result.getRestoredFiles().toString(), 0, result.getRestoredFiles().size());
+        assertEquals( 10, result.getNewFiles().size(),result.getNewFiles().toString());
+        assertEquals( 0, result.getChangedFiles().size(),result.getChangedFiles().toString());
+        assertEquals( 0, result.getDeletedFiles().size(),result.getDeletedFiles().toString());
+        assertEquals( 0, result.getRestoredFiles().size(),result.getRestoredFiles().toString());
         assertEquals(10, result.getTotalFilesCount());
     }
 
+    @Test
     public void testScanFiles() throws Exception {
         Path file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
         assertTrue(Files.exists(file1));
@@ -78,7 +85,7 @@ public class FolderScannerTest extends ControllerTestCase {
 
         Collection<FileInfo> newFiles = result.getNewFiles();
         // new Scan should find 4 + 20 dirs
-        assertEquals(result.toString(), 4 + 20, newFiles.size());
+        assertEquals( 4 + 20, newFiles.size(),result.toString());
         getFolder().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolder());
 
@@ -90,19 +97,19 @@ public class FolderScannerTest extends ControllerTestCase {
 
         getController().setPaused(false);
         result = scanFolderWaitIfBusy(folderScanner);
-        assertTrue(result.getResultState().toString(),
-            ScanResult.ResultState.SCANNED == result.getResultState());
+        assertTrue(
+            ScanResult.ResultState.SCANNED == result.getResultState(),result.getResultState().toString());
 
         // one deleted file should be found in new Scanning
-        assertEquals("Deleted files: " + result.getDeletedFiles().size(), 1,
-            result.getDeletedFiles().size());
+        assertEquals( 1,
+            result.getDeletedFiles().size(),"Deleted files: " + result.getDeletedFiles().size());
 
         scanFolder(getFolder());
 
         // one deleted file should be found in old Scanning
-        assertEquals("Counted deleted: "
-            + countDeleted(getFolder().getKnownFiles()), 1,
-            countDeleted(getFolder().getKnownFiles()));
+        assertEquals( 1,
+            countDeleted(getFolder().getKnownFiles()),"Counted deleted: "
+            + countDeleted(getFolder().getKnownFiles()));
 
         // change a file
         TestHelper.waitMilliSeconds(2100);
@@ -110,8 +117,8 @@ public class FolderScannerTest extends ControllerTestCase {
         result = scanFolderWaitIfBusy(folderScanner);
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
-        assertEquals("Changed files wrong: " + result.getChangedFiles().size(),
-            1, result.getChangedFiles().size());
+        assertEquals(
+            1, result.getChangedFiles().size(),"Changed files wrong: " + result.getChangedFiles().size());
 
         // rename a file
         Files.move(file3, file3.getParent().resolve("newname.txt"));
@@ -135,6 +142,7 @@ public class FolderScannerTest extends ControllerTestCase {
      * PFC-2849
      * @throws IOException
      */
+    @Test
     public void testScanManyFiles() throws IOException {
         long totalSize = 0;
         final int nFiles = 2000;
@@ -148,12 +156,12 @@ public class FolderScannerTest extends ControllerTestCase {
         ScanResult result = scanFolderWaitIfBusy(folderScanner);
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
         Collection<FileInfo> newFiles = result.getNewFiles();
-        assertEquals(result.toString(), nFiles, newFiles.size());
+        assertEquals( nFiles, newFiles.size(),result.toString());
         long scannedSize = 0;
         for (FileInfo fileInfo : newFiles) {
             scannedSize += fileInfo.getSize();
         }
-        assertEquals("Scanned size mismatch", totalSize, scannedSize);
+        assertEquals( totalSize, scannedSize,"Scanned size mismatch");
     }
 
     private ScanResult scanFolderWaitIfBusy(final FolderScanner folderScanner) {

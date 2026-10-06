@@ -29,6 +29,10 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFS-5911: A subfolder's tags are stored where its entry lives - on the directory while it inherits, on its
  * FolderInfo while interrupted. Only the switch between both copies them, and always the leading ones.
@@ -40,6 +44,7 @@ public class SubFolderTagsLeadTest extends ControllerTestCase {
 
     private Folder sub;
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -50,23 +55,26 @@ public class SubFolderTagsLeadTest extends ControllerTestCase {
         scanFolder(getFolder());
         tagDirectory("[\"Old\"]");
         sub = getFolder().share(directory());
-        assertEquals("Sanity: sharing copies the tags", List.of("Old"), sub.getInfo().getTagsList());
+        assertEquals(List.of("Old"), sub.getInfo().getTagsList(), "Sanity: sharing copies the tags");
 
         tagDirectory("[\"New\"]");
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testInterruptTakesTheTagsOfTheDirectory() {
         sub.setInheritsPermissions(false);
 
         assertEquals(List.of("New"), sub.getInfo().getTagsList());
     }
 
+    @Test
     public void testInterruptOfAnUntaggedDirectoryLeavesTheFolderUntagged() {
         tagDirectory(null);
 
@@ -75,6 +83,7 @@ public class SubFolderTagsLeadTest extends ControllerTestCase {
         assertEquals(List.of(), sub.getInfo().getTagsList());
     }
 
+    @Test
     public void testRestoreHandsTheTagsOfTheFolderBack() {
         sub.setInheritsPermissions(false);
         getController().getFolderRepository().renameFolder(
@@ -85,12 +94,14 @@ public class SubFolderTagsLeadTest extends ControllerTestCase {
         assertEquals(List.of("Interrupted"), directory().getTagsList());
     }
 
+    @Test
     public void testUnshareKeepsTheTagsOfTheDirectory() {
         getFolder().unshare(sub.getInfo().getLocation());
 
         assertEquals(List.of("New"), directory().getTagsList());
     }
 
+    @Test
     public void testUnshareOfAnInterruptedFolderKeepsItsTags() {
         sub.setInheritsPermissions(false);
         getController().getFolderRepository().renameFolder(
@@ -107,8 +118,8 @@ public class SubFolderTagsLeadTest extends ControllerTestCase {
 
     private DirectoryInfo directory() {
         FileInfo fInfo = getFolder().getFileInfo("proj");
-        assertNotNull("No entry for proj", fInfo);
-        assertTrue("proj is no directory", fInfo.isDiretory());
+        assertNotNull(fInfo, "No entry for proj");
+        assertTrue(fInfo.isDiretory(), "proj is no directory");
         return (DirectoryInfo) fInfo;
     }
 }

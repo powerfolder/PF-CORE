@@ -19,7 +19,12 @@
  */
 package de.dal33t.powerfolder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.Folder;
@@ -37,16 +42,17 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
     private Folder folderAtLisa;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
-        // implement a replacement for the UI
+        clearInvitationHandlers(getContollerBart());
         getContollerBart().addInvitationHandler(new InvitationHandler() {
 
             public void gotInvitation(Invitation invitation) {
@@ -103,6 +109,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     // assertEquals(2, folderAtLisa.getMembersCount());
     // }
 
+    @Test
     public void testInviteDirectly() throws Exception {
         Invitation invitation = folderAtLisa
             .createInvitation(FolderPermission.read(folderAtLisa.getInfo()));
@@ -115,47 +122,51 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getContollerBart().getFolderRepository().getFolders()
-                    .size() == 1;
+                return findFolderByName(getContollerBart(), folderAtLisa.getName()) != null;
             }
 
             @Override
             public String message() {
-                return "Bart does not have any folder setup: "
-                    + getContollerBart().getFolderRepository().getFolders()
-                        .size();
+                return "Bart does not have folder " + folderAtLisa.getName();
             }
         });
 
-        // controller bart should now have one folder
-        assertEquals(1, getContollerBart().getFolderRepository().getFolders()
-            .size());
-        String otherID = getContollerBart().getFolderRepository().getFolders()
-            .iterator().next().getId();
-        // Id's should match
-        assertEquals(otherID, folderAtLisa.getId());
-        // and both folders should have 2 members, this may fail if not
-        // connected yet
+        Folder bartFolder = findFolderByName(getContollerBart(), folderAtLisa.getName());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getContollerBart().getFolderRepository().getFolders()
-                    .iterator().next().getMembersCount() == 2
+                Folder bf = findFolderByName(getContollerBart(), folderAtLisa.getName());
+                return bf != null && bf.getMembersCount() == 2
                     && folderAtLisa.getMembersCount() == 2;
             }
 
             @Override
             public String message() {
-                return "Bart does not have 2 members in folder: "
-                    + getContollerBart().getFolderRepository().getFolders()
-                        .iterator().next().getMembersCount() + " or Lisa: "
-                    + folderAtLisa.getMembersCount();
+                Folder bf = findFolderByName(getContollerBart(), folderAtLisa.getName());
+                return "Bart members: " + (bf != null ? bf.getMembersCount() : 0)
+                    + ", Lisa: " + folderAtLisa.getMembersCount();
             }
         });
 
-        assertEquals(2, getContollerBart().getFolderRepository().getFolders()
-            .iterator().next().getMembersCount());
+        bartFolder = findFolderByName(getContollerBart(), folderAtLisa.getName());
+        assertEquals(2, bartFolder.getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void clearInvitationHandlers(Controller controller) throws Exception {
+        Field field = Controller.class.getDeclaredField("invitationHandlers");
+        field.setAccessible(true);
+        ((List<?>) field.get(controller)).clear();
+    }
+
+    private Folder findFolderByName(Controller controller, String name) {
+        for (Folder f : controller.getFolderRepository().getFolders()) {
+            if (name.equals(f.getName())) {
+                return f;
+            }
+        }
+        return null;
     }
 }

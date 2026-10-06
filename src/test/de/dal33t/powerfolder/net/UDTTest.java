@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.net;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,15 +33,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
-public class UDTTest extends TestCase {
+public class UDTTest {
     private class ThreadHelper<T> {
         volatile T value;
     }
 
+    @Test
     public void testUDTSO() throws IOException {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -55,6 +58,7 @@ public class UDTTest extends TestCase {
         assertTrue(Math.abs(1000 * 1024 - sock.getSoUDPReceiverBufferSize()) < 1000);
     }
 
+    @Test
     public void testClosing() {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -90,6 +94,7 @@ public class UDTTest extends TestCase {
         });
     }
 
+    @Test
     public void testSocket() throws IOException, InterruptedException {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -164,6 +169,7 @@ public class UDTTest extends TestCase {
     /**
      * Potential NAT traversal test.
      */
+    @Test
     public void testRendezvous() throws IOException {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -237,6 +243,7 @@ public class UDTTest extends TestCase {
         service.awaitTermination(1, TimeUnit.MINUTES);
     }
 
+    @Test
     public void testLargeTransfer() {
         if (!NetworkUtil.isUDTSupported()) {
             return;

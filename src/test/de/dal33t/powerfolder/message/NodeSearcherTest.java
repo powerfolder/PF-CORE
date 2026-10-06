@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.message;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +36,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the NodeSearcher. This test fails because there are also other users in
@@ -48,7 +52,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  */
 public class NodeSearcherTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -85,14 +89,15 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         Member bartAtLisa = getContollerLisa().getNodeManager()
             .getConnectedNodes().iterator().next();
         assertEquals(getContollerBart().getMySelf(), bartAtLisa);
-        // assertTrue("Bart is not known as supernode @ Lisa", bartAtLisa
-        // .isSupernode());
+        // assertTrue( bartAtLisa
+        // .isSupernode(),"Bart is not known as supernode @ Lisa");
     }
 
     /**
      * Tests the search on local node database without the need of sending
      * search requests to supernodes.
      */
+    @Test
     public void testLocalSearch() {
         List<Member> searchResultModel = new ArrayList<Member>();
 
@@ -125,9 +130,9 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
-        // assertFalse(searchResultModel.toString(),
-        // searchResultModel.isEmpty());
-        assertEquals(searchResultModel.toString(), 1, searchResultModel.size());
+        // assertFalse(
+        // searchResultModel.isEmpty(),searchResultModel.toString());
+        assertEquals( 1, searchResultModel.size(),searchResultModel.toString());
         assertEquals("Maggi", searchResultModel.get(0).getNick());
 
         // Search for "Marge" by nick. Is invalid, but on local database = found
@@ -145,6 +150,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * Tests the search on with the need of sending search requests to
      * supernodes.
      */
+    @Test
     public void testSupernodeSearch() {
         List<Member> searchResultModel = new ArrayList<Member>();
 
@@ -178,6 +184,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
     /**
      * Both cases with multiple search results.
      */
+    @Test
     public void testMixedSearch() {
         final List<Member> searchResultModel = new ArrayList<Member>();
 
@@ -195,12 +202,12 @@ public class NodeSearcherTest extends TwoControllerTestCase {
             }
         });
         searcher.cancelSearch();
-        assertFalse("Expected searach results, but nothing was found 1",
-            searchResultModel.isEmpty());
+        assertFalse(
+            searchResultModel.isEmpty(),"Expected searach results, but nothing was found 1");
         // bARt, homer and mARge, ned flenders, PowerFolder Cloud
-        assertEquals(
-            "Expected 2 results, but got: " + searchResultModel.toString(), 2,
-            searchResultModel.size());
+        assertEquals( 2,
+            searchResultModel.size(),
+            "Expected 2 results, but got: " + searchResultModel.toString());
 
         // Search for "127.0.0.1"
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
@@ -212,7 +219,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         // Bart, Homer, Ned Flenders
         
         //System.err.println(Debug.dumpCurrentStacktraces(true));
-        assertEquals(Debug.dumpCurrentStacktraces(true), 3, searchResultModel.size());
+        assertEquals( 3, searchResultModel.size(),Debug.dumpCurrentStacktraces(true));
 
         // Search for hostname (NO LONGER SUPPORTED)
         searcher = new NodeSearcher(getContollerLisa(), "localhost",
@@ -220,8 +227,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
-        assertTrue("Expected no searach results, but something was found"
-            + searchResultModel, searchResultModel.isEmpty());
+        assertTrue( searchResultModel.isEmpty(),"Expected no searach results, but something was found"
+            + searchResultModel);
         // None found = not really searched
         assertEquals(0, searchResultModel.size());
     }

@@ -14,3 +14,7 @@
 /tools/
 /reports/
 /.claude/
+
+# PFS-5561: toolchain provisioned by toolchain.xml
+/.toolchain/
+/toolchain-report.txt

@@ -11,6 +11,10 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 import java.util.Date;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFS-5653: "modifiedby:" and "device:" are matched word by word - a display name of two words used to be
@@ -20,6 +24,7 @@ public class FileInfoDAOEditorNameFilterTest extends FileInfoDAOTestCase {
 
     private FileInfoDAOHashMapImpl dao;
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -29,56 +34,61 @@ public class FileInfoDAOEditorNameFilterTest extends FileInfoDAOTestCase {
         dao.store(null, byEditor("minutes.docx", "Erik Sund", "erik@example.com", "Erik Desktop"));
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         dao.stop();
         super.tearDown();
     }
 
+    @Test
     public void testNoEditorFilterReturnsAll() {
         assertEquals(2, dao.findFilesFast(byModifiedBy(null)).size());
         assertEquals(2, dao.findFilesFast(byDevice(null)).size());
     }
 
+    @Test
     public void testDisplayNameOfTwoWordsMatches() {
         assertEquals(1, dao.findFilesFast(byModifiedBy("Jane Doe")).size());
-        assertEquals("case does not matter", 1, dao.findFilesFast(byModifiedBy("jane doe")).size());
+        assertEquals(1, dao.findFilesFast(byModifiedBy("jane doe")).size(), "case does not matter");
     }
 
     /** Every word has to sit in the editor, but the order they were typed in is none of our business. */
+    @Test
     public void testWordOrderDoesNotMatter() {
         assertEquals(1, dao.findFilesFast(byModifiedBy("doe jane")).size());
     }
 
+    @Test
     public void testASingleWordStillMatches() {
         assertEquals(1, dao.findFilesFast(byModifiedBy("jane")).size());
         assertEquals(1, dao.findFilesFast(byModifiedBy("erik")).size());
     }
 
+    @Test
     public void testTheUsernameIsMatchedToo() {
         assertEquals(1, dao.findFilesFast(byModifiedBy("jane.doe@example.com")).size());
-        assertEquals("both accounts share the domain", 2,
-                dao.findFilesFast(byModifiedBy("example.com")).size());
+        assertEquals(2, dao.findFilesFast(byModifiedBy("example.com")).size(), "both accounts share the domain");
     }
 
     /**
      * The display name, the username and the device nick are three separate texts. A word may sit in any
      * of them, but never across the seam between two - "doejane" is nobody.
      */
+    @Test
     public void testAWordNeverMatchesAcrossTwoFields() {
-        assertEquals("the seam between display name and username", 0,
-                dao.findFilesFast(byModifiedBy("doejane")).size());
-        assertEquals("and the seam between username and device nick", 0,
-                dao.findFilesFast(byModifiedBy("example.comjane")).size());
+        assertEquals(0, dao.findFilesFast(byModifiedBy("doejane")).size(), "the seam between display name and username");
+        assertEquals(0, dao.findFilesFast(byModifiedBy("example.comjane")).size(), "and the seam between username and device nick");
     }
 
+    @Test
     public void testUnknownEditorMatchesNothing() {
         assertEquals(0, dao.findFilesFast(byModifiedBy("smith")).size());
-        assertEquals("one word of two is not enough", 0,
-                dao.findFilesFast(byModifiedBy("jane smith")).size());
+        assertEquals(0, dao.findFilesFast(byModifiedBy("jane smith")).size(), "one word of two is not enough");
     }
 
     /** The device nick is asked for with "device:", and the same word rule applies to it. */
+    @Test
     public void testDeviceNameOfTwoWordsMatches() {
         assertEquals(1, dao.findFilesFast(byDevice("Jane Laptop")).size());
         assertEquals(1, dao.findFilesFast(byDevice("laptop jane")).size());
@@ -86,11 +96,13 @@ public class FileInfoDAOEditorNameFilterTest extends FileInfoDAOTestCase {
     }
 
     /** "modifiedby:" reaches the device nick as well - it is who wrote the file, from another angle. */
+    @Test
     public void testEditorFilterAlsoReachesTheDeviceNick() {
         assertEquals(1, dao.findFilesFast(byModifiedBy("Jane Laptop")).size());
     }
 
     /** A value of nothing but punctuation leaves no word - it must not silently drop every file. */
+    @Test
     public void testPunctuationOnlyFiltersNothing() {
         assertEquals(2, dao.findFilesFast(byModifiedBy("!!!")).size());
         assertEquals(2, dao.findFilesFast(byDevice("---")).size());

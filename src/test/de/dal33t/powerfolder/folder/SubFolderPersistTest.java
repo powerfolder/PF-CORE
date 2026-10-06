@@ -38,6 +38,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFS-5884: a subfolder that inherits its permissions has no database of its own - it writes through a
@@ -47,6 +51,7 @@ import java.util.List;
  */
 public class SubFolderPersistTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -56,6 +61,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -67,6 +73,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
      * created in the inheriting subfolder has to be in the holder's database file once the tree is
      * unmounted, because that file is what the next mount reads.
      */
+    @Test
     public void testADirectoryCreatedInAnInheritingSubFolderSurvivesTheUnmount() throws Exception {
         Folder topFolder = getFolderAtBart();
         Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
@@ -77,24 +84,22 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         Folder inheriting = subFolderAt(topFolder, "projects/reports/2026");
         Folder interrupted = subFolderAt(topFolder, "projects/reports");
         interrupted.setInheritsPermissions(false);
-        assertTrue("Sanity: the inheriting subfolder borrows another folder's database",
-            inheriting.getDAO() instanceof SubFolderFileInfoDAOProxy);
+        assertTrue(inheriting.getDAO() instanceof SubFolderFileInfoDAOProxy, "Sanity: the inheriting subfolder borrows another folder's database");
 
         // Everything the setup produced goes to disk first, so only the new row can dirty the holder
         // again - otherwise it would be written along with the rest and prove nothing.
         flush(interrupted);
 
         createDirectory(inheriting, "Q3");
-        assertTrue("Sanity: the row is served while the tree is mounted", hasRow(inheriting, "Q3"));
-        assertNotNull("Sanity: the interrupted subfolder is the one holding it",
-            interrupted.getFileInfo("2026/Q3"));
+        assertTrue(hasRow(inheriting, "Q3"), "Sanity: the row is served while the tree is mounted");
+        assertNotNull(interrupted.getFileInfo("2026/Q3"), "Sanity: the interrupted subfolder is the one holding it");
 
         // The order of a tree unmount: the subfolder, then the folder holding its rows.
         inheriting.shutdown();
         interrupted.shutdown();
 
-        assertTrue("The holder's database must carry the row - it is what the next mount reads."
-            + " Found: " + databaseOf(interrupted), databaseOf(interrupted).contains("2026/Q3"));
+        assertTrue(databaseOf(interrupted).contains("2026/Q3"), "The holder's database must carry the row - it is what the next mount reads."
+            + " Found: " + databaseOf(interrupted));
     }
 
     /**
@@ -102,6 +107,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
      * it back - {@code loadFolderDB} skips a borrowed database - and it was written empty, since the
      * rows live in the holder's.
      */
+    @Test
     public void testAnInheritingSubFolderWritesNoDatabaseOfItsOwn() throws Exception {
         Folder topFolder = getFolderAtBart();
         Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
@@ -115,8 +121,8 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         inheriting.shutdown();
 
         Path ownDatabase = inheriting.getSystemSubDir().resolve(Constants.DB_FILENAME);
-        assertFalse("A borrowed database is never read back, so writing one only loses rows: "
-            + ownDatabase, Files.exists(ownDatabase));
+        assertFalse(Files.exists(ownDatabase), "A borrowed database is never read back, so writing one only loses rows: "
+            + ownDatabase);
     }
 
     /**
@@ -136,6 +142,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
      * The customer's case one to one: the directory is created, the server is restarted, the tree
      * mounts again from what is on disk - and the directory has to be listed as before.
      */
+    @Test
     public void testADirectoryCreatedInAnInheritingSubFolderSurvivesARestart() throws Exception {
         Folder topFolder = getFolderAtBart();
         Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
@@ -147,7 +154,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         FolderInfo interruptedInfo = interrupted.getInfo();
 
         createDirectory(inheriting, "Q3");
-        assertTrue("Sanity: served while mounted", hasRow(inheriting, "Q3"));
+        assertTrue(hasRow(inheriting, "Q3"), "Sanity: served while mounted");
 
         // The restarted controller reads the feature switch from its config, not from the static flag the
         // test set - without this the interruption reads as inheriting after the restart.
@@ -162,9 +169,9 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
 
         Folder inheritingAgain = repository.getFolder(inheritingInfo);
         Folder interruptedAgain = repository.getFolder(interruptedInfo);
-        assertTrue("After the restart the holder must have the row: " + databaseOf(interruptedAgain),
-            hasRow(interruptedAgain, "2026/Q3"));
-        assertTrue("After the restart the inheriting subfolder must list it", hasRow(inheritingAgain, "Q3"));
+        assertTrue(hasRow(interruptedAgain, "2026/Q3"),
+            "After the restart the holder must have the row: " + databaseOf(interruptedAgain));
+        assertTrue(hasRow(inheritingAgain, "Q3"), "After the restart the inheriting subfolder must list it");
     }
 
     /**
@@ -173,6 +180,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
      * the interrupted subfolder is asked as well, which is what ScanAction does. Before, a subfolder
      * answered every scan with "handled by top folder" and did nothing.
      */
+    @Test
     public void testADirectoryOnDiskWithoutARowIsPickedUpByAScan() throws Exception {
         Folder topFolder = getFolderAtBart();
         Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
@@ -183,18 +191,19 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
 
         Files.createDirectories(inheriting.getPhysicalDir().resolve("Orphan"));
         Files.createDirectories(interrupted.getPhysicalDir().resolve("Lost"));
-        assertFalse("Sanity: no row yet", hasRow(inheriting, "Orphan"));
+        assertFalse(hasRow(inheriting, "Orphan"), "Sanity: no row yet");
 
         topFolder.scanLocalFiles();
-        assertFalse("The top folder must not pick up the interrupted subtree", hasRow(topFolder, "projects/reports/Lost"));
+        assertFalse(hasRow(topFolder, "projects/reports/Lost"),
+            "The top folder must not pick up the interrupted subtree");
 
-        assertTrue("An interrupted subfolder scans itself", interrupted.scanLocalFiles());
-        assertTrue("The holder has the row of its own directory", hasRow(interrupted, "Lost"));
-        assertTrue("The holder has the row below the inheriting subfolder", hasRow(interrupted, "2026/Orphan"));
-        assertTrue("The inheriting subfolder lists it", hasRow(inheriting, "Orphan"));
+        assertTrue(interrupted.scanLocalFiles(), "An interrupted subfolder scans itself");
+        assertTrue(hasRow(interrupted, "Lost"), "The holder has the row of its own directory");
+        assertTrue(hasRow(interrupted, "2026/Orphan"), "The holder has the row below the inheriting subfolder");
+        assertTrue(hasRow(inheriting, "Orphan"), "The inheriting subfolder lists it");
 
         Files.createDirectories(inheriting.getPhysicalDir().resolve("Later"));
-        assertTrue("A borrowing subfolder scans through its holder", inheriting.scanLocalFiles());
+        assertTrue(inheriting.scanLocalFiles(), "A borrowing subfolder scans through its holder");
         assertTrue(hasRow(inheriting, "Later"));
     }
 
@@ -206,7 +215,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
     /** Shares the given directory as a subfolder. Only the top folder may do this. */
     private Folder subFolderAt(Folder topFolder, String relativeName) {
         FileInfo fInfo = topFolder.getFileInfo(relativeName);
-        assertNotNull(topFolder + ": no row for " + relativeName, fInfo);
+        assertNotNull(fInfo, topFolder + ": no row for " + relativeName);
         return topFolder.share((DirectoryInfo) fInfo);
     }
 
@@ -223,7 +232,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
     /** The relative names in a folder's database file, as the next mount would read them. */
     private static List<String> databaseOf(Folder folder) throws Exception {
         Path dbFile = folder.getSystemSubDir().resolve(Constants.DB_FILENAME);
-        assertTrue(folder + ": no database file was written at all: " + dbFile, Files.exists(dbFile));
+        assertTrue(Files.exists(dbFile), folder + ": no database file was written at all: " + dbFile);
         try (ObjectInputStream in = new ObjectInputStream(
             new BufferedInputStream(Files.newInputStream(dbFile))))
         {

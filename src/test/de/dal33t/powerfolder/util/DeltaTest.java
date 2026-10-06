@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -32,7 +35,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.zip.Adler32;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.RingBuffer;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
@@ -51,7 +53,7 @@ import de.dal33t.powerfolder.util.delta.RollingChecksum;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $
  */
-public class DeltaTest extends TestCase {
+public class DeltaTest {
     private final static int ADLER_RS = 10;
 
     /*
@@ -77,11 +79,10 @@ public class DeltaTest extends TestCase {
     public void xtestAdlerMultiple() throws Exception {
         for (int i = 0; i < 40; i++) {
             testAdler();
-            tearDown();
-            setUp();
         }
     }
 
+    @Test
     public void testAdler() throws UnsupportedEncodingException {
         // Reference implementation from SUN, too bad it doesn't support rolling
         Adler32 ref = new Adler32();
@@ -130,8 +131,8 @@ public class DeltaTest extends TestCase {
             for (int j = 0; j <= 100; j++) {
                 ref.reset();
                 ref.update(data, j, i);
-                assertTrue("At " + i + ", " + j + ": checksum mismatch", ref
-                    .getValue() == ch.getValue());
+                assertTrue( ref
+                    .getValue() == ch.getValue(),"At " + i + ", " + j + ": checksum mismatch");
                 if (j + i + 3 < data.length) {
                     ch.update(data[j + i]);
                 }
@@ -139,6 +140,7 @@ public class DeltaTest extends TestCase {
         }
     }
 
+    @Test
     public void testPartInfos() throws NoSuchAlgorithmException, IOException {
         MessageDigest d1, d2;
         FilePartsRecordBuilder pim = new FilePartsRecordBuilder(new Adler32(),
@@ -155,9 +157,9 @@ public class DeltaTest extends TestCase {
         for (int i = 0; i < data.length / 128; i++) {
             ref.reset();
             ref.update(data, i * 128, 128);
-            assertTrue("Failed at index " + i + ", expected " + ref.getValue()
-                + " but got " + pi.getInfos()[i].getChecksum(),
-                ref.getValue() == pi.getInfos()[i].getChecksum());
+            assertTrue(
+                ref.getValue() == pi.getInfos()[i].getChecksum(),"Failed at index " + i + ", expected " + ref.getValue()
+                + " but got " + pi.getInfos()[i].getChecksum());
         }
 
         // Block searching test
@@ -209,10 +211,10 @@ public class DeltaTest extends TestCase {
             }
         }
         // Make sure we found all frames (Maybe even more due to randomness)
-        assertTrue("Found " + matches + ", but expected at least "
-            + pi.getInfos().length, matches >= pi.getInfos().length);
-        assertTrue("Found " + infos.length + ", but expected " + matches
-            + " matches!", infos.length == matches);
+        assertTrue( matches >= pi.getInfos().length,"Found " + matches + ", but expected at least "
+            + pi.getInfos().length);
+        assertTrue( infos.length == matches,"Found " + infos.length + ", but expected " + matches
+            + " matches!");
         // assertEquals(pim.getProcessedBytesCount().getValue(), matcher
         // .getProcessedBytes().getValue());
 
@@ -276,6 +278,7 @@ public class DeltaTest extends TestCase {
         return mil.toArray(new MatchInfo[0]);
     }
 
+    @Test
     public void testMultipleLens() throws NoSuchAlgorithmException, IOException
     {
         Random rng = new Random();
@@ -294,9 +297,9 @@ public class DeltaTest extends TestCase {
             MatchInfo mi[] = performMatch(new PartInfoMatcher(
                 new ByteArrayInputStream(tmp, 0, i), new RollingAdler32(j),
                 MessageDigest.getInstance("SHA-256"), rec.getInfos()));
-            assertEquals("Expected " + rec.getInfos().length + " but was "
-                + mi.length + ", i=" + i + ", j=" + j, rec.getInfos().length,
-                mi.length);
+            assertEquals( rec.getInfos().length,
+                mi.length,"Expected " + rec.getInfos().length + " but was "
+                + mi.length + ", i=" + i + ", j=" + j);
         }
     }
 
@@ -329,12 +332,12 @@ public class DeltaTest extends TestCase {
             }
             byte[] m1 = d1.digest(new byte[]{1});
             byte[] m2 = d2.digest(new byte[]{1});
-            assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
+            assertTrue( MessageDigest.isEqual(m1, m2),"Digest not equal on alg '" + alg + "'. Digest 1 len: "
                 + m1.length + ", Digest 2 len: " + m2.length + " after " + i
-                + " runs", MessageDigest.isEqual(m1, m2));
-            assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
+                + " runs");
+            assertTrue( Arrays.equals(m1, m2),"Digest not equal on alg '" + alg + "'. Digest 1 len: "
                 + m1.length + ", Digest 2 len: " + m2.length + " after " + i
-                + " runs", Arrays.equals(m1, m2));
+                + " runs");
         }
     }
 
@@ -352,6 +355,7 @@ public class DeltaTest extends TestCase {
         testDigest("SHA-1");
     }
 
+    @Test
     public void testRingBuffer() {
         for (int i = 1; i < 8192; i += 7) {
             for (int k = 0; k < 3; k++) {
@@ -379,21 +383,20 @@ public class DeltaTest extends TestCase {
                 }
                 rb.peek(buf, 0, j);
                 for (int k = 0; k < j; k++) {
-                    assertEquals("At i = " + i + ", j = " + j + ", k = " + k,
-                        rb.read(), buf[k] & 0xff);
+                    assertEquals(
+                        rb.read(), buf[k] & 0xff,"At i = " + i + ", j = " + j + ", k = " + k);
                 }
             }
         }
     }
 
+    @Test
     public void testPartInfosMultipleTimes() throws Exception {
         // Decreased from 1000 to 10. But if we're going to use that buggy
         // bamboo machine again this goes right
         // back to 1000.
         for (int i = 0; i < 10; i++) {
             testPartInfos();
-            tearDown();
-            setUp();
         }
     }
 
@@ -401,6 +404,7 @@ public class DeltaTest extends TestCase {
      * Note: This test will always pass, it's only there to note some
      * performance values
      */
+    @Test
     public void testRollingAdlerPerformance() {
         /*
          * RollingAdler32 ra = new RollingAdler32(8192); long time =
@@ -410,6 +414,7 @@ public class DeltaTest extends TestCase {
          */
     }
 
+    @Test
     public void testDataSplitter() {
         List<MatchInfo> mis = new LinkedList<MatchInfo>();
         long matchLen = 1000, maxData = 10000;
@@ -466,6 +471,7 @@ public class DeltaTest extends TestCase {
         assertEquals(3, fndRanges);
     }
 
+    @Test
     public void testRange() {
         Range a = Range.getRangeByNumbers(0, 1000);
         Range b = Range.getRangeByNumbers(500, 1500);

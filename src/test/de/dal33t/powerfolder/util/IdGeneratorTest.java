@@ -19,7 +19,9 @@
 */
 package de.dal33t.powerfolder.util;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
@@ -28,10 +30,11 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class IdGeneratorTest extends TestCase {
+public class IdGeneratorTest {
     /**
      * Tests the uniqueness of the idgenerator.
      */
+    @Test
     public void testIdGeneration() {
         for (int i = 0; i < 500000; i++) {
             assertFalse(IdGenerator.makeId().equals(IdGenerator.makeId()));

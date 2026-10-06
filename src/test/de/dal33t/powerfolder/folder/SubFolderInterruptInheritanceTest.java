@@ -32,11 +32,16 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3543 / PFC-3565: Integration tests for interrupting and restoring the permission
@@ -56,7 +61,7 @@ import java.util.Map;
  */
 public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         // The feature is process-wide and off by default in production; enable it for
@@ -66,12 +71,13 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testInterruptMovesSubtreeIntoOwnDAOPreservingVersion() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "projects/shared";
@@ -81,37 +87,38 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         TestHelper.scanFolder(topFolder);
 
         FileInfo topFileInfo = topFolder.getFileInfo(testFile);
-        assertNotNull("File must be scanned into the top folder", topFileInfo);
+        assertNotNull(topFileInfo, "File must be scanned into the top folder");
         int versionBefore = topFileInfo.getVersion();
 
         DirectoryInfo subDirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
         Folder subFolder = topFolder.share(subDirInfo);
-        assertTrue("Shared subfolder starts on the shared top DAO",
-            subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy);
+        assertTrue(subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy,
+            "Shared subfolder starts on the shared top DAO");
 
         // --- Interrupt ---
         subFolder.setInheritsPermissions(false);
 
-        assertFalse("Interrupted subfolder must no longer inherit",
-            subFolder.getInfo().inheritsPermissions());
-        assertTrue("Interrupted subfolder must switch to its own DAO",
-            subFolder.getDAO() instanceof FileInfoDAOHashMapImpl);
-        assertTrue("Interrupted subfolder must use its own archiver, not the proxy",
-            !(subFolder.getFileArchiver() instanceof SubFolderFileArchiverProxy));
+        assertFalse(subFolder.getInfo().inheritsPermissions(),
+            "Interrupted subfolder must no longer inherit");
+        assertTrue(subFolder.getDAO() instanceof FileInfoDAOHashMapImpl,
+            "Interrupted subfolder must switch to its own DAO");
+        assertTrue(!(subFolder.getFileArchiver() instanceof SubFolderFileArchiverProxy),
+            "Interrupted subfolder must use its own archiver, not the proxy");
 
         // The subtree is now gone from the top DAO - raw-removed, NOT tombstoned.
-        assertNull("Interrupt must raw-remove the subtree from the top DAO (no tombstone)",
-            topFolder.getDAO().find(topFileInfo, null));
+        assertNull(topFolder.getDAO().find(topFileInfo, null),
+            "Interrupt must raw-remove the subtree from the top DAO (no tombstone)");
 
         // ...and present in the subfolder's own DAO, with its version preserved.
         FileInfo mappedInfo = FileInfoFactory.mapToSubFolder(topFileInfo, subFolder.getInfo());
         FileInfo inSub = subFolder.getDAO().find(mappedInfo, null);
-        assertNotNull("Migrated file must be in the subfolder's own DAO", inSub);
-        assertEquals("Migration must preserve the file version", versionBefore, inSub.getVersion());
-        assertEquals("Mapped relative name must be subfolder-relative", "report.txt",
-            inSub.getRelativeName());
+        assertNotNull(inSub, "Migrated file must be in the subfolder's own DAO");
+        assertEquals(versionBefore, inSub.getVersion(), "Migration must preserve the file version");
+        assertEquals("report.txt", inSub.getRelativeName(),
+            "Mapped relative name must be subfolder-relative");
     }
 
+    @Test
     public void testRestoreMovesSubtreeBackIntoTopDAO() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "docs/team";
@@ -127,22 +134,23 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         Folder subFolder = topFolder.share(subDirInfo);
 
         subFolder.setInheritsPermissions(false);
-        assertNull("Sanity: interrupt removed the file from the top DAO",
-            topFolder.getDAO().find(topFileInfo, null));
+        assertNull(topFolder.getDAO().find(topFileInfo, null),
+            "Sanity: interrupt removed the file from the top DAO");
 
         // --- Restore ---
         subFolder.setInheritsPermissions(true);
 
-        assertTrue("Restored subfolder must inherit again",
-            subFolder.getInfo().inheritsPermissions());
-        assertTrue("Restored subfolder must switch back to the shared top DAO",
-            subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy);
+        assertTrue(subFolder.getInfo().inheritsPermissions(),
+            "Restored subfolder must inherit again");
+        assertTrue(subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy,
+            "Restored subfolder must switch back to the shared top DAO");
 
         FileInfo backInTop = topFolder.getDAO().find(topFileInfo, null);
-        assertNotNull("Restore must move the file back into the top DAO", backInTop);
-        assertEquals("Restore must preserve the file version", versionBefore, backInTop.getVersion());
+        assertNotNull(backInTop, "Restore must move the file back into the top DAO");
+        assertEquals(versionBefore, backInTop.getVersion(), "Restore must preserve the file version");
     }
 
+    @Test
     public void testInterruptIsNoOpWhenAlreadyInheriting() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "misc";
@@ -156,12 +164,13 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
 
         // Already inheriting -> no change, no version bump, still on the shared DAO.
         subFolder.setInheritsPermissions(true);
-        assertEquals("No-op must not bump the folder version",
-            versionBefore, subFolder.getInfo().getVersion());
-        assertTrue("No-op must keep the shared top DAO",
-            subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy);
+        assertEquals(versionBefore, subFolder.getInfo().getVersion(),
+            "No-op must not bump the folder version");
+        assertTrue(subFolder.getDAO() instanceof SubFolderFileInfoDAOProxy,
+            "No-op must keep the shared top DAO");
     }
 
+    @Test
     public void testInterruptDoesNotDeletePeerFiles() throws IOException {
         final Folder topFolderBart = getFolderAtBart();
         final Folder topFolderLisa = getFolderAtLisa();
@@ -194,7 +203,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
 
         // Give any (erroneous) deletion broadcast time to travel, then confirm the peer file survives.
         TestHelper.waitMilliSeconds(2000);
-        assertTrue("Interrupt must not delete the peer's physical file", Files.exists(lisaFile));
+        assertTrue(Files.exists(lisaFile), "Interrupt must not delete the peer's physical file");
     }
 
     /**
@@ -203,6 +212,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
      * able to name it as its child, and the path resolution must land on the INNERMOST of the two. This
      * is the case that made everything below the second level invisible in the web portal.
      */
+    @Test
     public void testNestedInterruptionResolvesToInnermostAndStaysListable() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -215,7 +225,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         TestHelper.scanFolder(topFolder);
 
         FileInfo innerFileInfo = topFolder.getFileInfo(innerFile);
-        assertNotNull("File must be scanned into the top folder", innerFileInfo);
+        assertNotNull(innerFileInfo, "File must be scanned into the top folder");
 
         Folder outer = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer"));
         Folder inner = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer/inner"));
@@ -232,8 +242,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         // folder can show it even though the child leaves no row behind.
         Map<DirectoryInfo, Folder> childrenOfOuter = repository.getSubFolders(outer);
         DirectoryInfo childKey = FileInfoFactory.lookupDirectory(outer.getInfo(), "inner");
-        assertTrue("Nested subfolder must be a child of the outer one: " + childrenOfOuter,
-            childrenOfOuter.containsKey(childKey));
+        assertTrue(childrenOfOuter.containsKey(childKey), "Nested subfolder must be a child of the outer one: " + childrenOfOuter);
         assertSame(inner, childrenOfOuter.get(childKey));
 
         // Resolution of a deep path lands on the INNERMOST barrier, and its own path is relative to it.
@@ -247,15 +256,13 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         // The content itself sits in the innermost folder's own database, reachable through it.
         FileInfo inInner = inner.getDAO()
             .find(FileInfoFactory.mapToSubFolder(innerFileInfo, inner.getInfo()), null);
-        assertNotNull("Nested content must live in the innermost subfolder's own DAO", inInner);
-        assertNull("The top folder must not keep the nested row",
-            topFolder.getDAO().find(innerFileInfo, null));
+        assertNotNull(inInner, "Nested content must live in the innermost subfolder's own DAO");
+        assertNull(topFolder.getDAO().find(innerFileInfo, null), "The top folder must not keep the nested row");
 
         // --- Restoring the inner one hands its content back to the folder that owns the location ---
         inner.setInheritsPermissions(true);
         assertTrue(inner.getInfo().inheritsPermissions());
-        assertNotNull("After the restore the outer folder must hold the content",
-            outer.getDAO().find(FileInfoFactory.mapToSubFolder(innerFileInfo, outer.getInfo()), null));
+        assertNotNull(outer.getDAO().find(FileInfoFactory.mapToSubFolder(innerFileInfo, outer.getInfo()), null), "After the restore the outer folder must hold the content");
     }
 
     /**
@@ -264,6 +271,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
      * top folder holds itself in place: fk_fi_topfolder refuses to let the middle row go, and deleting
      * the workspace fails on its own foreign key.
      */
+    @Test
     public void testSubFolderAlwaysPointsAtTheTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();
@@ -278,24 +286,21 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         Folder outer = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer"));
         outer.setInheritsPermissions(false);
         assertFalse(outer.getInfo().inheritsPermissions());
-        assertEquals("Precondition: the outer one points at the top folder",
-            topInfo, outer.getInfo().getTopFolder());
+        assertEquals(topInfo, outer.getInfo().getTopFolder(), "Precondition: the outer one points at the top folder");
 
         // The nested row lives in the outer subfolder's database now and comes back in ITS coordinates.
         // Mapping it to the top folder before sharing is what the web API does - subfolders are
         // registered on the top folder, however deep they sit.
         DirectoryInfo innerInOuter = (DirectoryInfo) outer.getFileInfo("inner");
         Folder inner = topFolder.share((DirectoryInfo) FileInfoFactory.mapToTopFolder(innerInOuter));
-        assertNotNull("The nested directory must be shareable through the top folder", inner);
+        assertNotNull(inner, "The nested directory must be shareable through the top folder");
         inner.setInheritsPermissions(false);
 
         for (Folder subFolder : new Folder[]{outer, inner}) {
             FolderInfo subInfo = subFolder.getInfo();
-            assertTrue(subInfo + " must be a subfolder", subInfo.isSubFolder());
-            assertEquals(subInfo + " must point at the top folder, not at another subfolder",
-                topInfo, subInfo.getTopFolder());
-            assertFalse("The top folder of " + subInfo + " must not itself be a subfolder",
-                subInfo.getTopFolder().isSubFolder());
+            assertTrue(subInfo.isSubFolder(), subInfo + " must be a subfolder");
+            assertEquals(topInfo, subInfo.getTopFolder(), subInfo + " must point at the top folder, not at another subfolder");
+            assertFalse(subInfo.getTopFolder().isSubFolder(), "The top folder of " + subInfo + " must not itself be a subfolder");
         }
         // The nesting shows in the PATH, never in the top folder reference.
         assertEquals("outer", inner.getInfo().getTopPath());
@@ -310,6 +315,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
      * with the outer folder while the inner one came up empty - for everybody, its own holders
      * included.
      */
+    @Test
     public void testInterruptingOuterFirstKeepsTheContentOfTheInnerOne() throws IOException {
         Folder topFolder = getFolderAtBart();
 
@@ -326,11 +332,8 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         inner.setInheritsPermissions(false);
 
         FileInfo innerFile = FileInfoFactory.lookupInstance(inner.getInfo(), "inner.txt");
-        assertNotNull("The inner folder must hold its own file after the interruption",
-            inner.getDAO().find(innerFile, null));
-        assertNull("The outer folder must not keep the row of the inner subtree",
-            outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "inner/inner.txt"), null));
-        assertNotNull("The outer folder keeps its own file",
-            outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "outer.txt"), null));
+        assertNotNull(inner.getDAO().find(innerFile, null), "The inner folder must hold its own file after the interruption");
+        assertNull(outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "inner/inner.txt"), null), "The outer folder must not keep the row of the inner subtree");
+        assertNotNull(outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "outer.txt"), null), "The outer folder keeps its own file");
     }
 }

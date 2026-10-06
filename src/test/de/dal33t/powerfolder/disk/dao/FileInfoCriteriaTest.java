@@ -5,18 +5,21 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.TagUtil;
-import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * PFS-5653: the two decisions {@link FileInfoCriteria} makes on its own - how the value of a name-like
  * filter is cut into words, and whether a query can be answered by a file only.
  */
-public class FileInfoCriteriaTest extends TestCase {
+public class FileInfoCriteriaTest {
 
+    @Test
     public void testNoValueLeavesNoWord() {
         assertTrue(FileInfoCriteria.nameWords(null).isEmpty());
         assertTrue(FileInfoCriteria.nameWords("").isEmpty());
@@ -24,6 +27,7 @@ public class FileInfoCriteriaTest extends TestCase {
     }
 
     /** The index tokenizes on everything that is neither a letter nor a digit, and so does the value. */
+    @Test
     public void testPunctuationAroundAWordIsDropped() {
         assertEquals(List.of("urgent"), FileInfoCriteria.nameWords("!urgent!"));
         assertEquals(List.of("urgent"), FileInfoCriteria.nameWords("(urgent)"));
@@ -31,40 +35,46 @@ public class FileInfoCriteriaTest extends TestCase {
     }
 
     /** A value of nothing but punctuation leaves no word, which means it filters nothing at all. */
+    @Test
     public void testPunctuationOnlyLeavesNoWord() {
         assertTrue(FileInfoCriteria.nameWords("!!!").isEmpty());
         assertTrue(FileInfoCriteria.nameWords("+++ ///").isEmpty());
-        assertTrue("a hyphen or a dot stays inside a word, but is none on its own",
-                FileInfoCriteria.nameWords("--- ...").isEmpty());
+        assertTrue(FileInfoCriteria.nameWords("--- ...").isEmpty(), "a hyphen or a dot stays inside a word, but is none on its own");
     }
 
+    @Test
     public void testWordsAreLowerCasedAndSplitOnBlanks() {
         assertEquals(List.of("annual", "report"), FileInfoCriteria.nameWords("Annual Report"));
         assertEquals(List.of("annual", "report"), FileInfoCriteria.nameWords("  Annual   REPORT  "));
     }
 
     /** Accents belong to the word - the index keeps them too, folding happens on the keyword side. */
+    @Test
     public void testAccentsSurvive() {
         assertEquals(List.of("müller"), FileInfoCriteria.nameWords("Müller"));
     }
 
     /** Dot, underscore and hyphen sit inside names often enough to stay part of the word. */
+    @Test
     public void testInnerPunctuationStays() {
         assertEquals(List.of("report.v2"), FileInfoCriteria.nameWords("report.v2"));
         assertEquals(List.of("test_pf-1"), FileInfoCriteria.nameWords("Test_PF-1"));
     }
 
     /** PFS-5306: the tokenizer keeps a dot only between alphanumerics, so a trailing one has to go. */
+    @Test
     public void testTrailingDotsAreCutOff() {
         assertEquals(List.of("29.7"), FileInfoCriteria.nameWords("29.7."));
         assertEquals(List.of("list", "29.7"), FileInfoCriteria.nameWords("List 29.7.."));
     }
 
+    @Test
     public void testEmptyCriteriaDescribeNothing() {
         assertFalse(new FileInfoCriteria().describesFilesOnly());
     }
 
     /** A name or a tag says nothing about files: folders carry both, so the folder rows stay. */
+    @Test
     public void testNameAndTagDoNotDescribeFilesOnly() {
         FileInfoCriteria byName = new FileInfoCriteria();
         byName.setFileName("report");
@@ -79,6 +89,7 @@ public class FileInfoCriteriaTest extends TestCase {
         assertFalse(byKeyword.describesFilesOnly());
     }
 
+    @Test
     public void testAKindOfFileDescribesFilesOnly() {
         FileInfoCriteria pdfs = new FileInfoCriteria();
         pdfs.addCategory("pdf");
@@ -86,14 +97,15 @@ public class FileInfoCriteriaTest extends TestCase {
 
         FileInfoCriteria folders = new FileInfoCriteria();
         folders.addCategory("folder");
-        assertFalse("a folder is what a folder row is", folders.describesFilesOnly());
+        assertFalse(folders.describesFilesOnly(), "a folder is what a folder row is");
 
         FileInfoCriteria both = new FileInfoCriteria();
         both.addCategory("folder");
         both.addCategory("pdf");
-        assertFalse("asking for folders as well keeps them", both.describesFilesOnly());
+        assertFalse(both.describesFilesOnly(), "asking for folders as well keeps them");
     }
 
+    @Test
     public void testEveryFileOnlyCriterion() {
         FileInfoCriteria byExtension = new FileInfoCriteria();
         byExtension.addExtension("pdf");
@@ -130,33 +142,36 @@ public class FileInfoCriteriaTest extends TestCase {
      * the file name alone. The index searches name, path and tags alike, and without it the answer has to
      * be the same - on a server that mounts on demand the database answers most of the time.
      */
+    @Test
     public void testAKeyWordReachesTheTags() {
         FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day", "Urgent");
 
-        assertTrue("the tag itself", criteriaFor("wonderful day").matches(tagged));
-        assertTrue("one word of it", criteriaFor("wonderful").matches(tagged));
-        assertTrue("a second tag", criteriaFor("urgent").matches(tagged));
-        assertTrue("case does not matter", criteriaFor("WONDERFUL").matches(tagged));
-        assertFalse("a word that is nowhere", criteriaFor("terrible").matches(tagged));
+        assertTrue(criteriaFor("wonderful day").matches(tagged), "the tag itself");
+        assertTrue(criteriaFor("wonderful").matches(tagged), "one word of it");
+        assertTrue(criteriaFor("urgent").matches(tagged), "a second tag");
+        assertTrue(criteriaFor("WONDERFUL").matches(tagged), "case does not matter");
+        assertFalse(criteriaFor("terrible").matches(tagged), "a word that is nowhere");
     }
 
     /** The name and the path it sits in stay searchable, tags or no tags. */
+    @Test
     public void testAKeyWordStillReachesNameAndPath() {
         FileInfo plain = file("Protokolle/Sitzung.docx");
 
-        assertTrue("the name", criteriaFor("sitzung").matches(plain));
-        assertTrue("the directory above it", criteriaFor("protokolle").matches(plain));
+        assertTrue(criteriaFor("sitzung").matches(plain), "the name");
+        assertTrue(criteriaFor("protokolle").matches(plain), "the directory above it");
         assertFalse(criteriaFor("wonderful").matches(plain));
     }
 
     /** Every keyword has to be met - by whichever of the three places (PFS-5653: they are ANDed). */
+    @Test
     public void testEveryKeyWordHasToBeMet() {
         FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day");
 
         FileInfoCriteria both = new FileInfoCriteria();
         both.addKeyWord("sitzung");
         both.addKeyWord("wonderful");
-        assertTrue("one from the name, one from the tag", both.matches(tagged));
+        assertTrue(both.matches(tagged), "one from the name, one from the tag");
 
         FileInfoCriteria withMiss = new FileInfoCriteria();
         withMiss.addKeyWord("sitzung");
@@ -165,6 +180,7 @@ public class FileInfoCriteriaTest extends TestCase {
     }
 
     /** The "tag:" operator keeps its exact-match semantics - it is not a substring search. */
+    @Test
     public void testTheTagOperatorStaysExact() {
         FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day");
 
@@ -174,7 +190,7 @@ public class FileInfoCriteriaTest extends TestCase {
 
         FileInfoCriteria partial = new FileInfoCriteria();
         partial.addTag("Wonderful");
-        assertFalse("half a tag is not that tag", partial.matches(tagged));
+        assertFalse(partial.matches(tagged), "half a tag is not that tag");
     }
 
     private static FileInfoCriteria criteriaFor(String query) {

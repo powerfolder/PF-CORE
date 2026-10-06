@@ -18,10 +18,8 @@
  */
 package de.dal33t.powerfolder.util;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 public class EstimatedTimeTest {
     private static final int DELTA_TIME_MILLIS = 100;
     private static final boolean ACTIVE = true;
@@ -48,8 +46,10 @@ public class EstimatedTimeTest {
         assertEquals(Format.formatDeltaTime(DELTA_TIME_MILLIS),estimatedTime.toString());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowNullPointerException(){
-        estimatedTime.isActive();
+        assertThrows(NullPointerException.class, () -> {
+            estimatedTime.isActive();
+        });
     }
 }

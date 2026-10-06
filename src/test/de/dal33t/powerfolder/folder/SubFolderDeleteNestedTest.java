@@ -31,6 +31,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFC-3646: Deleting a share that lies inside an interrupted subfolder.
  * <p>
@@ -47,6 +51,7 @@ public class SubFolderDeleteNestedTest extends ControllerTestCase {
     private Folder s2;
     private Folder s;
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -64,9 +69,10 @@ public class SubFolderDeleteNestedTest extends ControllerTestCase {
         s = getFolder().share(directory(getFolder(), "outer/dd/s"));
         outer.setInheritsPermissions(false);
         s.setInheritsPermissions(false);
-        assertTrue("Sanity: s2 inherits", s2.getInfo().inheritsPermissions());
+        assertTrue(s2.getInfo().inheritsPermissions(), "Sanity: s2 inherits");
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -74,54 +80,57 @@ public class SubFolderDeleteNestedTest extends ControllerTestCase {
     }
 
     /** The inheriting share inside the interrupted subfolder, deleted on its own directory as the web does it. */
+    @Test
     public void testAnInheritingShareInsideARestrictedSubFolderIsDeleted() {
         Path dir = s2.getLocalBase();
 
         s2.removeFilesLocal((AccountInfo) null, s2.getBaseDirectoryInfo());
 
         assertDissolved(s2);
-        assertFalse("outer/s2 is deleted on disk", Files.exists(dir));
+        assertFalse(Files.exists(dir), "outer/s2 is deleted on disk");
         assertDeletedIn(outer, "s2");
     }
 
     /** A plain directory of the interrupted subfolder that holds an interrupted share. */
+    @Test
     public void testADirectoryHoldingARestrictedShareIsDeleted() {
         Path dir = outer.getLocalBase().resolve("dd");
 
         outer.removeFilesLocal((AccountInfo) null, directory(outer, "dd"));
 
         assertDissolved(s);
-        assertFalse("outer/dd is deleted on disk", Files.exists(dir));
+        assertFalse(Files.exists(dir), "outer/dd is deleted on disk");
         assertDeletedIn(outer, "dd");
     }
 
     /** The interrupted share inside the interrupted subfolder, deleted on its own directory. */
+    @Test
     public void testARestrictedShareInsideARestrictedSubFolderIsDeleted() {
         Path dir = s.getLocalBase();
 
         s.removeFilesLocal((AccountInfo) null, s.getBaseDirectoryInfo());
 
         assertDissolved(s);
-        assertFalse("outer/dd/s is deleted on disk", Files.exists(dir));
+        assertFalse(Files.exists(dir), "outer/dd/s is deleted on disk");
         assertDeletedIn(outer, "dd/s");
-        assertTrue("The directory above it is untouched", Files.isDirectory(outer.getLocalBase().resolve("dd")));
+        assertTrue(Files.isDirectory(outer.getLocalBase().resolve("dd")), "The directory above it is untouched");
     }
 
     private void assertDissolved(Folder share) {
-        assertNull(share + " is dissolved",
-            getController().getFolderRepository().findSubFolder(share.getInfo().getLocation()));
+        assertNull(getController().getFolderRepository().findSubFolder(share.getInfo().getLocation()),
+            share + " is dissolved");
     }
 
     private static void assertDeletedIn(Folder folder, String relativeName) {
         FileInfo fInfo = folder.getFileInfo(relativeName);
-        assertNotNull(folder + " knows " + relativeName, fInfo);
-        assertTrue(folder + " reports " + relativeName + " as deleted", fInfo.isDeleted());
+        assertNotNull(fInfo, folder + " knows " + relativeName);
+        assertTrue(fInfo.isDeleted(), folder + " reports " + relativeName + " as deleted");
     }
 
     private static DirectoryInfo directory(Folder folder, String relativeName) {
         FileInfo fInfo = folder.getFileInfo(relativeName);
-        assertNotNull(folder + ": no entry for " + relativeName, fInfo);
-        assertTrue(relativeName + " is no directory", fInfo.isDiretory());
+        assertNotNull(fInfo, folder + ": no entry for " + relativeName);
+        assertTrue(fInfo.isDiretory(), relativeName + " is no directory");
         return (DirectoryInfo) fInfo;
     }
 }

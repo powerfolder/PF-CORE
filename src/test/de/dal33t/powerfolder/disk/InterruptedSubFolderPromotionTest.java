@@ -26,6 +26,11 @@ import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Date;
 
 /**
@@ -42,6 +47,7 @@ import java.util.Date;
  */
 public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -50,6 +56,7 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -61,6 +68,7 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
      * order, or the data was moved by a bug). The constructor runs the correction - it must NOT
      * promote, the hierarchy stays for a human to inspect.
      */
+    @Test
     public void testDoesNotPromoteInterruptedSubFolderWithoutMountedTop() {
         FolderInfo unmountedTop = FolderInfoFactory.newTopFolderForTest("topFolder");
         FolderInfo interrupted = newSubFolderInfo(unmountedTop, "secret", false);
@@ -69,11 +77,11 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
         Folder mounted = joinFolder(interrupted, testFolderBaseDir("orphan-interrupted"),
             SyncProfile.HOST_FILES);
 
-        assertTrue("Interrupted subfolder must NOT be promoted to a top folder",
-            mounted.getInfo().isSubFolder());
-        assertFalse("Interruption flag must survive", mounted.getInfo().inheritsPermissions());
-        assertEquals("No version bump - nothing may have changed",
-            versionBefore, mounted.getInfo().getVersion());
+        assertTrue(mounted.getInfo().isSubFolder(),
+            "Interrupted subfolder must NOT be promoted to a top folder");
+        assertFalse(mounted.getInfo().inheritsPermissions(), "Interruption flag must survive");
+        assertEquals(versionBefore, mounted.getInfo().getVersion(),
+            "No version bump - nothing may have changed");
 
         // Repeated correction runs (repository startup path) must stay a no-op as well.
         assertFalse(mounted.correctTopAndSubfolderRelation());
@@ -85,6 +93,7 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
      * correction still promotes it to a top folder. Mounted below its top first, then the top is
      * removed and the correction re-run - the same sequence the repository startup path takes.
      */
+    @Test
     public void testStillPromotesInheritingSubFolderWithoutMountedTop() {
         setupTestFolder(SyncProfile.HOST_FILES);
         Folder topFolder = getFolder();
@@ -97,17 +106,18 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
 
         getController().getFolderRepository().removeFolder(topFolder, false);
 
-        assertTrue("Inheriting subfolder without a mounted folder above is still promoted",
-            mounted.correctTopAndSubfolderRelation());
+        assertTrue(mounted.correctTopAndSubfolderRelation(),
+            "Inheriting subfolder without a mounted folder above is still promoted");
         assertTrue(mounted.getInfo().isTopFolder());
-        assertEquals("Promotion is a version-bumped change", versionBefore + 1,
-            mounted.getInfo().getVersion());
+        assertEquals(versionBefore + 1, mounted.getInfo().getVersion(),
+            "Promotion is a version-bumped change");
     }
 
     /**
      * The counterpart with interruption: same sequence, but the interrupted subfolder must survive
      * the removal of its top folder unchanged.
      */
+    @Test
     public void testKeepsInterruptedSubFolderWhenTopIsRemoved() {
         setupTestFolder(SyncProfile.HOST_FILES);
         Folder topFolder = getFolder();
@@ -123,8 +133,8 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
 
         getController().getFolderRepository().removeFolder(topFolder, false);
 
-        assertFalse("Interrupted subfolder must NOT be promoted when its top folder vanishes",
-            mounted.correctTopAndSubfolderRelation());
+        assertFalse(mounted.correctTopAndSubfolderRelation(),
+            "Interrupted subfolder must NOT be promoted when its top folder vanishes");
         assertTrue(mounted.getInfo().isSubFolder());
         assertFalse(mounted.getInfo().inheritsPermissions());
         assertEquals(versionBefore, mounted.getInfo().getVersion());

@@ -31,6 +31,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3536: A directory reported as deleted while it is still on disk was split off, not deleted.
@@ -47,6 +51,7 @@ import java.util.Date;
  */
 public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -56,6 +61,7 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -63,6 +69,7 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
     }
 
     /** The directory is still there, so nothing was deleted and the share has to stay. */
+    @Test
     public void testADirectoryThatIsStillOnDiskKeepsItsShare() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path reports = createTree(topFolder);
@@ -71,25 +78,24 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
 
         topFolder.unshareDeletedSubFolders(Collections.singletonList(deleted));
 
-        assertNotNull("The share stays - the directory it lives in is untouched",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertTrue("... and so is its content", Files.exists(reports.resolve("Report.txt")));
-        assertNotNull("... which is still the subfolder's", subFolder.getFileInfo("Report.txt"));
+        assertNotNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share stays - the directory it lives in is untouched");
+        assertTrue(Files.exists(reports.resolve("Report.txt")), "... and so is its content");
+        assertNotNull(subFolder.getFileInfo("Report.txt"), "... which is still the subfolder's");
     }
 
     /** The directory really is gone: then the share has nothing left to hold on to. */
+    @Test
     public void testADirectoryThatIsGoneDissolvesItsShare() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path reports = createTree(topFolder);
         DirectoryInfo deleted = deletionMarkerFor(topFolder, "projects/reports");
         Folder subFolder = shareInterrupted(topFolder, "projects/reports");
         PathUtils.recursiveDelete(reports);
-        assertFalse("Sanity: the directory is gone from disk", Files.exists(reports));
+        assertFalse(Files.exists(reports), "Sanity: the directory is gone from disk");
 
         topFolder.unshareDeletedSubFolders(Collections.singletonList(deleted));
 
-        assertNull("The share is dissolved",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
+        assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
     }
 
     /** "projects/reports" with a file in it, scanned. Returns the "reports" directory. */
@@ -102,18 +108,18 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
 
     private Folder shareInterrupted(Folder topFolder, String relativeName) {
         FileInfo fInfo = topFolder.getFileInfo(relativeName);
-        assertNotNull(topFolder + ": no row for " + relativeName, fInfo);
+        assertNotNull(fInfo, topFolder + ": no row for " + relativeName);
         Folder subFolder = topFolder.share((DirectoryInfo) fInfo);
         subFolder.setInheritsPermissions(false);
-        assertFalse("Sanity: the subfolder is interrupted", subFolder.getInfo().inheritsPermissions());
+        assertFalse(subFolder.getInfo().inheritsPermissions(), "Sanity: the subfolder is interrupted");
         return subFolder;
     }
 
     /** What a scan hands in: the row of the subfolder's own directory, marked as deleted. */
     private DirectoryInfo deletionMarkerFor(Folder topFolder, String relativeName) {
         FileInfo dirInfo = topFolder.getFileInfo(relativeName);
-        assertNotNull(topFolder + ": no row for " + relativeName, dirInfo);
-        assertTrue(relativeName + " is no directory", dirInfo.isDiretory());
+        assertNotNull(dirInfo, topFolder + ": no row for " + relativeName);
+        assertTrue(dirInfo.isDiretory(), relativeName + " is no directory");
         return (DirectoryInfo) FileInfoFactory.deletedFile(dirInfo,
             getContollerBart().getMySelf().getInfo(),
             getContollerBart().getMySelf().getAccountInfo(), new Date());

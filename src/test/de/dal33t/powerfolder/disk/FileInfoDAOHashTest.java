@@ -26,43 +26,52 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileInfoDAOHashTest extends FileInfoDAOTestCase {
     private FileInfoDAO dao;
     private DiskItemFilter filter;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         filter = new DiskItemFilter();
         dao = new FileInfoDAOHashMapImpl("ME", filter);
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         dao.stop();
         super.tearDown();
     }
 
+    @Test
     public void testIndexFileInfo() {
         testIndexFileInfo(dao);
     }
 
+    @Test
     public void testFindNewestVersion() {
         testFindNewestVersion(dao);
     }
 
+    @Test
     public void testFindAll() {
         LoggingManager.setConsoleLogging(Level.SEVERE);
         testFindAll(dao, 5000);
     }
 
+    @Test
     public void testFindInDir() {
         testFindInDir(dao, 1);
         testFindInDir(dao, 100);
         testFindInDir(dao, 5000);
     }
 
+    @Test
     public void testFindByOID() {
         String[] domains = new String[]{null, "anydomain"};
         FileInfo noID = createFileInfo("subdir/relative/NameNoID.txt", 1, false);

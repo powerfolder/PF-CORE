@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PowerFolder-Toolchain" default="provision" basedir=".">
+
+    <property name="jdk.release" value="jdk-21.0.10+7" />
+    <property name="jdk.version.expected" value="21.0.10" />
+    <property name="ant.version.expected" value="1.10.17" />
+
+    <property name="toolchain.dir" location="${basedir}/.toolchain" />
+    <property name="ant.archive" value="apache-ant-${ant.version.expected}-bin.zip" />
+    <property name="ant.url" value="https://archive.apache.org/dist/ant/binaries/${ant.archive}" />
+    <property name="ant.sha512"
+              value="5205a3c87902dd356a6bfcfc5d07659361d1c74627716662d7b31ab47817388dd1d985cfc27ca81a607827cb58d9e36d2d2fbf87a961a5dd4eeabfbde380aa71" />
+
+    <condition property="is.windows"><os family="windows" /></condition>
+    <condition property="is.mac"><os family="mac" /></condition>
+    <condition property="is.arm">
+        <or>
+            <equals arg1="${os.arch}" arg2="aarch64" />
+            <equals arg1="${os.arch}" arg2="arm64" />
+        </or>
+    </condition>
+
+    <target name="-platform">
+        <condition property="jdk.os" value="windows"><isset property="is.windows" /></condition>
+        <condition property="jdk.os" value="mac"><isset property="is.mac" /></condition>
+        <property name="jdk.os" value="linux" />
+
+        <condition property="jdk.arch" value="aarch64"><isset property="is.arm" /></condition>
+        <property name="jdk.arch" value="x64" />
+
+        <condition property="jdk.ext" value="zip"><isset property="is.windows" /></condition>
+        <property name="jdk.ext" value="tar.gz" />
+
+        <loadresource property="jdk.file.version">
+            <string value="${jdk.release}" />
+            <filterchain>
+                <tokenfilter>
+                    <replacestring from="jdk-" to="" />
+                    <replacestring from="+" to="_" />
+                </tokenfilter>
+            </filterchain>
+        </loadresource>
+
+        <property name="jdk.archive"
+                  value="OpenJDK21U-jdk_${jdk.arch}_${jdk.os}_hotspot_${jdk.file.version}.${jdk.ext}" />
+        <property name="jdk.url"
+                  value="https://github.com/adoptium/temurin21-binaries/releases/download/${jdk.release}/${jdk.archive}" />
+
+        <condition property="jdk.sha256" value="ea3b9bd464d6dd253e9a7accf59f7ccd2a36e4aa69640b7251e3370caef896a4">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="357fee29fb0d5c079f6730db98b28942df13a6eed426f6c61cd4ad703ab27b9a">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.10_7.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="7484d5d4cdb02fc17a842ab86ddac2524a0365066659c46b2e258c64152379cd">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_mac_hotspot_21.0.10_7.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="01ca390455216ca27bdddf8cfad51aaedb4f90e1e23aad9bfd9e90caaa2c5f1b">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.10_7.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="08cae782814f027f8b159d6b68823f0f87422eb475c1a0ea1abc7a4357aaf11f">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_windows_hotspot_21.0.10_7.zip" /></condition>
+        <condition property="jdk.sha256" value="0e1f016cd74c05ab4fe2b2a839f6439e3dc516c9bb201bfb75d12b3fb2a63334">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.10_7.zip" /></condition>
+
+        <fail unless="jdk.sha256"
+              message="No pinned checksum for ${jdk.archive} (os=${os.name} arch=${os.arch}). Add it from the Adoptium API before this platform can be used." />
+    </target>
+
+    <target name="-fetch" depends="-platform">
+        <mkdir dir="${toolchain.dir}/dl" />
+        <available property="jdk.downloaded" file="${toolchain.dir}/dl/${jdk.archive}" />
+        <antcall target="-fetch-jdk" inheritall="true" />
+        <available property="ant.downloaded" file="${toolchain.dir}/dl/${ant.archive}" />
+        <antcall target="-fetch-ant" inheritall="true" />
+    </target>
+
+    <target name="-fetch-jdk" unless="jdk.downloaded">
+        <get src="${jdk.url}" dest="${toolchain.dir}/dl/${jdk.archive}" retries="3" />
+    </target>
+
+    <target name="-fetch-ant" unless="ant.downloaded">
+        <get src="${ant.url}" dest="${toolchain.dir}/dl/${ant.archive}" retries="3" />
+    </target>
+
+    <target name="-checksums" depends="-fetch">
+        <checksum file="${toolchain.dir}/dl/${jdk.archive}" algorithm="SHA-256" property="jdk.sha256.actual" />
+        <checksum file="${toolchain.dir}/dl/${ant.archive}" algorithm="SHA-512" property="ant.sha512.actual" />
+
+        <fail message="JDK checksum mismatch for ${jdk.archive}.&#10;  expected ${jdk.sha256}&#10;  actual   ${jdk.sha256.actual}&#10;Delete ${toolchain.dir}/dl and retry.">
+            <condition><not><equals arg1="${jdk.sha256}" arg2="${jdk.sha256.actual}" /></not></condition>
+        </fail>
+        <fail message="Ant checksum mismatch for ${ant.archive}.&#10;  expected ${ant.sha512}&#10;  actual   ${ant.sha512.actual}">
+            <condition><not><equals arg1="${ant.sha512}" arg2="${ant.sha512.actual}" /></not></condition>
+        </fail>
+    </target>
+
+    <target name="-unpack-jdk-zip" if="is.windows">
+        <unzip src="${toolchain.dir}/dl/${jdk.archive}" dest="${toolchain.dir}/jdk" overwrite="false" />
+    </target>
+
+    <target name="-unpack-jdk-tar" unless="is.windows">
+        <untar src="${toolchain.dir}/dl/${jdk.archive}" dest="${toolchain.dir}/jdk"
+               compression="gzip" overwrite="false" />
+    </target>
+
+    <target name="provision" depends="-checksums"
+            description="Download, verify and unpack the pinned JDK and Ant">
+        <mkdir dir="${toolchain.dir}/jdk" />
+        <mkdir dir="${toolchain.dir}/ant" />
+
+        <antcall target="-unpack-jdk-zip" inheritall="true" />
+        <antcall target="-unpack-jdk-tar" inheritall="true" />
+        <unzip src="${toolchain.dir}/dl/${ant.archive}" dest="${toolchain.dir}/ant" overwrite="false" />
+
+        <pathconvert property="java.bin" setonempty="false">
+            <fileset dir="${toolchain.dir}/jdk">
+                <include name="**/bin/java" />
+                <include name="**/bin/java.exe" />
+            </fileset>
+        </pathconvert>
+        <fail unless="java.bin" message="Unpacked the JDK but found no bin/java under ${toolchain.dir}/jdk" />
+
+        <pathconvert property="ant.launcher" setonempty="false">
+            <fileset dir="${toolchain.dir}/ant">
+                <include name="**/lib/ant-launcher.jar" />
+            </fileset>
+        </pathconvert>
+        <fail unless="ant.launcher" message="Unpacked Ant but found no lib/ant-launcher.jar under ${toolchain.dir}/ant" />
+
+        <chmod perm="ugo+rx" failonerror="false" osfamily="unix">
+            <fileset dir="${toolchain.dir}/jdk">
+                <include name="**/bin/*" />
+                <include name="**/lib/jspawnhelper" />
+            </fileset>
+        </chmod>
+
+        <dirname property="jdk.bin.dir" file="${java.bin}" />
+        <dirname property="jdk.home" file="${jdk.bin.dir}" />
+        <dirname property="ant.lib.dir" file="${ant.launcher}" />
+        <dirname property="ant.home" file="${ant.lib.dir}" />
+
+        <echo>JDK ${jdk.version.expected} : ${jdk.home}</echo>
+        <echo>Ant ${ant.version.expected} : ${ant.home}</echo>
+
+        <propertyfile file="${toolchain.dir}/paths.properties">
+            <entry key="jdk.home" value="${jdk.home}" />
+            <entry key="java.bin" value="${java.bin}" />
+            <entry key="ant.home" value="${ant.home}" />
+            <entry key="ant.launcher" value="${ant.launcher}" />
+            <entry key="jdk.version.expected" value="${jdk.version.expected}" />
+            <entry key="ant.version.expected" value="${ant.version.expected}" />
+        </propertyfile>
+    </target>
+
+    <target name="clean" description="Drop the provisioned toolchain">
+        <delete dir="${toolchain.dir}" />
+    </target>
+
+</project>

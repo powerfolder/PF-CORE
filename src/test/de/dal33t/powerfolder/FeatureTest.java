@@ -19,22 +19,27 @@
 */
 package de.dal33t.powerfolder;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Feature;
 
-public class FeatureTest extends TestCase {
+public class FeatureTest {
 
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
         Feature.OS_CLIENT.enable();
         Feature.EXIT_ON_SHUTDOWN.enable();
     }
 
+    @Test
     public void testFeatureDefaults() {
         assertTrue(Feature.OS_CLIENT.isEnabled());
         assertTrue(Feature.EXIT_ON_SHUTDOWN.isEnabled());
     }
 
+    @Test
     public void testFeatureChange() {
         Feature.OS_CLIENT.disable();
         assertFalse(Feature.OS_CLIENT.isEnabled());
