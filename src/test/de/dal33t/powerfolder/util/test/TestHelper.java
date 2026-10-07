@@ -198,7 +198,8 @@ public class TestHelper {
 
     /**
      * PFS-5561: Copies a controller test config to its target location and
-     * rewrites net.port to a free ephemeral port. The fixed ports of the
+     * rewrites net.port, net.port.rcon and plugin.webinterface.port to free
+     * ephemeral ports. The fixed ports of the
      * checked-in test configs collide when the PF-CORE and the PF-PRO test
      * suite run concurrently on the same CI runner (GitLab resource_groups
      * only serialize within one project), which made connect() reach the
@@ -217,6 +218,18 @@ public class TestHelper {
         for (String line : Files.readAllLines(source)) {
             if (line.startsWith("net.port=")) {
                 lines.add("net.port=" + findFreePort());
+            } else if (line.startsWith("net.port.rcon=")) {
+                // a fixed rcon port makes a parallel test JVM look like an already running instance
+                lines.add("net.port.rcon=" + findFreePort());
+            } else if (line.startsWith("plugin.webinterface.port=")) {
+                lines.add("plugin.webinterface.port=" + webPort(Integer.parseInt(line.substring(line.indexOf('=') + 1).trim())));
+            } else if (line.startsWith("server.port.d2d=")) {
+                lines.add("server.port.d2d=" + findFreePort());
+            } else if (line.startsWith("database.port=")) {
+                lines.add("database.port=" + h2TcpPort());
+            } else if (line.startsWith("database.url=") && line.contains("tcp://localhost:")) {
+                // the H2 server of one controller is the database of the others in this JVM: same port for all
+                lines.add(line.replaceAll("tcp://localhost:\\d+", "tcp://localhost:" + h2TcpPort()));
             } else {
                 lines.add(line);
             }
@@ -233,6 +246,27 @@ public class TestHelper {
      *         remains - acceptable for tests, unlike the guaranteed
      *         collisions of fixed ports.
      */
+    private static final java.util.Map<Integer, Integer> WEB_PORTS = new java.util.HashMap<>();
+
+    /**
+     * @param templatePort the web interface port a checked-in test config names, e.g. 6070 for ControllerBart
+     * @return the free port that stands in for it in this JVM - the same one for every copy of that config, so a
+     *         test reaches the server at "http://localhost:" + TestHelper.webPort(6070) + "/..."
+     */
+    public static synchronized int webPort(int templatePort) {
+        return WEB_PORTS.computeIfAbsent(templatePort, port -> findFreePort());
+    }
+
+    private static int h2TcpPort;
+
+    /** The port of the H2 TCP server started by a test controller of this JVM, chosen once per JVM. */
+    private static synchronized int h2TcpPort() {
+        if (h2TcpPort == 0) {
+            h2TcpPort = findFreePort();
+        }
+        return h2TcpPort;
+    }
+
     public static int findFreePort() {
         try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
             socket.setReuseAddress(true);
