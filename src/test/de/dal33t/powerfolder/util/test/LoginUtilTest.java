@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2015 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,13 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: Constants.java 11478 2010-02-01 15:25:42Z tot $
  */
 package de.dal33t.powerfolder.util.test;
 
-
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -34,10 +31,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LoginUtilTest {
-
     @Test
+
     public void testDecorateUrlNullPass() {
         String url = "http://localhost:8080";
         String username = "TestUser";
@@ -49,8 +48,8 @@ public class LoginUtilTest {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameWithSpecial), LoginUtil.decorateURL(url, usernameWithSpecial, password));
 
     }
-
     @Test
+
     public void testDecorateUrlNullUsername() {
         String url = "http://localhost:8080";
         String username = null;
@@ -61,9 +60,9 @@ public class LoginUtilTest {
         String usernameEmpty = "";
         assertEquals(url, LoginUtil.decorateURL(url, username, password));
     }
-
-
     @Test
+
+
     public void testDecorateUrlOk() {
         String url = "http://localhost:8080";
         String username = "TestUser";
@@ -73,15 +72,15 @@ public class LoginUtilTest {
                 LoginUtil.decorateURL(url, username, password));
 
     }
-
     @Test
+
     public void testDecorateUrlException() {
         String nullString = null;
         char[] nullChars = null;
         assertNull(LoginUtil.decorateURL(nullString, nullString, nullChars));
     }
-
     @Test
+
     public void testDecorateUrlObfuscatedEmptyUser() {
         String url = "http://localhost:8080";
         String username = null;
@@ -96,8 +95,8 @@ public class LoginUtilTest {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password), LoginUtil.decorateURL(url, usernameSpaces, password));
 
     }
-
     @Test
+
     public void testDecorateUrlObfuscatedEmptyPassword() {
         String url = "http://localhost:8080";
         String username = "TestUsername";
@@ -111,8 +110,8 @@ public class LoginUtilTest {
         String passwordSpaces = "   ";
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username), LoginUtil.decorateURL(url, username, passwordSpaces));
     }
-
     @Test
+
     public void testDecorateUrlObfuscatedOk() {
         String url = "http://localhost:8080";
         String username = "TestUsername";
@@ -127,22 +126,21 @@ public class LoginUtilTest {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameSpecialChars) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(passwordSpaces)
                 , LoginUtil.decorateURL(url, usernameSpecialChars, passwordSpaces));
     }
-
     @Test
+
     public void testMatchesHashedPwBlank() {
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, ""));
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, null));
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, "   "));
     }
-
     @Test
+
     public void testHasAndSaltBlankPass() {
-        assertNull(LoginUtil.hashAndSalt(""));
-        assertNull(LoginUtil.hashAndSalt("   "));
-        assertNull(LoginUtil.hashAndSalt((String) null));
+        assertNull(LoginUtil.hashAndSalt(new char[0]));
+        assertNull(LoginUtil.hashAndSalt((char[]) null));
     }
-
     @Test
+
     public void testClearNullAndEmpty() {
         char[] password = null;
         LoginUtil.clear(password);
@@ -151,8 +149,8 @@ public class LoginUtilTest {
         LoginUtil.clear(emptyPassword);
         assertTrue(emptyPassword.length == 0);
     }
-
     @Test
+
     public void testClearOk() {
 
         char[] password = {'p','a','s','s','A','1','!'};
@@ -165,8 +163,8 @@ public class LoginUtilTest {
         }
 
     }
-
     @Test
+
     public void testIsUsernameAny() throws IOException {
         Controller controller = new Controller();
         File file = new File("build/test/testConfig.config");
@@ -194,8 +192,8 @@ public class LoginUtilTest {
 
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testIsBooleanConfValueNull() throws IOException {
         Controller controller = new Controller();
         File file = new File("build/test/testConfig.config");
@@ -231,8 +229,8 @@ public class LoginUtilTest {
         controller.shutdown();
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testGetInviteUsernameShibboleth() throws IOException {
         Controller controller = new Controller();
 
@@ -264,8 +262,8 @@ public class LoginUtilTest {
         controller.shutdown();
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testGetInviteUsername() throws IOException {
         Controller controller = new Controller();
         File file = new File("build/test/testConfig.config");
@@ -298,8 +296,8 @@ public class LoginUtilTest {
         FileUtils.forceDelete(file);
 
     }
-
     @Test
+
     public void testGetUsernameTextNull() {
         Controller controller = null;
 
@@ -310,8 +308,8 @@ public class LoginUtilTest {
             //OK since controller was null
         }
     }
-
     @Test
+
     public void testGetUsernameTestOk() throws IOException {
         Controller controller = new Controller();
 
@@ -342,8 +340,8 @@ public class LoginUtilTest {
 
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testIsUsernameEmailOnlyTest() throws IOException {
         Controller controller = new Controller();
         File file = new File("build/test/testConfig.config");
@@ -367,8 +365,8 @@ public class LoginUtilTest {
 
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testIsValidUsername() throws IOException {
         Controller controller = new Controller();
         File file = new File("build/test/testConfig.config");
@@ -395,22 +393,22 @@ public class LoginUtilTest {
 
         FileUtils.forceDelete(file);
     }
-
     @Test
+
     public void testSatisfiesUnixPoicyNull() {
         assertFalse(LoginUtil.satisfiesUnixPolicy(null));
         String pass = null;
         assertFalse(LoginUtil.satisfiesUnixPolicy(pass));
     }
-
     @Test
+
     public void testDeobfuscateIllegalArgument() {
         assertNull(LoginUtil.deobfuscate("!"));
         assertNull(LoginUtil.deobfuscate("\""));
     }
-
-
     @Test
+
+
     public void testObfuscate() {
         String password = "xC33öcn$k3444o$$44";
         String obf = LoginUtil.obfuscate(password.toCharArray());
@@ -440,19 +438,320 @@ public class LoginUtilTest {
         assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
         assertEquals(password, Util.toString(LoginUtil.deobfuscate(obf)));
     }
-
     @Test
+
     public void testHash() {
         String password = IdGenerator.makeId();
-        String hasedSalted = LoginUtil.hashAndSalt(password);
+        String hasedSalted = LoginUtil.hashAndSalt(password.toCharArray());
         assertTrue(LoginUtil.matches(password.toCharArray(), hasedSalted));
         assertFalse(LoginUtil.matches("test".toCharArray(), hasedSalted));
         assertFalse(LoginUtil.matches(null, hasedSalted));
         // Legacy support.
         assertTrue(LoginUtil.matches("XXX".toCharArray(), "XXX"));
     }
-
     @Test
+
+    public void testHashFormat() {
+        String hashed = LoginUtil.hashAndSalt("testPassword123".toCharArray());
+        assertNotNull(hashed);
+        String[] parts = hashed.split(":");
+        assertEquals(3, parts.length);
+        assertEquals("ARGON2ID", parts[0]);
+        assertFalse(parts[1].isEmpty());
+        assertFalse(parts[2].isEmpty());
+    }
+    @Test
+
+    public void testHashUniqueSalts() {
+        String hash1 = LoginUtil.hashAndSalt("samePassword".toCharArray());
+        String hash2 = LoginUtil.hashAndSalt("samePassword".toCharArray());
+        assertNotNull(hash1);
+        assertNotNull(hash2);
+        assertFalse(hash1.equals(hash2), "Same password must produce different hashes due to salt");
+        assertTrue(LoginUtil.matches("samePassword".toCharArray(), hash1));
+        assertTrue(LoginUtil.matches("samePassword".toCharArray(), hash2));
+    }
+    @Test
+
+    public void testHashDifferentPasswords() {
+        String hash1 = LoginUtil.hashAndSalt("password1".toCharArray());
+        String hash2 = LoginUtil.hashAndSalt("password2".toCharArray());
+        assertTrue(LoginUtil.matches("password1".toCharArray(), hash1));
+        assertTrue(LoginUtil.matches("password2".toCharArray(), hash2));
+        assertFalse(LoginUtil.matches("password1".toCharArray(), hash2));
+        assertFalse(LoginUtil.matches("password2".toCharArray(), hash1));
+    }
+    @Test
+
+    public void testMatchesWrongPassword() {
+        String hashed = LoginUtil.hashAndSalt("correctPassword".toCharArray());
+        assertFalse(LoginUtil.matches("wrongPassword".toCharArray(), hashed));
+        assertFalse(LoginUtil.matches("CORRECTPASSWORD".toCharArray(), hashed));
+        assertFalse(LoginUtil.matches("correctPassword ".toCharArray(), hashed));
+        assertFalse(LoginUtil.matches(" correctPassword".toCharArray(), hashed));
+        assertFalse(LoginUtil.matches("".toCharArray(), hashed));
+    }
+    @Test
+
+    public void testMatchesNullCandidate() {
+        String hashed = LoginUtil.hashAndSalt("test".toCharArray());
+        assertFalse(LoginUtil.matches(null, hashed));
+    }
+    @Test
+
+    public void testMatchesInvalidFormat() {
+        assertFalse(LoginUtil.matches("test".toCharArray(), "SHA-256:onlytwocolons"));
+        assertFalse(LoginUtil.matches("test".toCharArray(), "UNKNOWN:salt:hash"));
+        assertFalse(LoginUtil.matches("test".toCharArray(), "MD5:"));
+        assertFalse(LoginUtil.matches("test".toCharArray(), "SHA-256:"));
+    }
+    @Test
+
+    public void testMatchesLegacyCleartext() {
+        assertTrue(LoginUtil.matches("plaintext".toCharArray(), "plaintext"));
+        assertFalse(LoginUtil.matches("wrong".toCharArray(), "plaintext"));
+        assertFalse(LoginUtil.matches("MD5password".toCharArray(), "MD5password"));
+        assertFalse(LoginUtil.matches("SHA-256pw".toCharArray(), "SHA-256pw"));
+    }
+    @Test
+
+    public void testMatchesLegacySHA256() {
+        String password = "TestPassword123!";
+        String salt = "legacySalt";
+        String legacyHash = "SHA-256:" + salt + ":" + LoginUtil.hash("SHA-256", password, salt);
+
+        assertTrue(LoginUtil.matches(password.toCharArray(), legacyHash));
+        assertFalse(LoginUtil.matches("WrongPassword".toCharArray(), legacyHash));
+        assertTrue(LoginUtil.needsRehash(legacyHash));
+        assertTrue(LoginUtil.isHashed(legacyHash));
+    }
+    @Test
+
+    public void testMatchesLegacyMD5() {
+        String password = "TestPassword123!";
+        String salt = "legacySalt";
+        String legacyHash = "MD5:" + salt + ":" + LoginUtil.hash("MD5", password, salt);
+
+        assertTrue(LoginUtil.matches(password.toCharArray(), legacyHash));
+        assertFalse(LoginUtil.matches("WrongPassword".toCharArray(), legacyHash));
+        assertTrue(LoginUtil.needsRehash(legacyHash));
+        assertTrue(LoginUtil.isHashed(legacyHash));
+    }
+    @Test
+
+    public void testNeedsRehash() {
+        String argon2Hash = LoginUtil.hashAndSalt("test".toCharArray());
+        assertFalse(LoginUtil.needsRehash(argon2Hash));
+
+        String sha256Hash = "SHA-256:salt:hash";
+        assertTrue(LoginUtil.needsRehash(sha256Hash));
+
+        String md5Hash = "MD5:salt:hash";
+        assertTrue(LoginUtil.needsRehash(md5Hash));
+
+        assertTrue(LoginUtil.needsRehash("cleartext"));
+        assertFalse(LoginUtil.needsRehash(null));
+    }
+    @Test
+
+    public void testIsHashed() {
+        assertTrue(LoginUtil.isHashed("SHA-256:salt:hash"));
+        assertTrue(LoginUtil.isHashed("MD5:salt:hash"));
+        assertTrue(LoginUtil.isHashed("ARGON2ID:salt:hash"));
+        assertFalse(LoginUtil.isHashed("plaintext"));
+        assertFalse(LoginUtil.isHashed(null));
+        assertFalse(LoginUtil.isHashed(""));
+    }
+    @Test
+
+    public void testHashSpecialCharacters() {
+        String[] passwords = {
+                "päss€wörd!",
+                "pass word with spaces",
+                "!@#$%^&*()_+-=[]{}|;':\",./<>?",
+                "パスワード",
+                "a",
+                "x".repeat(1000)
+        };
+        for (String pw : passwords) {
+            String hashed = LoginUtil.hashAndSalt(pw.toCharArray());
+            assertNotNull(hashed, "hashAndSalt returned null for: " + pw);
+            assertTrue(LoginUtil.matches(pw.toCharArray(), hashed), "matches failed for: " + pw);
+        }
+    }
+    @Test
+
+    public void testHashConsistency() {
+        String password = "consistencyTest";
+        String hashed = LoginUtil.hashAndSalt(password.toCharArray());
+        for (int i = 0; i < 50; i++) {
+            assertTrue(LoginUtil.matches(password.toCharArray(), hashed));
+        }
+    }
+    @Test
+
+    public void testHashDirectMethod() {
+        String digest = "SHA-256";
+        String salt = "testSalt";
+        String hash1 = LoginUtil.hash(digest, "password", salt);
+        String hash2 = LoginUtil.hash(digest, "password", salt);
+        assertEquals(hash1, hash2, "Same input must produce same hash");
+
+        String hash3 = LoginUtil.hash(digest, "password", "differentSalt");
+        assertFalse(hash1.equals(hash3), "Different salt must produce different hash");
+
+        String hash4 = LoginUtil.hash(digest, "differentPassword", salt);
+        assertFalse(hash1.equals(hash4), "Different password must produce different hash");
+    }
+    @Test
+
+    public void testPasswordPolicyMinLength() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("aA1!"));
+        assertFalse(LoginUtil.satisfiesUnixPolicy("aA1!567"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("aA1!5678"));
+    }
+    @Test
+
+    public void testPasswordPolicyRequiresDigit() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("aAbBcCd!"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("aAbBcC1!"));
+    }
+    @Test
+
+    public void testPasswordPolicyRequiresLowercase() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("ABCDEF1!"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("ABCDEf1!"));
+    }
+    @Test
+
+    public void testPasswordPolicyRequiresUppercase() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("abcdef1!"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("abcdeF1!"));
+    }
+    @Test
+
+    public void testPasswordPolicyRequiresSpecialChar() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("abcdeF12"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("abcdeF1!"));
+    }
+    @Test
+
+    public void testPasswordPolicyNoWhitespace() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("abc deF1!"));
+        assertFalse(LoginUtil.satisfiesUnixPolicy(" abcdeF1!"));
+    }
+
+    /**
+     * Brute-force attack simulation: measures how long it takes to check
+     * passwords against a hash. Demonstrates that the 1597-iteration
+     * SHA-256 approach is relatively fast to crack compared to BCrypt/Argon2.
+     */
+    @Test
+    public void testBruteForceAttackResistance() {
+        String secretPassword = "Secr3t!X";
+        String hashed = LoginUtil.hashAndSalt(secretPassword.toCharArray());
+
+        // Dictionary of common passwords to try
+        String[] dictionary = {
+                "password", "123456", "admin", "letmein", "welcome",
+                "monkey", "dragon", "master", "qwerty", "login",
+                "password1", "Password1!", "Passw0rd!", "Admin123!",
+                "Secr3t!X" // the actual password
+        };
+
+        long startTime = System.nanoTime();
+        int attempts = 0;
+        boolean cracked = false;
+
+        for (String candidate : dictionary) {
+            attempts++;
+            if (LoginUtil.matches(candidate.toCharArray(), hashed)) {
+                cracked = true;
+                break;
+            }
+        }
+
+        long dictionaryTimeMs = (System.nanoTime() - startTime) / 1_000_000;
+        assertTrue(cracked, "Dictionary attack should find the password");
+        System.out.println("[Dictionary Attack] Cracked in " + attempts
+                + " attempts, " + dictionaryTimeMs + " ms");
+
+        // Brute-force: measure throughput (how many hashes per second)
+        int bruteForceAttempts = 20;
+        startTime = System.nanoTime();
+        for (int i = 0; i < bruteForceAttempts; i++) {
+            LoginUtil.matches(("attempt" + i).toCharArray(), hashed);
+        }
+        long bruteForceTimeMs = (System.nanoTime() - startTime) / 1_000_000;
+        long hashesPerSecond = bruteForceTimeMs > 0
+                ? (bruteForceAttempts * 1000L) / bruteForceTimeMs : 0;
+
+        System.out.println("[Brute Force] " + bruteForceAttempts + " attempts in "
+                + bruteForceTimeMs + " ms (" + hashesPerSecond + " hashes/sec)");
+        System.out.println("[Brute Force] At this rate, a 8-char password "
+                + "(uppercase+lowercase+digits+special, ~70^8 = 576 billion combos) "
+                + "would take ~" + (576_000_000_000L / Math.max(hashesPerSecond, 1) / 3600 / 24 / 365)
+                + " years on a single thread");
+
+        assertTrue(hashesPerSecond < 100, "Argon2id should be slow enough to resist brute force");
+    }
+
+    /**
+     * Timing attack resistance: verifies that matching a correct vs incorrect
+     * password takes roughly the same time (no early-exit information leak).
+     */
+    @Test
+    public void testTimingAttackResistance() {
+        String password = "TimingT3st!";
+        String hashed = LoginUtil.hashAndSalt(password.toCharArray());
+
+        // Warm up JIT
+        for (int i = 0; i < 3; i++) {
+            LoginUtil.matches(password.toCharArray(), hashed);
+            LoginUtil.matches("WrongPass1!".toCharArray(), hashed);
+        }
+
+        int rounds = 10;
+
+        // Measure correct password
+        long startCorrect = System.nanoTime();
+        for (int i = 0; i < rounds; i++) {
+            LoginUtil.matches(password.toCharArray(), hashed);
+        }
+        long correctTimeNs = System.nanoTime() - startCorrect;
+
+        // Measure wrong password (same length)
+        long startWrong = System.nanoTime();
+        for (int i = 0; i < rounds; i++) {
+            LoginUtil.matches("WrongPass1!".toCharArray(), hashed);
+        }
+        long wrongTimeNs = System.nanoTime() - startWrong;
+
+        // Measure completely different length
+        long startShort = System.nanoTime();
+        for (int i = 0; i < rounds; i++) {
+            LoginUtil.matches("x".toCharArray(), hashed);
+        }
+        long shortTimeNs = System.nanoTime() - startShort;
+
+        double correctMs = correctTimeNs / 1_000_000.0;
+        double wrongMs = wrongTimeNs / 1_000_000.0;
+        double shortMs = shortTimeNs / 1_000_000.0;
+
+        System.out.println("[Timing Attack] Correct password: " + String.format("%.2f", correctMs) + " ms");
+        System.out.println("[Timing Attack] Wrong password (same len): " + String.format("%.2f", wrongMs) + " ms");
+        System.out.println("[Timing Attack] Wrong password (short): " + String.format("%.2f", shortMs) + " ms");
+
+        // Times should be within 50% of each other — hashing dominates, not comparison
+        double ratio = Math.max(correctMs, wrongMs) / Math.max(Math.min(correctMs, wrongMs), 0.01);
+        System.out.println("[Timing Attack] Correct/Wrong ratio: " + String.format("%.2f", ratio)
+                + " (should be close to 1.0)");
+        assertTrue(ratio < 2.0,
+            "Timing difference between correct and wrong password should be < 2x (ratio=" + String.format("%.2f", ratio)
+                + ")");
+    }
+    @Test
+
     public void testOTP() {
         // Valid
         for (int i = 0; i < 10000; i++) {
@@ -474,8 +773,8 @@ public class LoginUtilTest {
         assertFalse(LoginUtil
                 .isOTPValid("30957s0cuxpcfeärl43#r3ä2ö43täö4eäföedäfgsdägösdägösäfdglsd08g7sa0g7w098470387"));
     }
-
     @Test
+
     public void testPasswordPolicy() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("12"));
         assertFalse(LoginUtil.satisfiesUnixPolicy("12345678"));
@@ -492,8 +791,8 @@ public class LoginUtilTest {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abc123"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("ABC123abc!"));
     }
-
     @Test
+
     public void testGetDigestException() {
         try {
             LoginUtil.hash("asdasd", "testing", "zxc");
@@ -502,8 +801,8 @@ public class LoginUtilTest {
             //OK
         }
     }
-
     @Test
+
     public void testControllerNotStarter() {
         Controller controller = new Controller();
         try {

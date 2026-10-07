@@ -569,6 +569,8 @@ For creation of the installer:
 
 	<target name="-relaunch-pinned" depends="provision-toolchain">
 		<property name="test" value="" />
+		<property name="test.threads" value="4" />
+		<property name="test.work.keep" value="false" />
 		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" jvm="${java.bin}"
 		      failonerror="true" dir="${basedir}">
 			<!-- PFS-5561: without -Xmx this JVM defaults to 1/4 of physical RAM. With
@@ -579,6 +581,8 @@ For creation of the installer:
 			<arg value="-f" />
 			<arg file="${ant.file}" />
 			<arg value="-Dtest=${test}" />
+			<arg value="-Dtest.threads=${test.threads}" />
+			<arg value="-Dtest.work.keep=${test.work.keep}" />
 			<arg value="${pinned.target}" />
 		</java>
 	</target>
@@ -613,7 +617,7 @@ For creation of the installer:
 				<fileset refid="testlibs" />
 			</classpath>
 			<testclasses outputDir="${build.reports.dir}/raw">
-				<fork dir="${basedir}" forkMode="perTestClass">
+				<fork dir="${basedir}" forkMode="perTestClass" timeout="1800000">
 					<sysproperty key="file.encoding" value="UTF-8"/>
 					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
@@ -652,28 +656,79 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
-		<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
-			<classpath>
-				<pathelement location="${build.dir}" />
-				<fileset refid="libs" />
-				<fileset refid="testlibs" />
-			</classpath>
-			<testclasses outputDir="${build.reports.dir}/raw">
-				<fork dir="${basedir}" forkMode="perTestClass">
-					<sysproperty key="file.encoding" value="UTF-8"/>
-					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
-					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
-					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
-					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
-				</fork>
-				<fileset dir="${build.dir}">
-					<include name="**/*Test.class"/>
-					<exclude name="**/*$*.class"/>
-					<exclude name="**/BandwidthLimitTest.class"/>
-				</fileset>
-				<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
-			</testclasses>
-		</junitlauncher>
+		<!-- PFS-5561: test classes run in parallel (-Dtest.threads=N, 1 = one after another), each in its own working
+		     directory build/test-work/<class> with a private copy of src/test-resources, so the build/test trees of
+		     concurrent classes never meet. Listener ports come from TestHelper.copyConfigWithFreePort. -->
+		<property name="test.threads" value="4"/>
+		<property name="test.work.keep" value="false"/>
+		<property name="test.work.dir" location="${basedir}/build/test-work"/>
+		<delete dir="${test.work.dir}" quiet="true"/>
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${basedir}/lib-build/ant-contrib-1.0b3.jar"/>
+		<for param="testfile" parallel="true" threadCount="${test.threads}">
+			<fileset dir="${build.dir}">
+				<include name="**/*Test.class"/>
+				<exclude name="**/*$*.class"/>
+				<exclude name="**/BandwidthLimitTest.class"/>
+			</fileset>
+			<sequential>
+				<local name="testclass"/>
+				<pathconvert property="testclass">
+					<path location="@{testfile}"/>
+					<chainedmapper>
+						<globmapper from="${build.dir}${file.separator}*" to="*"/>
+						<regexpmapper from="^(.*)\.class$$" to="\1"/>
+						<filtermapper>
+							<replacestring from="${file.separator}" to="."/>
+						</filtermapper>
+					</chainedmapper>
+				</pathconvert>
+				<local name="testfilerel"/>
+				<pathconvert property="testfilerel" dirsep="/">
+					<path location="@{testfile}"/>
+					<globmapper from="${build.dir}${file.separator}*" to="*"/>
+				</pathconvert>
+				<local name="workdir"/>
+				<property name="workdir" location="${test.work.dir}/${testclass}"/>
+				<mkdir dir="${workdir}/build/test"/>
+				<copy todir="${workdir}/src/test-resources">
+					<fileset dir="${basedir}/src/test-resources"/>
+				</copy>
+				<trycatch>
+				  <try>
+				<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
+					<classpath>
+						<pathelement location="${build.dir}" />
+						<fileset refid="libs" />
+						<fileset refid="testlibs" />
+					</classpath>
+					<testclasses outputDir="${build.reports.dir}/raw">
+						<fork dir="${workdir}" timeout="1800000">
+							<sysproperty key="file.encoding" value="UTF-8"/>
+							<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
+							<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+							<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+							<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+						</fork>
+						<fileset dir="${build.dir}">
+							<include name="${testfilerel}"/>
+						</fileset>
+						<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+					</testclasses>
+				</junitlauncher>
+				  </try>
+				  <catch>
+				    <echo level="warning">Test JVM for ${testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
+				    <property name="tests.crashed" value="${testclass}"/>
+				  </catch>
+				  <finally>
+				    <!-- -Dtest.work.keep=true leaves the working directories (controller logs, databases) for a look -->
+				    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
+				      <delete dir="${workdir}" quiet="true"/>
+				    </then></if>
+				  </finally>
+				</trycatch>
+			</sequential>
+		</for>
 
 		<junitreport todir="${build.reports.dir}">
 			<fileset dir="${build.reports.dir}/raw/">
@@ -690,6 +745,7 @@ For creation of the installer:
 		</junitreport>
 
 		<fail if="tests.failed" message="Tests failed. See ${build.reports.dir}/raw for the per-class reports." />
+		<fail if="tests.crashed" message="A test JVM crashed (first: ${tests.crashed}) - its class produced no report. See the warnings above." />
 	</target>
 
 	<!-- API Docs generation -->

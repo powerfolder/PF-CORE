@@ -44,8 +44,6 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
 
     @BeforeEach
     protected void setUp() throws Exception {
-        assertFalse(
-            RemoteCommandManager.hasRunningInstance(3458),"PowerFolder already running on port 3458");
         super.setUp();
         ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getContollerBart(), false);
         ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getContollerBart(), false);
@@ -64,8 +62,17 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getMembersCount() == 1;
             }
         });
-        assertTrue(
-                RemoteCommandManager.hasRunningInstance(3458),"PowerFolder already running on port 3458");
+        assertTrue(RemoteCommandManager.hasRunningInstance(rconPort()),
+            "PowerFolder not running on port " + rconPort());
+    }
+
+    /** The rcon port of Bart, a free one per run - see TestHelper.copyConfigWithFreePort. */
+    private int rconPort() {
+        return ConfigurationEntry.NET_PORT_RCON.getValueInt(getContollerBart());
+    }
+
+    private int rconPortOfLisa() {
+        return ConfigurationEntry.NET_PORT_RCON.getValueInt(getContollerLisa());
     }
 
     @Test
@@ -74,7 +81,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         getContollerBart().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
 
         assertEquals(1, getFolderAtLisa().getMembersCount());
-        boolean sent = RemoteCommandManager.sendCommand(3458,
+        boolean sent = RemoteCommandManager.sendCommand(rconPort(),
             RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";id=" + getFolderAtLisa().getId() + ";dlscript=what.bat");
         assertTrue(sent);
@@ -106,7 +113,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager
             .sendCommand(
-                3458,
+                rconPort(),
                 RemoteCommandManager.MAKEFOLDER
                     + "dir="
                     + oldDir.toAbsolutePath()
@@ -132,7 +139,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES.setValue(
             getContollerBart(), Boolean.TRUE.toString());
         Folder oldFolderAtBart = folderAtBart;
-        sent = RemoteCommandManager.sendCommand(3458,
+        sent = RemoteCommandManager.sendCommand(rconPort(),
             RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";name=XXX"
                 + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
@@ -149,20 +156,20 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     public void testRemoveFolder() {
         assertEquals(1, getFolderAtLisa().getMembersCount());
 
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "dir=C:\\Dir"));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "name=Folder"));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "id=theid"));
 
         // Wrong commands. Should be still there.
         assertEquals(1, getContollerLisa().getFolderRepository()
             .getFoldersCount());
 
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "dir="
                 + getFolderAtLisa().getLocalBase() + ";id="
                 + getFolderAtLisa().getId() + ";name="
