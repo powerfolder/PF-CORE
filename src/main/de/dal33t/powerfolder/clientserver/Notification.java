@@ -24,10 +24,11 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -40,6 +41,10 @@ import de.dal33t.powerfolder.util.Translation;
  * @author sprajc
  */
 @Entity
+@Table(indexes = {
+    @Index(name = "IDX_NOT_ACCOUNT_OID", columnList = Notification.PROPERTYNAME_ACCOUNT_OID),
+    @Index(name = "IDX_TYPE_ID", columnList = Notification.PROPERTYNAME_TYPE_ID)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Notification implements Serializable {
 
@@ -81,7 +86,6 @@ public class Notification implements Serializable {
     /**
      * The OID of the target Account/User.
      */
-    @Index(name = "IDX_NOT_ACCOUNT_OID")
     private String accountOID;
 
     /**
@@ -90,7 +94,6 @@ public class Notification implements Serializable {
      * about the expired license purchased on 1.1.2007. Use to re-identify
      * already created notification.
      */
-    @Index(name = "IDX_TYPE_ID")
     private String typeId;
 
     /**

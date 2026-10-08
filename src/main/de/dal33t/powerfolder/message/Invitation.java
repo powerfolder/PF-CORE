@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -54,6 +53,10 @@ import java.nio.file.Paths;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 @Entity
+@Table(indexes = {
+    @Index(name = "IDX_INV_SENDER", columnList = Invitation.PROPERTY_SENDER),
+    @Index(name = "IDX_INV_RECIPIENT", columnList = Invitation.PROPERTY_RECIPIENT)
+})
 public class Invitation extends FolderRelatedMessage implements Auditable
 {
     private static final long serialVersionUID = 101L;
@@ -106,7 +109,6 @@ public class Invitation extends FolderRelatedMessage implements Auditable
      *       size > 900 which is a hard limit in MS SQL databases.
      * @since 11.2
      */
-    @Index(name = "IDX_INV_SENDER")
     private String sender;
 
     /**
@@ -117,7 +119,6 @@ public class Invitation extends FolderRelatedMessage implements Auditable
      *       size > 900 which is a hard limit in MS SQL databases.
      * @since 11.2
      */
-    @Index(name = "IDX_INV_RECIPIENT")
     private String recipient;
 
     /**

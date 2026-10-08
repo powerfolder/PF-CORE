@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
 import de.dal33t.powerfolder.util.StringUtils;
@@ -76,7 +77,8 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
         return false;
     }
 
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names,
+        SharedSessionContractImplementor session, Object owner)
         throws HibernateException, SQLException
     {
 
@@ -101,7 +103,8 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
         }
     }
 
-    public void nullSafeSet(PreparedStatement st, Object value, int index)
+    public void nullSafeSet(PreparedStatement st, Object value, int index,
+        SharedSessionContractImplementor session)
         throws HibernateException, SQLException
     {
         if (value == null) {
