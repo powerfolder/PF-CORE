@@ -919,8 +919,8 @@ public class Folder extends PFComponent {
      * <ul>
      *   <li>If the folder is located inside another top folder, it is corrected
      *       to be a subfolder of that top folder.</li>
-     *   <li>If the folder is no longer located inside any top folder but is marked
-     *       as a subfolder, it is promoted to a top folder.</li>
+     *   <li>A subfolder found inside no mounted top folder is left unchanged - PFC-3649: its top folder may simply
+     *       not be mounted yet.</li>
      *   <li>The correct parent directory inside the top folder is derived from the
      *       filesystem path.</li>
      * </ul>
@@ -951,30 +951,16 @@ public class Folder extends PFComponent {
             path = path.getParent();
         }
 
-        if (foundTopFolder == null && isTopFolder()) {
-            // Regular case for top folders
-            return false;
-        }
-
-        if (foundTopFolder == null && isSubFolder()) {
-            // PFC-3543: NEVER auto-promote a subfolder with interrupted inheritance. Its whole point
-            // is data isolation below a parent: dropping the parent silently discards the permission
-            // barrier, the location and the index entry - and the version-bumped change replicates.
-            // An empty ancestor chain is no proof of relocation either (mount order, disconnected
-            // device, a path bug - the storage-path check was one and promoted 150 of them). Log
-            // SEVERE and keep the hierarchy for a human to inspect.
-            if (!currentInfo.inheritsPermissions()) {
+        if (foundTopFolder == null) {
+            // PFC-3543, PFC-3649: never promote a subfolder - no mounted folder above is no proof of a relocation, its
+            // top folder may just not be mounted yet. Losing the permission barrier of an interrupted one is SEVERE.
+            if (isSubFolder() && !currentInfo.inheritsPermissions()) {
                 logSevere(this + ": NOT promoting to topfolder - permission inheritance is interrupted."
                     + " No mounted folder found above " + getLocalBase() + ", hierarchy left unchanged");
-                return false;
+            } else if (isSubFolder()) {
+                logInfo(this + ": NOT promoting to topfolder - no mounted folder found above " + getLocalBase()
+                    + ", hierarchy left unchanged");
             }
-            logWarning(this + ": Promoting folder to topfolder based on filesystem location");
-            FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
-            updateInfo(corrected);
-            return true;
-        }
-
-        if (foundTopFolder == null) {
             return false;
         }
 
@@ -987,7 +973,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        if (getTopFolder().equals(foundTopFolder)) {
+        // PFC-3649: own top folder not mounted - it is not another one's subfolder just because it lies in its tree
+        if (getTopFolder() == null || getTopFolder().equals(foundTopFolder)) {
             return false;
         }
 
