@@ -46,7 +46,13 @@ public class DocumentHandler extends Handler {
 
     private final StyledDocument logBuffer = new DefaultStyledDocument();
 
-    private static final Map<String, SimpleAttributeSet> logColors =
+    // PFC-3643: per-level log colours for the debug panel, theme-aware. The old
+    // single set used Color.BLACK for INFO (invisible on the dark theme) and dark
+    // blue/green that were unreadable on a dark background. We keep one set tuned for
+    // the light theme and a brighter set for dark, and pick at render time.
+    private static final Map<String, SimpleAttributeSet> logColorsLight =
+            new HashMap<String, SimpleAttributeSet>();
+    private static final Map<String, SimpleAttributeSet> logColorsDark =
             new HashMap<String, SimpleAttributeSet>();
 
     private static ThreadLocal<LoggingFormatter> formatterThreadLocal =
@@ -56,27 +62,30 @@ public class DocumentHandler extends Handler {
                 }
             };
 
+    private static void putColor(Map<String, SimpleAttributeSet> map,
+        Level level, Color color)
+    {
+        SimpleAttributeSet set = new SimpleAttributeSet();
+        StyleConstants.setForeground(set, color);
+        map.put(level.getName(), set);
+    }
+
     static {
-        // Initialize logging colors.
-        SimpleAttributeSet severe = new SimpleAttributeSet();
-        StyleConstants.setForeground(severe, Color.RED);
-        logColors.put(Level.SEVERE.getName(), severe);
+        // Light theme: all log text black, regardless of level.
+        putColor(logColorsLight, Level.SEVERE, Color.BLACK);
+        putColor(logColorsLight, Level.WARNING, Color.BLACK);
+        putColor(logColorsLight, Level.INFO, Color.BLACK);
+        putColor(logColorsLight, Level.FINE, Color.BLACK);
+        putColor(logColorsLight, Level.FINER, Color.BLACK);
 
-        SimpleAttributeSet warn = new SimpleAttributeSet();
-        StyleConstants.setForeground(warn, Color.BLUE);
-        logColors.put(Level.WARNING.getName(), warn);
-
-        SimpleAttributeSet info = new SimpleAttributeSet();
-        StyleConstants.setForeground(info, Color.BLACK);
-        logColors.put(Level.INFO.getName(), info);
-
-        SimpleAttributeSet fine = new SimpleAttributeSet();
-        StyleConstants.setForeground(fine, Color.GREEN.darker());
-        logColors.put(Level.FINE.getName(), fine);
-
-        SimpleAttributeSet finer = new SimpleAttributeSet();
-        StyleConstants.setForeground(finer, Color.GRAY);
-        logColors.put(Level.FINER.getName(), finer);
+        // Dark theme: all log text white (matches the client's text foreground),
+        // regardless of level.
+        Color white = new Color(0xF5F5F5);
+        putColor(logColorsDark, Level.SEVERE, white);
+        putColor(logColorsDark, Level.WARNING, white);
+        putColor(logColorsDark, Level.INFO, white);
+        putColor(logColorsDark, Level.FINE, white);
+        putColor(logColorsDark, Level.FINER, white);
     }
 
     public void close() throws SecurityException {
@@ -98,7 +107,10 @@ public class DocumentHandler extends Handler {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    MutableAttributeSet set = logColors.get(record.getLevel()
+                    Map<String, SimpleAttributeSet> colors =
+                        de.dal33t.powerfolder.ui.LookAndFeelSupport.isDarkMode()
+                            ? logColorsDark : logColorsLight;
+                    MutableAttributeSet set = colors.get(record.getLevel()
                         .getName());
                     String formattedMessage = formatterThreadLocal.get()
                         .format(record);

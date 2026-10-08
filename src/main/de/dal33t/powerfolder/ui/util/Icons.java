@@ -171,6 +171,10 @@ public class Icons {
     public static final String SYNC_INCOMPLETE = "sync_incomplete.icon";
     /** Android-style "online only / in the cloud" glyph (blue circular arrows). */
     public static final String SYNC_CLOUD = "sync_cloud.icon";
+    /** PFC-3643: sync badges copied from the Android app - green ring+check for the
+     *  synced state, blue circular arrows (rotated) for the syncing spinner. */
+    public static final String SYNCED_BADGE = "synced_badge.icon";
+    public static final String SYNCING_BADGE = "syncing_badge.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
@@ -410,6 +414,212 @@ public class Icons {
         }
     }
 
+    /** PFC-3643: ids of the sync-spinner animation frames. These no longer map to
+     *  the dated grey bundled PNGs - each frame is the Android "syncing" badge (blue
+     *  circular arrows) rotated by the frame index (see {@link #badgeIcon}). */
+    private static final java.util.Set<String> SYNC_ANIMATION_IDS =
+        new java.util.HashSet<>(java.util.Arrays.asList(SYNC_ANIMATION));
+
+    /** Base size (px) of the in-list / badge sync glyph. */
+    private static final int SPINNER_BASE_SIZE = 24;
+
+    /** @return the frame position of a SYNC_ANIMATION id (0 if not found). */
+    private static int syncFrameIndex(String id) {
+        for (int i = 0; i < SYNC_ANIMATION.length; i++) {
+            if (SYNC_ANIMATION[i].equals(id)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /** PFC-3643: the account-header status glyphs (synced / syncing / pause / ...)
+     *  are a white symbol on a filled brand-accent disc - the same colour, shape and
+     *  size as the avatar, so they pair cleanly. (Folders/tray keep the Android
+     *  badges.) Matches {@code AvatarLabel.BRAND}. */
+    private static final Color STATUS_CIRCLE = new Color(0x34495c);
+
+    /** Start a status glyph image: a filled accent disc, with antialiasing on and the
+     *  pen set to white, ready for the caller to draw the symbol. */
+    private static java.awt.Graphics2D beginStatusGlyph(
+        java.awt.image.BufferedImage img, int size)
+    {
+        java.awt.Graphics2D g = img.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_STROKE_CONTROL,
+            java.awt.RenderingHints.VALUE_STROKE_PURE);
+        float inset = Math.max(1f, size * 0.02f);
+        g.setColor(STATUS_CIRCLE);
+        g.fill(new java.awt.geom.Ellipse2D.Double(inset, inset,
+            size - 2.0 * inset, size - 2.0 * inset));
+        g.setColor(Color.WHITE);
+        return g;
+    }
+
+    /**
+     * @return the syncing status glyph: a white arc (rotated per frame) on the accent
+     *         disc, at {@code size} px. Account-header status (syncing / uploading /
+     *         downloading / connecting); folders/tray keep the Android badges.
+     */
+    public static Icon getSyncSpinnerFrame(int frame, int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        double head = 360.0 * (frame % SYNC_ANIMATION.length) / SYNC_ANIMATION.length;
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+            size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = beginStatusGlyph(img, size);
+        float stroke = Math.max(2f, size * 0.09f);
+        double r = size * 0.27; // the arc sits inside the disc
+        double c = size / 2.0;
+        g.setStroke(new java.awt.BasicStroke(stroke, java.awt.BasicStroke.CAP_ROUND,
+            java.awt.BasicStroke.JOIN_ROUND));
+        // A 270-degree arc (gap conveys motion); the start angle spins per frame.
+        g.draw(new java.awt.geom.Arc2D.Double(c - r, c - r, 2 * r, 2 * r,
+            90.0 - head, -270.0, java.awt.geom.Arc2D.OPEN));
+        g.dispose();
+        return new ImageIcon(img);
+    }
+
+    /**
+     * @return the "all in sync" status glyph: a white checkmark on the accent disc, at
+     *         {@code size} px. Account-header only; folders/tray keep the Android badge.
+     */
+    public static Icon getSyncCompleteIcon(int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+            size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = beginStatusGlyph(img, size);
+        g.setStroke(new java.awt.BasicStroke(Math.max(2f, size * 0.10f),
+            java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+        java.awt.geom.Path2D.Double check = new java.awt.geom.Path2D.Double();
+        check.moveTo(size * 0.31, size * 0.52);
+        check.lineTo(size * 0.44, size * 0.65);
+        check.lineTo(size * 0.70, size * 0.37);
+        g.draw(check);
+        g.dispose();
+        return new ImageIcon(img);
+    }
+
+    /**
+     * @return a status glyph for a bundled monochrome icon ({@code iconId}, e.g.
+     *         {@link #PAUSE}): the icon drawn white and centered on the accent disc,
+     *         at {@code size} px - so pause etc. match the drawn check/spinner.
+     */
+    public static Icon getStatusGlyph(String iconId, int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+            size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = beginStatusGlyph(img, size);
+        // WARNING / INFORMATION are themselves round badges (a disc + "!"/"i"), so
+        // compositing them would double up the circle - draw just the white symbol.
+        if (WARNING.equals(iconId)) {
+            drawExclamation(g, size);
+        } else if (INFORMATION.equals(iconId)) {
+            drawInfoMark(g, size);
+        } else {
+            Icon glyph = getIconById(iconId);
+            if (glyph != null) {
+                Icon white = whiten(glyph);
+                if (white instanceof ImageIcon) {
+                    int gs = Math.round(size * 0.46f);
+                    int off = (size - gs) / 2;
+                    g.drawImage(((ImageIcon) white).getImage(), off, off, gs, gs,
+                        null);
+                }
+            }
+        }
+        g.dispose();
+        return new ImageIcon(img);
+    }
+
+    /**
+     * @return the paused status glyph: a white "play" triangle on the accent disc, at
+     *         {@code size} px. The paused state's action is "Resume", so the glyph is
+     *         a play arrow (not pause bars).
+     */
+    public static Icon getStatusPlayGlyph(int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+            size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = beginStatusGlyph(img, size);
+        java.awt.geom.Path2D.Double play = new java.awt.geom.Path2D.Double();
+        // Slightly right of centre so the triangle looks optically centred.
+        play.moveTo(size * 0.40, size * 0.33);
+        play.lineTo(size * 0.40, size * 0.67);
+        play.lineTo(size * 0.70, size * 0.50);
+        play.closePath();
+        g.fill(play);
+        // Soften the corners to match the rounded-cap check/pause style.
+        g.setStroke(new java.awt.BasicStroke(Math.max(1f, size * 0.05f),
+            java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+        g.draw(play);
+        g.dispose();
+        return new ImageIcon(img);
+    }
+
+    /** White "!" (a rounded bar + dot) centered for the warning status glyph. */
+    private static void drawExclamation(java.awt.Graphics2D g, int size) {
+        double w = size * 0.11, cx = size / 2.0;
+        g.fill(new java.awt.geom.RoundRectangle2D.Double(cx - w / 2, size * 0.27,
+            w, size * 0.33, w, w));
+        double dot = size * 0.13;
+        g.fill(new java.awt.geom.Ellipse2D.Double(cx - dot / 2, size * 0.68, dot,
+            dot));
+    }
+
+    /** White "i" (a dot + rounded bar) centered for the information status glyph. */
+    private static void drawInfoMark(java.awt.Graphics2D g, int size) {
+        double w = size * 0.11, cx = size / 2.0;
+        double dot = size * 0.13;
+        g.fill(new java.awt.geom.Ellipse2D.Double(cx - dot / 2, size * 0.24, dot,
+            dot));
+        g.fill(new java.awt.geom.RoundRectangle2D.Double(cx - w / 2, size * 0.42,
+            w, size * 0.34, w, w));
+    }
+
+    /**
+     * Render a sync badge image (from the skin, by icon id) scaled to {@code size}
+     * px and optionally rotated by {@code degrees} (used to spin the syncing badge).
+     * Falls back to the plain icon if the image cannot be loaded.
+     */
+    private static Icon badgeIcon(String id, int size, double degrees) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        Image src = getImageById(id);
+        if (src == null) {
+            return getIconById(id);
+        }
+        // Toolkit images load asynchronously; ImageIcon forces a full load.
+        ImageIcon loaded = new ImageIcon(src);
+        if (loaded.getIconWidth() <= 0) {
+            return loaded;
+        }
+        java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(
+            size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = out.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+            java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,
+            java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        if (degrees != 0) {
+            g.rotate(Math.toRadians(degrees), size / 2.0, size / 2.0);
+        }
+        g.drawImage(loaded.getImage(), 0, 0, size, size, null);
+        g.dispose();
+        return new ImageIcon(out);
+    }
+
     /** @return a copy of {@code icon} with every pixel set to white, alpha kept. */
     private static Icon whiten(Icon icon) {
         int w = icon.getIconWidth(), h = icon.getIconHeight();
@@ -459,7 +669,28 @@ public class Icons {
         if (baseImg == null) {
             return getIconById(badgeIconId);
         }
-        Image badgeImg = getImageById(badgeIconId);
+        // PFC-3643: getImageById() has no dark-mode handling (unlike getIconById),
+        // so the raw FOLDER glyph is black and vanishes on the dark background.
+        // Whiten the base folder in dark mode; the coloured sync badge stays as-is.
+        if (darkMode) {
+            Icon whiteFolder = whiten(new ImageIcon(baseImg));
+            if (whiteFolder instanceof ImageIcon) {
+                baseImg = ((ImageIcon) whiteFolder).getImage();
+            }
+        }
+        // PFC-3643: the sync spinner and the "complete" check are drawn (modern,
+        // blue/green) via getIconById; getImageById does not draw/tint, so take those
+        // badges from getIconById. Other badges (cloud, incomplete) stay as loaded.
+        Image badgeImg;
+        if (SYNC_ANIMATION_IDS.contains(badgeIconId)
+            || SYNC_COMPLETE.equals(badgeIconId))
+        {
+            Icon drawnBadge = getIconById(badgeIconId);
+            badgeImg = drawnBadge instanceof ImageIcon
+                ? ((ImageIcon) drawnBadge).getImage() : getImageById(badgeIconId);
+        } else {
+            badgeImg = getImageById(badgeIconId);
+        }
         int w = baseImg.getWidth(null), h = baseImg.getHeight(null);
         if (badgeImg == null || w <= 0 || h <= 0) {
             return new ImageIcon(baseImg);
@@ -623,6 +854,14 @@ public class Icons {
         // same bicubic multi-resolution treatment so it stays crisp.
         if (LOGO400UI.equals(id) && icon instanceof ImageIcon) {
             icon = toHiDpiIcon((ImageIcon) icon);
+        }
+        // PFC-3643: sync glyphs use the Android badges - the "syncing" badge (blue
+        // arrows) rotated per frame, and the "synced" badge (green ring + check).
+        if (SYNC_ANIMATION_IDS.contains(id)) {
+            double degrees = 360.0 * syncFrameIndex(id) / SYNC_ANIMATION.length;
+            icon = badgeIcon(SYNCING_BADGE, SPINNER_BASE_SIZE, degrees);
+        } else if (SYNC_COMPLETE.equals(id)) {
+            icon = badgeIcon(SYNCED_BADGE, SPINNER_BASE_SIZE, 0);
         }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);

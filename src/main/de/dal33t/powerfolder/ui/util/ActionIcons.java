@@ -42,7 +42,7 @@ import java.awt.geom.RoundRectangle2D;
 public final class ActionIcons {
 
     public enum Type {
-        WEB, EXPLORE, PAUSE, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
+        WEB, EXPLORE, PAUSE, PLAY, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
     }
 
     private ActionIcons() {
@@ -104,6 +104,14 @@ public final class ActionIcons {
                 g.fillRect(4, 3, 5, 16);
                 g.fillRect(13, 3, 5, 16);
                 break;
+            case PLAY :
+                java.awt.geom.Path2D.Double tri = new java.awt.geom.Path2D.Double();
+                tri.moveTo(6, 3);
+                tri.lineTo(6, 19);
+                tri.lineTo(18, 11);
+                tri.closePath();
+                g.fill(tri);
+                break;
             case PREFERENCES :
                 gear(g);
                 break;
@@ -155,14 +163,33 @@ public final class ActionIcons {
     }
 
     private static void gear(Graphics2D g) {
-        double cx = 11, cy = 11, r = 9;
-        for (int i = 0; i < 8; i++) {
-            double a = Math.PI * 2 * i / 8;
-            g.draw(new Line2D.Double(cx + Math.cos(a) * r * 0.6,
-                cy + Math.sin(a) * r * 0.6, cx + Math.cos(a) * r,
-                cy + Math.sin(a) * r));
+        // PFC-3643: a modern filled gear with rounded teeth and a hollow centre.
+        double cx = 11, cy = 11;
+        double body = 6.0;      // filled body radius
+        int teeth = 8;
+        double toothW = 3.2;    // tooth width
+        double toothLen = 3.2;  // how far a tooth sticks out past the body
+        double hole = 2.4;      // centre hole radius
+        java.awt.geom.Area gear = new java.awt.geom.Area(
+            new Ellipse2D.Double(cx - body, cy - body, 2 * body, 2 * body));
+        for (int i = 0; i < teeth; i++) {
+            double a = Math.PI * 2 * i / teeth;
+            // A rounded-rect tooth on the radial axis, overlapping the body so it
+            // merges cleanly, then rotated into place.
+            java.awt.geom.RoundRectangle2D.Double tooth =
+                new java.awt.geom.RoundRectangle2D.Double(-toothW / 2,
+                    -(body + toothLen), toothW, toothLen + 1.6,
+                    toothW * 0.55, toothW * 0.55);
+            java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
+            at.translate(cx, cy);
+            at.rotate(a);
+            java.awt.geom.Area ta = new java.awt.geom.Area(tooth);
+            ta.transform(at);
+            gear.add(ta);
         }
-        g.draw(new Ellipse2D.Double(cx - 5, cy - 5, 10, 10));
+        gear.subtract(new java.awt.geom.Area(
+            new Ellipse2D.Double(cx - hole, cy - hole, 2 * hole, 2 * hole)));
+        g.fill(gear);
     }
 
     private static void arrow(Graphics2D g, double x1, double y1, double x2,

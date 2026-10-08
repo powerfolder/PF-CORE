@@ -30,8 +30,12 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,27 +90,28 @@ public class AvatarLabel extends JComponent {
         return sb.toString();
     }
 
-    /** @see #loadAvatar(String, String) with no auth token. */
+    /** @see #loadAvatar(String, String) with no authorization. */
     public void loadAvatar(final String url) {
-        loadAvatar(url, null);
+        loadAvatar(url, (String) null);
     }
 
     /**
      * Asynchronously load the avatar image from {@code url}. No-op on a blank
      * URL; failures are swallowed (initials remain).
      * <p>
-     * The server avatar endpoint ({@code /avatars/<oid>}) is registered
-     * "unsecured" but its handler still requires an authenticated caller for
-     * non-public avatars, so a bare request gets a 403 ("Can't get input stream
-     * from URL"). We therefore authenticate with the device token via the
-     * {@code Authorization: Bearer <token>} header (see server WebSession), which
-     * is the same scheme the REST API uses.
+     * The server avatar endpoint ({@code /avatars/<oid>}) is "unsecured" but its
+     * handler still needs an authenticated caller for non-public avatars (a bare
+     * request gets 403). We therefore send an {@code Authorization} header - a
+     * device-token {@code Bearer}, or, when the client has no token, HTTP
+     * {@code Basic} login credentials (the server's web session layer accepts both;
+     * see {@code ServerClient.getWebAuthorizationHeader()}).
      *
-     * @param url         the avatar image URL (from ServerClient.getAvatarURL).
-     * @param bearerToken the device token (ServerClient.getDeviceToken()), or
-     *                    {@code null}/blank for an unauthenticated request.
+     * @param url           the avatar image URL (from ServerClient.getAvatarURL).
+     * @param authorization the full {@code Authorization} header value
+     *                      (ServerClient.getWebAuthorizationHeader()), or
+     *                      {@code null}/blank for an unauthenticated request.
      */
-    public void loadAvatar(final String url, final String bearerToken) {
+    public void loadAvatar(final String url, final String authorization) {
         if (url == null || url.trim().isEmpty()) {
             return;
         }
@@ -114,7 +119,7 @@ public class AvatarLabel extends JComponent {
         loadToken = token;
         Thread t = new Thread(() -> {
             try {
-                BufferedImage img = fetch(url, bearerToken);
+                BufferedImage img = fetch(url, authorization);
                 if (img != null && loadToken == token) {
                     avatar = img;
                     SwingUtilities.invokeLater(this::repaint);
@@ -128,29 +133,168 @@ public class AvatarLabel extends JComponent {
     }
 
     /**
-     * Fetch and decode the avatar, authenticating with a Bearer token. Returns
-     * {@code null} (not an exception) on any non-200 response - e.g. 403 (no/
-     * invalid auth) or 404 (account has no avatar) - so the caller keeps the
+     * Like {@link #loadAvatar(String, String)}, but the {@code Authorization} header
+     * is produced by {@code authSupplier} ON the loader thread - use this when
+     * obtaining the header may be slow (e.g. it mints a device token), so it never
+     * runs on the EDT.
+     */
+    public void loadAvatar(final String url,
+        final java.util.function.Supplier<String> authSupplier)
+    {
+        if (url == null || url.trim().isEmpty()) {
+            return;
+        }
+        final Object token = new Object();
+        loadToken = token;
+        Thread t = new Thread(() -> {
+            try {
+                String authorization = authSupplier != null
+                    ? authSupplier.get() : null;
+                BufferedImage img = fetch(url, authorization);
+                if (img != null && loadToken == token) {
+                    avatar = img;
+                    SwingUtilities.invokeLater(this::repaint);
+                }
+            } catch (Exception e) {
+                LOG.log(Level.FINE, "Could not load avatar from " + url + ": " + e);
+            }
+        }, "avatar-loader");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * Fetch and decode the avatar, sending the given {@code Authorization} header.
+     * Returns {@code null} (not an exception) on any non-200 response - e.g. 403
+     * (no/invalid auth) or 404 (account has no avatar) - so the caller keeps the
      * initials fallback.
      */
-    private static BufferedImage fetch(String url, String bearerToken)
+    /**
+     * PFC-3643: also carry the token as a {@code ?Token=} URL parameter (the scheme
+     * the Android client uses and the server honours on the unsecured /avatars path),
+     * in addition to the Authorization header. Some servers authenticate the param
+     * but not the Bearer header on that path, which otherwise 403s.
+     */
+    private static String withTokenParam(String url, String authorization) {
+        if (url != null && authorization != null
+            && authorization.startsWith("Bearer "))
+        {
+            String tok = authorization.substring("Bearer ".length()).trim();
+            if (!tok.isEmpty()) {
+                String sep = url.contains("?") ? "&" : "?";
+                return url + sep + "Token="
+                    + java.net.URLEncoder.encode(tok, StandardCharsets.UTF_8);
+            }
+        }
+        return url;
+    }
+
+    private static BufferedImage fetch(String url, String authorization)
         throws IOException
     {
-        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(
+            withTokenParam(url, authorization)).openConnection();
         try {
             con.setRequestMethod("GET");
             con.setConnectTimeout(10_000);
             con.setReadTimeout(10_000);
             con.setInstanceFollowRedirects(true);
-            if (bearerToken != null && !bearerToken.trim().isEmpty()) {
-                con.setRequestProperty("Authorization", "Bearer " + bearerToken);
+            if (authorization != null && !authorization.trim().isEmpty()) {
+                con.setRequestProperty("Authorization", authorization);
             }
-            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            int code = con.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                // Make the (otherwise silent) failure diagnosable: 404 = no avatar
+                // stored for the account; 401/403 = not authenticated/allowed;
+                // 5xx = server error.
+                LOG.info("Avatar not loaded: HTTP " + code + " for " + url
+                    + (authorization == null || authorization.trim().isEmpty()
+                        ? " (no auth header sent)" : " (auth header sent)"));
                 return null;
             }
             try (InputStream in = con.getInputStream()) {
                 return javax.imageio.ImageIO.read(in);
             }
+        } finally {
+            con.disconnect();
+        }
+    }
+
+    /** Drop any loaded image and show the initials fallback again. */
+    public void clearAvatar() {
+        // Invalidate any in-flight load so it cannot re-populate the image.
+        loadToken = new Object();
+        avatar = null;
+        SwingUtilities.invokeLater(this::repaint);
+    }
+
+    /**
+     * Upload {@code image} as the account avatar via a multipart POST to the
+     * avatar endpoint (form field {@code "file"} - the name the server's
+     * ThumbnailServlet expects), authenticated with the device token.
+     *
+     * @param url           the avatar endpoint, e.g. {@code /avatars/<oid>} (no
+     *                      {@code thumbnail} query - from getAvatarURL(info, false)).
+     * @param authorization the full {@code Authorization} header value
+     *                      (ServerClient.getWebAuthorizationHeader()).
+     * @param image         the local image file to upload.
+     * @return {@code true} on a 2xx response (the server replies 201 CREATED).
+     */
+    public static boolean upload(String url, String authorization, Path image)
+        throws IOException
+    {
+        String boundary = "PFAvatarBoundary" + System.nanoTime();
+        HttpURLConnection con = (HttpURLConnection) new URL(withTokenParam(url, authorization)).openConnection();
+        try {
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(15_000);
+            con.setReadTimeout(30_000);
+            con.setDoOutput(true);
+            con.setRequestProperty("Content-Type",
+                "multipart/form-data; boundary=" + boundary);
+            if (authorization != null && !authorization.trim().isEmpty()) {
+                con.setRequestProperty("Authorization", authorization);
+            }
+            String fileName = image.getFileName().toString();
+            String contentType = Files.probeContentType(image);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            try (OutputStream out = con.getOutputStream()) {
+                String header = "--" + boundary + "\r\n"
+                    + "Content-Disposition: form-data; name=\"file\"; filename=\""
+                    + fileName + "\"\r\n"
+                    + "Content-Type: " + contentType + "\r\n\r\n";
+                out.write(header.getBytes(StandardCharsets.UTF_8));
+                Files.copy(image, out);
+                out.write(("\r\n--" + boundary + "--\r\n")
+                    .getBytes(StandardCharsets.UTF_8));
+            }
+            int code = con.getResponseCode();
+            return code >= 200 && code < 300;
+        } finally {
+            con.disconnect();
+        }
+    }
+
+    /**
+     * DELETE the account avatar on the server.
+     *
+     * @return {@code true} on a 2xx response.
+     */
+    public static boolean delete(String url, String authorization)
+        throws IOException
+    {
+        HttpURLConnection con = (HttpURLConnection) new URL(withTokenParam(url, authorization)).openConnection();
+        try {
+            con.setRequestMethod("DELETE");
+            con.setConnectTimeout(15_000);
+            con.setReadTimeout(15_000);
+            if (authorization != null && !authorization.trim().isEmpty()) {
+                con.setRequestProperty("Authorization", authorization);
+            }
+            int code = con.getResponseCode();
+            return code >= 200 && code < 300;
         } finally {
             con.disconnect();
         }

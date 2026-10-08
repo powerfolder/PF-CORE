@@ -4,6 +4,7 @@
     <libelement value="jar://$MODULE_DIR$/lib/commons-io-1.3.1.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/commons-cli-1.0.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/looks-2.1.4.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/flatlaf-3.5.4.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/jmock/cglib-nodep-2.1_3.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/jmock/hamcrest-core-1.3.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/jmock/hamcrest-library-1.3.jar!/" />
@@ -88,6 +89,15 @@
       <library name="looks-2.1.4.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/looks-2.1.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="flatlaf-3.5.4.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/flatlaf-3.5.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

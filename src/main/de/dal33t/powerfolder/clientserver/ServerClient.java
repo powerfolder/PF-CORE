@@ -1854,6 +1854,46 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * PFC-3643: the {@code Authorization} header value for authenticating web
+     * requests (e.g. loading/uploading the account avatar via /avatars/*).
+     * <p>
+     * Prefers a device token ({@code Bearer <token>}). If the client has no token
+     * yet (e.g. "keep me logged in" was off, so none was minted at login), one is
+     * requested on demand and cached - HTTP Basic with the password is rejected by
+     * the server for OTP/SSO accounts (403), whereas a device token always
+     * authenticates. Basic is only a last resort when token generation is disabled.
+     * Sent over HTTPS only (same as login). Must be called off the EDT (it may do a
+     * remote call to mint the token).
+     *
+     * @return the header value, or {@code null} if no credentials are available.
+     */
+    public String getWebAuthorizationHeader() {
+        if (StringUtils.isBlank(tokenSecret)) {
+            // Mint a device token on demand for web auth (avatar etc.).
+            String minted = requestAndSaveToken();
+            if (StringUtils.isNotBlank(minted)) {
+                tokenSecret = minted;
+            }
+        }
+        if (StringUtils.isNotBlank(tokenSecret)) {
+            return "Bearer " + tokenSecret;
+        }
+        if (StringUtils.isNotBlank(username) && passwordObf != null) {
+            char[] pw = LoginUtil.deobfuscate(passwordObf);
+            if (pw != null && pw.length > 0) {
+                try {
+                    String creds = username + ':' + new String(pw);
+                    return "Basic " + java.util.Base64.getEncoder().encodeToString(
+                        creds.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } finally {
+                    LoginUtil.clear(pw);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * ATTENTION: This password must not be used for long. It cannot be
      * purged/cleared from memory.
      *
