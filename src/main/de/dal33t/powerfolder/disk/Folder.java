@@ -5928,6 +5928,12 @@ public class Folder extends PFComponent {
      * @return {@code true} if {@code file} is gone; {@code false} if content had to be left behind -
      *         then the directory itself stays as well, and the caller must not report it as deleted
      */
+    /** PFC-3646: a .PowerFolder, not this folder's own, in a directory no mounted folder sits on. */
+    private boolean isLeftoverSystemSubDir(Path dir) {
+        return Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(dir.getFileName().toString()) && !isSystemSubDir(dir)
+            && getController().getFolderRepository().findExistingFolder(dir.getParent(), false) == null;
+    }
+
     private boolean deleteFileRecursive(FileInfo newFileInfo, Path file) throws IOException {
         if (newFileInfo.isDiretory() || Files.isDirectory(file)) {
             boolean emptied = true;
@@ -5938,6 +5944,11 @@ public class Folder extends PFComponent {
                      * the scanner skips it for the same reason (FolderScanner, isSystemSubDir). Left in,
                      * the deletion tried to archive and delete the running database. */
                     if (isSystemSubDir(path) || !PathUtils.isScannable(path, this)) {
+                        // PFC-3646: unless no mounted folder owns it - a share dissolved after its directory moved
+                        if (isLeftoverSystemSubDir(path)) {
+                            logInfo(path + ": Deleting the .PowerFolder of a folder no longer mounted here");
+                            PathUtils.recursiveDelete(path);
+                        }
                         continue;
                     }
                     /* PFC-3543: never touch an interrupted subfolder - that subtree is owned by its own
