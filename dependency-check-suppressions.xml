@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!--
+        False positive: CVE-2026-0994 is a bug in the Python protobuf package
+        (recursion limit bypass in the pure-Python JSON parser). It does not
+        exist in protobuf-java. The scanner flags protobuf-java 4.36.2 because
+        the advisory lists a single unified fix version (33.4) and the Java
+        artifact uses the 4.x.y scheme, so the version comparison cannot
+        exclude it. 4.36.2 is past the fixed minor (36 > 33) either way.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            CVE-2026-0994 affects the Python protobuf package only. protobuf-java
+            4.36.2 is not affected and is past the unified fix version 33.4.
+        ]]></notes>
+        <filePath regex="true">.*[/\\]protobuf-java-[0-9.]+\.jar$</filePath>
+        <cve>CVE-2026-0994</cve>
+    </suppress>
+
+</suppressions>

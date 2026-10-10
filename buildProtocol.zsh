@@ -116,7 +116,7 @@ EOF
 
       echo "[INFO] Generated \`$TEMP_JAVA_OUT\`"
 
-      \javac -cp ".:./lib/protobuf-java-3.5.0.jar" -d $TEMP_CLASS_OUT $TEMP_JAVA_OUT/**/*.java -Xlint:deprecation
+      \javac -cp ".:./lib/protobuf-java-4.36.2.jar" -d $TEMP_CLASS_OUT $TEMP_JAVA_OUT/**/*.java -Xlint:deprecation
 
       echo "[INFO] Compiled \`$TEMP_CLASS_OUT\´"
 

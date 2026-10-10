@@ -193,7 +193,7 @@ For creation of the installer:
 			<include name="netty-resolver-4.1.137.Final.jar" />
 
 			<!-- Protobuf -->
-            <include name="protobuf-java-3.5.0.jar"/>
+            <include name="protobuf-java-4.36.2.jar"/>
 			<include name="powerfolder-protobuf-0.1.jar"/>
 
 			<!-- Squirrel -->
