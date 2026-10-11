@@ -3661,8 +3661,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
-                // Don't remove. We have archived files.
-                if (archiver.hasArchivedFileInfo(file)) {
+                // Don't remove. We have archived files - below a directory, or of the file itself.
+                if (file.isDiretory() ? archiver.hasArchivedFilesBelow(file.getRelativeName())
+                    : archiver.hasArchivedFileInfo(file))
+                {
                     continue;
                 }
                 expired++;

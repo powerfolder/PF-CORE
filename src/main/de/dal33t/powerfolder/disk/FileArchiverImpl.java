@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.SimpleCache;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Util;
 import org.apache.commons.io.FileUtils;
@@ -34,6 +35,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -66,6 +70,17 @@ public class FileArchiverImpl implements FileArchiver {
     private final Path archiveDirectory;
     private volatile int versionsPerFile;
     private MemberInfo mySelf;
+
+    /* PFS-5529: what the archive holds, remembered per directory - the names (with extension) that have a
+     * version, and whether anything lies below - read in one pass on first use. Every write of this archiver
+     * forgets it, and so does age: a change made to the archive directory from outside is seen within
+     * INDEX_LIFETIME_MS. A recycle-bin listing asks about every file of a directory; with this it costs one
+     * listing of the archive, not one per file. */
+    private static final long INDEX_LIFETIME_MS = 30_000L;
+    private final SimpleCache<String, Set<String>> namesByDirectory =
+        new SimpleCache<>(INDEX_LIFETIME_MS, TimeUnit.MILLISECONDS);
+    private final SimpleCache<String, Boolean> anythingBelow =
+        new SimpleCache<>(INDEX_LIFETIME_MS, TimeUnit.MILLISECONDS);
 
     /*
      * Cached size of this file archive.
@@ -106,7 +121,7 @@ public class FileArchiverImpl implements FileArchiver {
     @Override
     public void archive(FileInfo fileInfo, Path source, boolean forceKeepSource)
             throws IOException {
-
+        forget();
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(source, "source");
 
@@ -209,6 +224,10 @@ public class FileArchiverImpl implements FileArchiver {
     @Override
     public void moveVersions(String fromPath, FileArchiver target, String toPath) {
         Reject.ifNull(target, "target");
+        forget();
+        if (target instanceof FileArchiverImpl) {
+            ((FileArchiverImpl) target).forget();
+        }
         final Path from = versionsDirectory(fromPath);
         final Path to = target.versionsDirectory(toPath);
         if (!Files.isDirectory(from) || from.equals(to)) {
@@ -269,6 +288,92 @@ public class FileArchiverImpl implements FileArchiver {
             return archiveDirectory;
         }
         return archiveDirectory.resolve(FileInfoFactory.encodeIllegalChars(relativePath));
+    }
+
+    @Override
+    public boolean hasArchivedFilesBelow(String relativeDirectory) {
+        String directory = relativeDirectory == null ? "" : relativeDirectory;
+        Boolean remembered = anythingBelow.getValidEntry(directory);
+        if (remembered == null) {
+            remembered = readAnythingBelow(directory);
+            anythingBelow.put(directory, remembered);
+        }
+        return remembered;
+    }
+
+    /** The names (with extension) with a version in the relative directory, read once and remembered. */
+    private Set<String> namesIn(String directory) {
+        Set<String> remembered = namesByDirectory.getValidEntry(directory);
+        if (remembered == null) {
+            remembered = readNames(directory);
+            namesByDirectory.put(directory, remembered);
+        }
+        return remembered;
+    }
+
+    /**
+     * Every write to this archive: what was remembered about its directories no longer holds. Package-private for
+     * {@link SubFolderFileArchiverProxy}, which deletes in this archive's directory on its own.
+     */
+    void forget() {
+        namesByDirectory.invalidateAll();
+        anythingBelow.invalidateAll();
+    }
+
+    private Set<String> readNames(String relativeDirectory) {
+        Path directory;
+        try {
+            directory = versionsDirectory(relativeDirectory);
+        } catch (InvalidPathException e) {
+            log.warning("Unable to resolve versions below: " + relativeDirectory + ". " + e);
+            return Collections.emptySet();
+        }
+        if (!Files.isDirectory(directory)) {
+            return Collections.emptySet();
+        }
+        Set<String> names = FileInfo.IGNORE_CASE ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
+            for (Path file : files) {
+                String versionName = versionNameOf(file);
+                if (versionName != null) {
+                    names.add(versionName);
+                }
+            }
+        } catch (IOException ioe) {
+            log.warning(ioe.toString());
+        }
+        return names;
+    }
+
+    private boolean readAnythingBelow(String relativeDirectory) {
+        Path directory;
+        try {
+            directory = versionsDirectory(relativeDirectory);
+        } catch (InvalidPathException e) {
+            log.warning("Unable to resolve versions below: " + relativeDirectory + ". " + e);
+            return false;
+        }
+        if (!Files.isDirectory(directory)) {
+            return false;
+        }
+        try (Stream<Path> files = Files.walk(directory)) {
+            return files.anyMatch(file -> versionNameOf(file) != null);
+        } catch (IOException | UncheckedIOException e) {
+            log.warning(directory + ": unable to look for versions below. " + e);
+            return false;
+        }
+    }
+
+    /** The name (with extension) the version file belongs to, or {@code null} for anything that is not a version. */
+    private static String versionNameOf(Path file) {
+        String name = file.getFileName().toString();
+        if (name.endsWith(META_SUFFIX) || name.endsWith(META_WRITING_SUFFIX) || SIZE_INFO_FILE.equals(name)
+            || Files.isDirectory(file))
+        {
+            return null;
+        }
+        Matcher m = BASE_NAME_PATTERN.matcher(FileInfoFactory.decodeIllegalChars(name));
+        return m.matches() ? m.group(1) + m.group(2) : null;
     }
 
     private synchronized void sizeChanged() {
@@ -540,46 +645,17 @@ public class FileArchiverImpl implements FileArchiver {
      * @return {@code True} if there is a file in the history, {@code false}
      * otherwise.
      */
+    /**
+     * PFS-5529: by exact name and extension - the prefix match before it let report.txt borrow the versions of
+     * report-final.txt, so a purged file kept coming back to the recycle bin.
+     */
     @Override
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-
-        Path subdirectory;
-        try {
-            // Find archive subdirectory.
-            subdirectory = archiveDirectory.resolve(
-                    FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName())).getParent();
-        } catch (InvalidPathException e) {
-            // PFS-2000:
-            log.warning("Unable to resolve versions for file: "
-                    + fileInfo.toDetailString() + ". " + e);
-            return false;
-        }
-        if (Files.notExists(subdirectory)) {
-            return false;
-        }
-
-        try (DirectoryStream<Path> files = Files
-                .newDirectoryStream(subdirectory)) {
-            String fn = fileInfo.getFilenameOnly();
-
-            // get rid of the extension, if present
-            int ind = fn.lastIndexOf('.');
-            if (ind > -1) {
-                fn = fn.substring(0, ind);
-            }
-            fn = FileInfoFactory.encodeIllegalChars(fn);
-
-            for (Path file : files) {
-                if (file.getFileName().toString().startsWith(fn)) {
-                    return true;
-                }
-            }
-        } catch (IOException ioe) {
-            log.warning(ioe.toString());
-        }
-
-        return false;
+        String relativeName = fileInfo.getRelativeName();
+        int slash = relativeName.lastIndexOf('/');
+        String directory = slash < 0 ? "" : relativeName.substring(0, slash);
+        return namesIn(directory).contains(fileInfo.getFilenameOnly());
     }
 
     /**
@@ -813,6 +889,7 @@ public class FileArchiverImpl implements FileArchiver {
     @Override
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
+        forget();
 
         long freedSpace = size != null ? size : 0L;
         purge0(archiveDirectory);
@@ -837,6 +914,7 @@ public class FileArchiverImpl implements FileArchiver {
     @Override
     public void purge(FileInfo fileInfo, Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
+        forget();
 
         long freedSpace = 0;
         boolean purgedSubdirs = false;
@@ -975,6 +1053,7 @@ public class FileArchiverImpl implements FileArchiver {
     public synchronized List<FileInfo> maintainAndCleanup(
         Date cleanupDate, FileInfoDAO dao, FolderInfo folderInfo, AccountInfo myAccount)
     {
+        forget();
         List<FileInfo> lostFileInfos = new ArrayList<>();
         if (Files.notExists(archiveDirectory)) {
             size = 0L;
