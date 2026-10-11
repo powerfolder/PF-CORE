@@ -69,8 +69,11 @@ public class LoginUtil {
         return useArgon2;
     }
 
-    private static final int ARGON2_ITERATIONS = 5;
-    private static final int ARGON2_MEMORY_KB = 65536;
+    public static final String PROPERTY_ARGON2_ITERATIONS = "powerfolder.argon2.iterations";
+    public static final String PROPERTY_ARGON2_MEMORY_KB = "powerfolder.argon2.memoryKB";
+
+    private static final int ARGON2_DEFAULT_ITERATIONS = 5;
+    private static final int ARGON2_DEFAULT_MEMORY_KB = 65536;
     private static final int ARGON2_PARALLELISM = 1;
     private static final int ARGON2_HASH_LENGTH = 32;
     private static final int ARGON2_SALT_LENGTH = 16;
@@ -245,8 +248,8 @@ public class LoginUtil {
 
             Argon2Parameters params = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
                     .withSalt(salt)
-                    .withIterations(ARGON2_ITERATIONS)
-                    .withMemoryAsKB(ARGON2_MEMORY_KB)
+                    .withIterations(argon2Iterations())
+                    .withMemoryAsKB(argon2MemoryKB())
                     .withParallelism(ARGON2_PARALLELISM)
                     .build();
 
@@ -306,14 +309,22 @@ public class LoginUtil {
         return hashAndSaltLegacy(new String(password));
     }
 
+    private static int argon2Iterations() {
+        return Integer.getInteger(PROPERTY_ARGON2_ITERATIONS, ARGON2_DEFAULT_ITERATIONS);
+    }
+
+    private static int argon2MemoryKB() {
+        return Integer.getInteger(PROPERTY_ARGON2_MEMORY_KB, ARGON2_DEFAULT_MEMORY_KB);
+    }
+
     private static String hashArgon2(char[] password) {
         byte[] salt = new byte[ARGON2_SALT_LENGTH];
         new SecureRandom().nextBytes(salt);
 
         Argon2Parameters params = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
                 .withSalt(salt)
-                .withIterations(ARGON2_ITERATIONS)
-                .withMemoryAsKB(ARGON2_MEMORY_KB)
+                .withIterations(argon2Iterations())
+                .withMemoryAsKB(argon2MemoryKB())
                 .withParallelism(ARGON2_PARALLELISM)
                 .build();
 

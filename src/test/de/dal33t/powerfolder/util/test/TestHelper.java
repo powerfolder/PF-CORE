@@ -312,6 +312,15 @@ public class TestHelper {
     }
 
     /** deletes all files in the test dir */
+    public static final String PROPERTY_TEST_RESOURCES = "powerfolder.test.resources";
+
+    public static Path testResource(String name) {
+        String base = System.getProperty(PROPERTY_TEST_RESOURCES);
+        return base == null || base.isEmpty()
+            ? Paths.get("src/test-resources", name)
+            : Paths.get(base, name);
+    }
+
     public static void cleanTestDir() {
         Path testDir = getTestDir();
 

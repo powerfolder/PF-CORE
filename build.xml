@@ -626,6 +626,9 @@ For creation of the installer:
 			<testclasses outputDir="${build.reports.dir}/raw">
 				<fork dir="${basedir}" forkMode="perTestClass" timeout="1800000">
 					<sysproperty key="file.encoding" value="UTF-8"/>
+					<sysproperty key="powerfolder.config.url.skip" value="true"/>
+					<sysproperty key="powerfolder.argon2.iterations" value="1"/>
+					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
@@ -711,6 +714,9 @@ For creation of the installer:
 					<testclasses outputDir="${build.reports.dir}/raw">
 						<fork dir="${workdir}" timeout="1800000">
 							<sysproperty key="file.encoding" value="UTF-8"/>
+					<sysproperty key="powerfolder.config.url.skip" value="true"/>
+					<sysproperty key="powerfolder.argon2.iterations" value="1"/>
+					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 							<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
 							<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 							<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>

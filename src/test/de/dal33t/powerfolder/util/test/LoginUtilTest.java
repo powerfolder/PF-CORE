@@ -648,6 +648,25 @@ public class LoginUtilTest {
      */
     @Test
     public void testBruteForceAttackResistance() {
+        String iterations = System.clearProperty(LoginUtil.PROPERTY_ARGON2_ITERATIONS);
+        String memory = System.clearProperty(LoginUtil.PROPERTY_ARGON2_MEMORY_KB);
+        try {
+            measureBruteForceResistance();
+        } finally {
+            restoreProperty(LoginUtil.PROPERTY_ARGON2_ITERATIONS, iterations);
+            restoreProperty(LoginUtil.PROPERTY_ARGON2_MEMORY_KB, memory);
+        }
+    }
+
+    private static void restoreProperty(String key, String value) {
+        if (value == null) {
+            System.clearProperty(key);
+        } else {
+            System.setProperty(key, value);
+        }
+    }
+
+    private void measureBruteForceResistance() {
         String secretPassword = "Secr3t!X";
         String hashed = LoginUtil.hashAndSalt(secretPassword.toCharArray());
 

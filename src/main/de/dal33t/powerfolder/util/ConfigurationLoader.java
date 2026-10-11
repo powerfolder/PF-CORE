@@ -62,6 +62,8 @@ public class ConfigurationLoader {
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
     private static final int URL_CONNECT_TIMEOUT_SECONDS = 10;
+
+    public static final String PROPERTY_SKIP_CONFIG_URL = "powerfolder.config.url.skip";
     public static final String SUFFIX_OVERWRITE = ".overwrite";
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
@@ -297,6 +299,11 @@ public class ConfigurationLoader {
     {
         Reject.ifNull(controller, "Controller is null");
         if (StringUtils.isBlank(configURL)) {
+            return false;
+        }
+        if (Boolean.getBoolean(PROPERTY_SKIP_CONFIG_URL)) {
+            LOG.fine("Skipping configuration from " + configURL + " ("
+                + PROPERTY_SKIP_CONFIG_URL + ")");
             return false;
         }
         String un = controller.getCLIUsername();
