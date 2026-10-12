@@ -49,6 +49,8 @@
             <arg value="JSON"/>
             <arg value="--failOnCVSS"/>
             <arg value="${cvss.fail.threshold}"/>
+            <arg value="--suppression"/>
+            <arg value="${basedir}/dependency-check-suppressions.xml"/>
             <arg value="--disableAssembly"/>
             <arg value="--disableOssIndex"/>
             <arg value="--nvdApiKey" if:set="nvd.api.key.set"/>
