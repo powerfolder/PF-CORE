@@ -14,7 +14,9 @@
             CVE-2026-0994 affects the Python protobuf package only. protobuf-java
             4.36.2 is not affected and is past the unified fix version 33.4.
         ]]></notes>
-        <filePath regex="true">.*[/\\]protobuf-java-[0-9.]+\.jar$</filePath>
+        <!-- INT-1774 review: pin to the exact shipped jar so a future protobuf-java
+             bump/downgrade is re-evaluated instead of silently inheriting this exemption. -->
+        <filePath regex="true">.*[/\\]protobuf-java-4\.36\.2\.jar$</filePath>
         <cve>CVE-2026-0994</cve>
     </suppress>
 
