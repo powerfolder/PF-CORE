@@ -672,74 +672,110 @@ For creation of the installer:
 		<property name="test.threads" value="4"/>
 		<property name="test.work.keep" value="false"/>
 		<property name="test.work.dir" location="${basedir}/build/test-work"/>
+		<!-- PFS-5561: -Dshard.total=N -Dshard.index=K runs only every Nth class, so N jobs on N
+		     machines cover the suite together. Sharding and in-job threads are alternatives: with
+		     shard.total > 1 the classes run one after another, which is what the timing-sensitive
+		     tests were written for. -Dshard.listonly=true prints the selection instead of running it. -->
+		<property name="shard.index" value="0"/>
+		<property name="shard.total" value="1"/>
+		<property name="shard.listonly" value="false"/>
+		<condition property="test.threads.effective" value="1" else="${test.threads}">
+			<not><equals arg1="${shard.total}" arg2="1"/></not>
+		</condition>
 		<delete dir="${test.work.dir}" quiet="true"/>
 		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${basedir}/lib-build/ant-contrib-1.0b3.jar"/>
-		<for param="testfile" parallel="true" threadCount="${test.threads}">
-			<fileset dir="${build.dir}">
-				<include name="**/*Test.class"/>
-				<exclude name="**/*$*.class"/>
-				<exclude name="**/BandwidthLimitTest.class"/>
-			</fileset>
+		<var name="shard.tick" value=""/>
+		<for param="testfile" parallel="true" threadCount="${test.threads.effective}">
+			<path>
+				<sort>
+					<fileset dir="${build.dir}">
+						<include name="**/*Test.class"/>
+						<exclude name="**/*$*.class"/>
+						<exclude name="**/BandwidthLimitTest.class"/>
+					</fileset>
+				</sort>
+			</path>
 			<sequential>
-				<local name="testclass"/>
-				<pathconvert property="testclass">
-					<path location="@{testfile}"/>
-					<chainedmapper>
+				<local name="shard.pos"/>
+				<length string="${shard.tick}" property="shard.pos"/>
+				<if>
+					<equals arg1="${shard.pos}" arg2="${shard.index}"/>
+					<then>
+					<local name="testclass"/>
+					<pathconvert property="testclass">
+						<path location="@{testfile}"/>
+						<chainedmapper>
+							<globmapper from="${build.dir}${file.separator}*" to="*"/>
+							<regexpmapper from="^(.*)\.class$$" to="\1"/>
+							<filtermapper>
+								<replacestring from="${file.separator}" to="."/>
+							</filtermapper>
+						</chainedmapper>
+					</pathconvert>
+					<local name="testfilerel"/>
+					<pathconvert property="testfilerel" dirsep="/">
+						<path location="@{testfile}"/>
 						<globmapper from="${build.dir}${file.separator}*" to="*"/>
-						<regexpmapper from="^(.*)\.class$$" to="\1"/>
-						<filtermapper>
-							<replacestring from="${file.separator}" to="."/>
-						</filtermapper>
-					</chainedmapper>
-				</pathconvert>
-				<local name="testfilerel"/>
-				<pathconvert property="testfilerel" dirsep="/">
-					<path location="@{testfile}"/>
-					<globmapper from="${build.dir}${file.separator}*" to="*"/>
-				</pathconvert>
-				<local name="workdir"/>
-				<property name="workdir" location="${test.work.dir}/${testclass}"/>
-				<mkdir dir="${workdir}/build/test"/>
-				<copy todir="${workdir}/src/test-resources">
-					<fileset dir="${basedir}/src/test-resources"/>
-				</copy>
-				<trycatch>
-				  <try>
-				<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
-					<classpath>
-						<pathelement location="${build.dir}" />
-						<fileset refid="libs" />
-						<fileset refid="testlibs" />
-					</classpath>
-					<testclasses outputDir="${build.reports.dir}/raw">
-						<fork dir="${workdir}" timeout="1800000">
-							<sysproperty key="file.encoding" value="UTF-8"/>
-					<sysproperty key="powerfolder.config.url.skip" value="true"/>
-					<sysproperty key="powerfolder.argon2.iterations" value="1"/>
-					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
-							<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
-							<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
-							<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
-							<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
-						</fork>
-						<fileset dir="${build.dir}">
-							<include name="${testfilerel}"/>
-						</fileset>
-						<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
-					</testclasses>
-				</junitlauncher>
-				  </try>
-				  <catch>
-				    <echo level="warning">Test JVM for ${testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
-				    <property name="tests.crashed" value="${testclass}"/>
-				  </catch>
-				  <finally>
-				    <!-- -Dtest.work.keep=true leaves the working directories (controller logs, databases) for a look -->
-				    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
-				      <delete dir="${workdir}" quiet="true"/>
-				    </then></if>
-				  </finally>
-				</trycatch>
+					</pathconvert>
+					<if>
+						<equals arg1="${shard.listonly}" arg2="true"/>
+						<then>
+							<echo>shard ${shard.index} of ${shard.total}: ${testclass}</echo>
+							<return/>
+						</then>
+					</if>
+					<local name="workdir"/>
+					<property name="workdir" location="${test.work.dir}/${testclass}"/>
+					<mkdir dir="${workdir}/build/test"/>
+					<copy todir="${workdir}/src/test-resources">
+						<fileset dir="${basedir}/src/test-resources"/>
+					</copy>
+					<trycatch>
+					  <try>
+					<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
+						<classpath>
+							<pathelement location="${build.dir}" />
+							<fileset refid="libs" />
+							<fileset refid="testlibs" />
+						</classpath>
+						<testclasses outputDir="${build.reports.dir}/raw">
+							<fork dir="${workdir}" timeout="1800000">
+								<sysproperty key="file.encoding" value="UTF-8"/>
+								<sysproperty key="powerfolder.config.url.skip" value="true"/>
+								<sysproperty key="powerfolder.argon2.iterations" value="1"/>
+								<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
+								<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
+								<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+								<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+								<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+							</fork>
+							<fileset dir="${build.dir}">
+								<include name="${testfilerel}"/>
+							</fileset>
+							<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+						</testclasses>
+					</junitlauncher>
+					  </try>
+					  <catch>
+					    <echo level="warning">Test JVM for ${testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
+					    <property name="tests.crashed" value="${testclass}"/>
+					  </catch>
+					  <finally>
+					    <!-- -Dtest.work.keep=true leaves the working directories (controller logs, databases) for a look -->
+					    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
+					      <delete dir="${workdir}" quiet="true"/>
+					    </then></if>
+					  </finally>
+					</trycatch>
+					</then>
+				</if>
+				<var name="shard.tick" value="${shard.tick}x"/>
+				<local name="shard.ticks"/>
+				<length string="${shard.tick}" property="shard.ticks"/>
+				<if>
+					<equals arg1="${shard.ticks}" arg2="${shard.total}"/>
+					<then><var name="shard.tick" value=""/></then>
+				</if>
 			</sequential>
 		</for>
 

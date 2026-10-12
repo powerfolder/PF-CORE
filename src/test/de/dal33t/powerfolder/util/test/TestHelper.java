@@ -311,7 +311,6 @@ public class TestHelper {
         return testFile;
     }
 
-    /** deletes all files in the test dir */
     public static final String PROPERTY_TEST_RESOURCES = "powerfolder.test.resources";
 
     public static Path testResource(String name) {
@@ -321,6 +320,7 @@ public class TestHelper {
             : Paths.get(base, name);
     }
 
+    /** deletes all files in the test dir */
     public static void cleanTestDir() {
         Path testDir = getTestDir();
 
