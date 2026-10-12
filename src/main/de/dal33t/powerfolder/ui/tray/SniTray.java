@@ -77,9 +77,12 @@ public final class SniTray {
     /** One menu entry (or separator) in the tray popup. */
     private static final class Entry {
         final int id;
-        String label;
+        // PFC-3096: written on the EDT (updateItemLabel/setItemEnabled), read on
+        // dbus-java worker threads (GetLayout/GetGroupProperties/GetProperty);
+        // volatile gives the host re-read a happens-before view of the latest value.
+        volatile String label;
         final boolean separator;
-        boolean enabled = true;
+        volatile boolean enabled = true;
         final Action action;
 
         Entry(int id, String label, boolean separator, Action action) {
