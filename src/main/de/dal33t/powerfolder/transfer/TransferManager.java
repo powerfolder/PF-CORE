@@ -832,8 +832,14 @@ public class TransferManager extends PFComponent {
             String error = new String(err);
 
             int res = p.waitFor();
-            logInfo("Executed command finished (exit value: " + res + "): "
-                + command + " | stdout: " + output + ", stderr: " + error);
+            String result = "Executed command finished (exit value: " + res
+                + "): " + command + " | stdout: " + output + ", stderr: "
+                + error;
+            if (res != 0 || StringUtils.isNotBlank(error)) {
+                logWarning(result);
+            } else {
+                logInfo(result);
+            }
 
         } catch (IOException e) {
             logSevere(

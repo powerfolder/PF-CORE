@@ -230,9 +230,9 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.toAbsolutePath().toString() + "\nexit")
+            content = ("echo %1 %2 %3 %4 %5 >>\"" + outputFile.toAbsolutePath().toString() + "\"\nexit")
                 .getBytes();
-            cmdLine = "cmd /C start " + testScript.toAbsolutePath().toString() + ' '
+            cmdLine = "cmd /C " + testScript.toAbsolutePath().toString() + ' '
                 + params;
         } else {
             content = ("echo $* >>\"" + outputFile.toAbsolutePath().toString() + '"')
@@ -254,9 +254,9 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.toAbsolutePath().toString() + "\npause")
+            content = ("echo %1 %2 %3 %4 %5 >>\"" + outputFile.toAbsolutePath().toString() + "\"\npause")
                 .getBytes();
-            cmdLine = "cmd /C start " + testScript.toAbsolutePath().toString() + ' '
+            cmdLine = "cmd /C " + testScript.toAbsolutePath().toString() + ' '
                 + params;
         } else {
             content = ("echo $* >>\"" + outputFile.toAbsolutePath().toString() + "\"\nread -p \"Press any key ...\"")
