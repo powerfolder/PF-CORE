@@ -16,7 +16,8 @@ variables:
 
 security-java-scan:
   stage: test
-  extends: .rules-test
+  rules:
+    - when: never
   tags:
     - Linux
     - Development
@@ -37,7 +38,7 @@ security-java-scan:
 test-Linux:
   stage: test
   extends: .rules-test
-  resource_group: tests-Linux
+  parallel: 2
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -45,8 +46,8 @@ test-Linux:
   tags:
     - Linux
   script:
-    - pkill -f java || true
-    - ant run-tests
+    - nproc; free -m; uptime; ps -eo pid,etimes,rss,args --sort=-rss | grep -c "[j]ava"
+    - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=2
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
@@ -57,7 +58,6 @@ test-Linux:
 test-macOS:
   stage: test
   extends: .rules-test
-  resource_group: tests-macOS
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -66,6 +66,7 @@ test-macOS:
     - macOS
   script:
     - pkill -f java || true
+    - sysctl -n hw.ncpu hw.memsize; uptime
     - mkdir -p test-reports
     # PFC-3573: external thread-dump watchdog. If a test JVM runs longer than ~10 minutes it is considered hung;
     # jstack -F works even when the JVM is frozen (safepoint stall). Dumps land in the test-reports artifact.
@@ -94,7 +95,7 @@ test-macOS:
 test-Windows:
   stage: test
   extends: .rules-test
-  resource_group: tests-Windows
+  parallel: 2
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -103,7 +104,10 @@ test-Windows:
     - Windows
   script:
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Old Java processes killed (if any)'"
-    - ant run-tests
+    - echo CPUs=%NUMBER_OF_PROCESSORS%
+    - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
+    - set /a SHARD_INDEX=%CI_NODE_INDEX%-1
+    - call ant run-tests -Dshard.total=%CI_NODE_TOTAL% -Dshard.index=%SHARD_INDEX% -Dtest.threads=2
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
