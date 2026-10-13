@@ -46,7 +46,7 @@ test-Linux:
   tags:
     - Linux
   script:
-    - nproc; free -m; uptime; ps -eo pid,etimes,rss,args --sort=-rss | grep -c "[j]ava"
+    - nproc; free -m; uptime; ps -eo pid,etimes,rss,args --sort=-rss | grep -c "[j]ava" || true
     - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=2
   artifacts:
     reports:
