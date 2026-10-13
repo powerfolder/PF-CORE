@@ -108,7 +108,7 @@ public class DocumentHandler extends Handler {
             public void run() {
                 try {
                     Map<String, SimpleAttributeSet> colors =
-                        de.dal33t.powerfolder.ui.LookAndFeelSupport.isDarkMode()
+                        de.dal33t.powerfolder.util.UIThemeState.isDark()
                             ? logColorsDark : logColorsLight;
                     MutableAttributeSet set = colors.get(record.getLevel()
                         .getName());

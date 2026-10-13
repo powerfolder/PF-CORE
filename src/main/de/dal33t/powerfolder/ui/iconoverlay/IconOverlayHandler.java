@@ -133,7 +133,7 @@ public class IconOverlayHandler extends PFComponent implements
         }
 
         try {
-            SyncStatus status = SyncStatus.of(getController(), fileInfo, folder);
+            SyncStatus status = SyncStatus.of(getController(), fileInfo, folder, true);
             // PFC-3643: only two overlays remain - synced-and-on-device shows the
             // green tick, actively-syncing shows the (blue) spinner. Every other
             // state (not on device / not synced / ignored / locked / warning)

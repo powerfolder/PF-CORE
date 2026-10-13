@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
+import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
@@ -129,6 +130,9 @@ public class LookAndFeelSupport {
         log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
         de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
         currentDark = dark;
+        // Publish to the neutral holder so non-ui code (e.g. the log DocumentHandler)
+        // can theme itself without depending upward on the ui package.
+        de.dal33t.powerfolder.util.UIThemeState.setDark(dark);
         startSystemThemeWatcher();
     }
 
@@ -229,29 +233,7 @@ public class LookAndFeelSupport {
      * poll, which exhausted the JVM after ~20 min and froze the UI.)
      */
     private static String readProcessOutput(String... command) {
-        Process p = null;
-        try {
-            p = new ProcessBuilder(command).redirectErrorStream(true).start();
-            String out;
-            try (java.io.InputStream in = p.getInputStream()) {
-                out = new String(in.readAllBytes(),
-                    java.nio.charset.StandardCharsets.UTF_8);
-            }
-            if (!p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
-                return null; // don't thrash if it hangs; cleaned up in finally
-            }
-            return out;
-        } catch (Exception e) {
-            log.fine("theme detection command failed: " + e);
-            return null;
-        } finally {
-            if (p != null) {
-                p.destroy();
-                try { p.getOutputStream().close(); } catch (Exception ignore) { }
-                try { p.getInputStream().close(); } catch (Exception ignore) { }
-                try { p.getErrorStream().close(); } catch (Exception ignore) { }
-            }
-        }
+        return de.dal33t.powerfolder.util.ProcessUtils.runBounded(2, command);
     }
 
     /** The dark/light state currently applied to the UI. */
@@ -452,6 +434,22 @@ public class LookAndFeelSupport {
      * (the {@code <color type="BACKGROUND" value="#..."/> <!-- Primary color -->}
      * entry). Falls back to {@link #DEFAULT_ACCENT}.
      */
+    /**
+     * PFC-3643: the resolved brand accent colour - the active skin's primary colour,
+     * or {@link #DEFAULT_ACCENT} when none is found. Single source of truth for the
+     * avatar disc ({@code AvatarLabel}), the account-header status glyphs
+     * ({@code Icons}) and the splash loading bar ({@code SplashScreen}), so they all
+     * match the FlatLaf {@code @accentColor}. Resolve at paint/build time, not in a
+     * static initialiser, because the active skin is set during L&F startup.
+     */
+    public static Color getAccentColor() {
+        try {
+            return Color.decode(accentColorHex(activeSkin));
+        } catch (RuntimeException ex) {
+            return Color.decode(DEFAULT_ACCENT);
+        }
+    }
+
     private static String accentColorHex(Skin skin) {
         if (!(skin instanceof AbstractSyntheticaSkin)) {
             return DEFAULT_ACCENT;
@@ -466,12 +464,28 @@ public class LookAndFeelSupport {
                 }
                 String xml = new String(in.readAllBytes(),
                     java.nio.charset.StandardCharsets.UTF_8);
-                java.util.regex.Matcher m = java.util.regex.Pattern.compile(
-                    "BACKGROUND\"\\s+value=\"(#[0-9a-fA-F]{6})\"\\s*/>\\s*<!--\\s*Primary color",
-                    java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
-                if (m.find()) {
-                    return m.group(1);
+                // The brand primary is the BACKGROUND colour tagged with the
+                // "Primary color" comment in the skin's synth.xml. Match the hex
+                // regardless of the order of the type/value attributes, and tolerate
+                // flexible whitespace, so a harmless reformat of the XML does not drop
+                // the accent. The comment marker stays the disambiguator (there are
+                // several BACKGROUND entries).
+                for (String pattern : new String[] {
+                    "type=\"BACKGROUND\"[^>]*?value=\"(#[0-9a-fA-F]{6})\"[^>]*?/>\\s*<!--\\s*Primary color",
+                    "value=\"(#[0-9a-fA-F]{6})\"[^>]*?type=\"BACKGROUND\"[^>]*?/>\\s*<!--\\s*Primary color"})
+                {
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                        pattern, java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
+                    if (m.find()) {
+                        return m.group(1);
+                    }
                 }
+                // A branded skin with no recognisable primary colour is a real
+                // problem (the UI silently falls back to the generic accent), so make
+                // it visible instead of hiding it at fine level.
+                log.warning(skin.getName()
+                    + ": no 'Primary color' BACKGROUND entry in " + resource
+                    + " - falling back to the default accent " + DEFAULT_ACCENT);
             }
         } catch (Throwable t) {
             log.fine("accent extraction failed: " + t);

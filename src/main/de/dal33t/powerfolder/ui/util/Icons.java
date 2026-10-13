@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.TrayIconManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -436,8 +437,8 @@ public class Icons {
     /** PFC-3643: the account-header status glyphs (synced / syncing / pause / ...)
      *  are a white symbol on a filled brand-accent disc - the same colour, shape and
      *  size as the avatar, so they pair cleanly. (Folders/tray keep the Android
-     *  badges.) Matches {@code AvatarLabel.BRAND}. */
-    private static final Color STATUS_CIRCLE = new Color(0x34495c);
+     *  badges.) The disc colour is the shared brand accent
+     *  ({@link LookAndFeelSupport#getAccentColor()}), resolved at paint time. */
 
     /** Start a status glyph image: a filled accent disc, with antialiasing on and the
      *  pen set to white, ready for the caller to draw the symbol. */
@@ -450,7 +451,7 @@ public class Icons {
         g.setRenderingHint(java.awt.RenderingHints.KEY_STROKE_CONTROL,
             java.awt.RenderingHints.VALUE_STROKE_PURE);
         float inset = Math.max(1f, size * 0.02f);
-        g.setColor(STATUS_CIRCLE);
+        g.setColor(LookAndFeelSupport.getAccentColor());
         g.fill(new java.awt.geom.Ellipse2D.Double(inset, inset,
             size - 2.0 * inset, size - 2.0 * inset));
         g.setColor(Color.WHITE);

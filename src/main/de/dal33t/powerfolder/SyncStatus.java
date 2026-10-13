@@ -40,7 +40,7 @@ public enum SyncStatus {
      * @return the sync status of the file
      */
     public static SyncStatus of(Controller controller, FileInfo fInfo) {
-        return SyncStatus.of(controller, fInfo, null);
+        return SyncStatus.of(controller, fInfo, null, false);
     }
 
     /**
@@ -53,6 +53,28 @@ public enum SyncStatus {
      * @return the sync status of the file
      */
     public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder) {
+        return SyncStatus.of(controller, fInfo, folder, false);
+    }
+
+    /**
+     * @param controller
+     * @param fInfo
+     *            The file to get the {@link SyncStatus} for.
+     * @param folder
+     *            If the {@code Folder} is already known, just pass it here.
+     *            Otherwise use {@link #of(Controller, FileInfo)}.
+     * @param directoryOverlay
+     *            PFC-3643: when {@code true} a (non base-dir) directory reports a
+     *            sync state for the file-manager icon overlay - LOCKED, the spinner
+     *            while something transfers under it, otherwise the synced tick. When
+     *            {@code false} directories keep the pre-PFC-3643 behaviour and always
+     *            return {@link #NONE}, so the webhook/API and context-menu callers
+     *            are unaffected. Only {@code IconOverlayHandler} opts in.
+     * @return the sync status of the file
+     */
+    public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder,
+        boolean directoryOverlay)
+    {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
@@ -80,6 +102,11 @@ public enum SyncStatus {
             }
         }
         if (fInfo.isDiretory()) {
+            if (!directoryOverlay) {
+                // Non-overlay callers (webhook/API FileEvent, context menu) keep the
+                // pre-PFC-3643 behaviour: a directory has no sync state of its own.
+                return NONE;
+            }
             if (fInfo.isLocked(controller)) {
                 return LOCKED;
             }

@@ -42,7 +42,7 @@ import java.awt.geom.RoundRectangle2D;
 public final class ActionIcons {
 
     public enum Type {
-        WEB, EXPLORE, PAUSE, PLAY, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
+        PAUSE, PLAY, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
     }
 
     private ActionIcons() {
@@ -94,12 +94,6 @@ public final class ActionIcons {
     // All glyphs drawn on a 22x22 grid in the current colour.
     private static void paint(Type type, Graphics2D g) {
         switch (type) {
-            case WEB :
-                web(g);
-                break;
-            case EXPLORE :
-                folder(g, false);
-                break;
             case PAUSE :
                 g.fillRect(4, 3, 5, 16);
                 g.fillRect(13, 3, 5, 16);
@@ -137,15 +131,6 @@ public final class ActionIcons {
             default :
                 break;
         }
-    }
-
-    private static void web(Graphics2D g) {
-        double r = 10, cx = 11, cy = 11;
-        g.draw(new Ellipse2D.Double(cx - r, cy - r, 2 * r, 2 * r));
-        g.draw(new Ellipse2D.Double(cx - r * 0.5, cy - r, r, 2 * r));
-        g.draw(new Line2D.Double(cx - r, cy, cx + r, cy));
-        g.draw(new Line2D.Double(cx - r * 0.86, cy - r * 0.5, cx + r * 0.86, cy - r * 0.5));
-        g.draw(new Line2D.Double(cx - r * 0.86, cy + r * 0.5, cx + r * 0.86, cy + r * 0.5));
     }
 
     private static void folder(Graphics2D g, boolean plus) {

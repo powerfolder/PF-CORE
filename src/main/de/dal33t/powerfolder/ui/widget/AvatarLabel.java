@@ -36,6 +36,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +53,6 @@ public class AvatarLabel extends JComponent {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = Logger.getLogger(AvatarLabel.class.getName());
-    private static final Color BRAND = new Color(0x34495c);
 
     private final int size;
     private String initials = "";
@@ -90,9 +90,15 @@ public class AvatarLabel extends JComponent {
         return sb.toString();
     }
 
-    /** @see #loadAvatar(String, String) with no authorization. */
+    /** @see #loadAvatar(String, Supplier) with no authorization. */
     public void loadAvatar(final String url) {
-        loadAvatar(url, (String) null);
+        loadAvatar(url, (Supplier<String>) null);
+    }
+
+    /** @see #loadAvatar(String, Supplier) with a ready {@code Authorization} header. */
+    public void loadAvatar(final String url, final String authorization) {
+        loadAvatar(url, authorization == null
+            ? null : () -> authorization);
     }
 
     /**
@@ -105,41 +111,17 @@ public class AvatarLabel extends JComponent {
      * device-token {@code Bearer}, or, when the client has no token, HTTP
      * {@code Basic} login credentials (the server's web session layer accepts both;
      * see {@code ServerClient.getWebAuthorizationHeader()}).
+     * <p>
+     * The header is produced by {@code authSupplier} ON the loader thread - never on
+     * the EDT - because obtaining it may be slow (it can mint a device token).
      *
-     * @param url           the avatar image URL (from ServerClient.getAvatarURL).
-     * @param authorization the full {@code Authorization} header value
-     *                      (ServerClient.getWebAuthorizationHeader()), or
-     *                      {@code null}/blank for an unauthenticated request.
-     */
-    public void loadAvatar(final String url, final String authorization) {
-        if (url == null || url.trim().isEmpty()) {
-            return;
-        }
-        final Object token = new Object();
-        loadToken = token;
-        Thread t = new Thread(() -> {
-            try {
-                BufferedImage img = fetch(url, authorization);
-                if (img != null && loadToken == token) {
-                    avatar = img;
-                    SwingUtilities.invokeLater(this::repaint);
-                }
-            } catch (Exception e) {
-                LOG.log(Level.FINE, "Could not load avatar from " + url + ": " + e);
-            }
-        }, "avatar-loader");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    /**
-     * Like {@link #loadAvatar(String, String)}, but the {@code Authorization} header
-     * is produced by {@code authSupplier} ON the loader thread - use this when
-     * obtaining the header may be slow (e.g. it mints a device token), so it never
-     * runs on the EDT.
+     * @param url          the avatar image URL (from ServerClient.getAvatarURL).
+     * @param authSupplier supplies the full {@code Authorization} header value
+     *                     (ServerClient.getWebAuthorizationHeader()), or
+     *                     {@code null} for an unauthenticated request.
      */
     public void loadAvatar(final String url,
-        final java.util.function.Supplier<String> authSupplier)
+        final Supplier<String> authSupplier)
     {
         if (url == null || url.trim().isEmpty()) {
             return;
@@ -169,36 +151,18 @@ public class AvatarLabel extends JComponent {
      * (no/invalid auth) or 404 (account has no avatar) - so the caller keeps the
      * initials fallback.
      */
-    /**
-     * PFC-3643: also carry the token as a {@code ?Token=} URL parameter (the scheme
-     * the Android client uses and the server honours on the unsecured /avatars path),
-     * in addition to the Authorization header. Some servers authenticate the param
-     * but not the Bearer header on that path, which otherwise 403s.
-     */
-    private static String withTokenParam(String url, String authorization) {
-        if (url != null && authorization != null
-            && authorization.startsWith("Bearer "))
-        {
-            String tok = authorization.substring("Bearer ".length()).trim();
-            if (!tok.isEmpty()) {
-                String sep = url.contains("?") ? "&" : "?";
-                return url + sep + "Token="
-                    + java.net.URLEncoder.encode(tok, StandardCharsets.UTF_8);
-            }
-        }
-        return url;
-    }
-
     private static BufferedImage fetch(String url, String authorization)
         throws IOException
     {
-        HttpURLConnection con = (HttpURLConnection) new URL(
-            withTokenParam(url, authorization)).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
         try {
             con.setRequestMethod("GET");
             con.setConnectTimeout(10_000);
             con.setReadTimeout(10_000);
-            con.setInstanceFollowRedirects(true);
+            // Don't follow redirects: HttpURLConnection would re-send the
+            // Authorization header (a bearer-equivalent credential) to the redirect
+            // host. The avatar endpoint answers directly; a redirect is unexpected.
+            con.setInstanceFollowRedirects(false);
             if (authorization != null && !authorization.trim().isEmpty()) {
                 con.setRequestProperty("Authorization", authorization);
             }
@@ -244,9 +208,10 @@ public class AvatarLabel extends JComponent {
         throws IOException
     {
         String boundary = "PFAvatarBoundary" + System.nanoTime();
-        HttpURLConnection con = (HttpURLConnection) new URL(withTokenParam(url, authorization)).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
         try {
             con.setRequestMethod("POST");
+            con.setInstanceFollowRedirects(false);
             con.setConnectTimeout(15_000);
             con.setReadTimeout(30_000);
             con.setDoOutput(true);
@@ -285,9 +250,10 @@ public class AvatarLabel extends JComponent {
     public static boolean delete(String url, String authorization)
         throws IOException
     {
-        HttpURLConnection con = (HttpURLConnection) new URL(withTokenParam(url, authorization)).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
         try {
             con.setRequestMethod("DELETE");
+            con.setInstanceFollowRedirects(false);
             con.setConnectTimeout(15_000);
             con.setReadTimeout(15_000);
             if (authorization != null && !authorization.trim().isEmpty()) {
@@ -314,7 +280,7 @@ public class AvatarLabel extends JComponent {
                 g.setClip(circle);
                 g.drawImage(img, 0, 0, size, size, null);
             } else {
-                g.setColor(BRAND);
+                g.setColor(de.dal33t.powerfolder.ui.LookAndFeelSupport.getAccentColor());
                 g.fill(circle);
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("SansSerif", Font.BOLD, Math.round(size * 0.36f)));

@@ -1857,19 +1857,33 @@ public class ServerClient extends PFComponent {
      * PFC-3643: the {@code Authorization} header value for authenticating web
      * requests (e.g. loading/uploading the account avatar via /avatars/*).
      * <p>
-     * Prefers a device token ({@code Bearer <token>}). If the client has no token
-     * yet (e.g. "keep me logged in" was off, so none was minted at login), one is
-     * requested on demand and cached - HTTP Basic with the password is rejected by
-     * the server for OTP/SSO accounts (403), whereas a device token always
-     * authenticates. Basic is only a last resort when token generation is disabled.
-     * Sent over HTTPS only (same as login). Must be called off the EDT (it may do a
-     * remote call to mint the token).
+     * Prefers a device token ({@code Bearer <token>}). Falls back to HTTP Basic with
+     * the login password only over HTTPS (never cleartext http) and only as a last
+     * resort - the server rejects Basic for OTP/SSO accounts (403), whereas a device
+     * token always authenticates. Must be called off the EDT (it may do a remote call
+     * to mint the token).
      *
-     * @return the header value, or {@code null} if no credentials are available.
+     * @return the header value, or {@code null} if no usable credentials are
+     *         available.
+     * @see #getWebAuthorizationHeader(boolean)
      */
     public String getWebAuthorizationHeader() {
-        if (StringUtils.isBlank(tokenSecret)) {
-            // Mint a device token on demand for web auth (avatar etc.).
+        // Default: do NOT mint a device token. Passive uses (e.g. loading the avatar)
+        // must not create a persistent server-side credential as a side effect -
+        // especially when the user opted out of "keep me logged in" at login.
+        return getWebAuthorizationHeader(false);
+    }
+
+    /**
+     * @param mintIfMissing when {@code true} and no device token exists yet, mint one
+     *                      on demand and cache it. Pass {@code true} only for an
+     *                      explicit, user-initiated web action (e.g. uploading or
+     *                      removing the avatar); pass {@code false} for passive loads.
+     * @return the {@code Authorization} header value, or {@code null}.
+     * @see #getWebAuthorizationHeader()
+     */
+    public String getWebAuthorizationHeader(boolean mintIfMissing) {
+        if (StringUtils.isBlank(tokenSecret) && mintIfMissing) {
             String minted = requestAndSaveToken();
             if (StringUtils.isNotBlank(minted)) {
                 tokenSecret = minted;
@@ -1878,7 +1892,11 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isNotBlank(tokenSecret)) {
             return "Bearer " + tokenSecret;
         }
-        if (StringUtils.isNotBlank(username) && passwordObf != null) {
+        // Basic carries the account password: only ever over HTTPS, never http.
+        String webURL = getWebURL();
+        boolean secure = webURL != null
+            && webURL.toLowerCase().startsWith("https:");
+        if (secure && StringUtils.isNotBlank(username) && passwordObf != null) {
             char[] pw = LoginUtil.deobfuscate(passwordObf);
             if (pw != null && pw.length > 0) {
                 try {

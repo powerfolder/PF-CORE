@@ -858,7 +858,8 @@ public class MainFrame extends PFUIComponent {
         new javax.swing.SwingWorker<Boolean, Void>() {
             protected Boolean doInBackground() throws Exception {
                 // Off the EDT: obtaining the header may mint a device token.
-                String auth = client.getWebAuthorizationHeader();
+                // Explicit user action -> mint one if none exists yet.
+                String auth = client.getWebAuthorizationHeader(true);
                 return AvatarLabel.upload(url, auth, image);
             }
 
@@ -897,7 +898,8 @@ public class MainFrame extends PFUIComponent {
         new javax.swing.SwingWorker<Boolean, Void>() {
             protected Boolean doInBackground() throws Exception {
                 // Off the EDT: obtaining the header may mint a device token.
-                String auth = client.getWebAuthorizationHeader();
+                // Explicit user action -> mint one if none exists yet.
+                String auth = client.getWebAuthorizationHeader(true);
                 return AvatarLabel.delete(url, auth);
             }
 
@@ -990,19 +992,23 @@ public class MainFrame extends PFUIComponent {
         // PFC-3643: static check when fully synced; the blue spinner is shown ONLY
         // while actively syncing or connecting (never when idle/synced).
         boolean synchronized_ = event.equals(SyncStatusEvent.SYNCHRONIZED);
+        // PFC-3643: the blue spinner means "work in progress" - only syncing and the
+        // transient login handshake. A lost/failed server connection (NOT_CONNECTED)
+        // must NOT spin indefinitely (that read as active sync and masked the outage);
+        // it shows the not-connected warning indicator below instead.
         boolean spinning = event.equals(SyncStatusEvent.SYNCING)
             || event.equals(SyncStatusEvent.SYNC_INCOMPLETE)
-            || event.equals(SyncStatusEvent.NOT_CONNECTED)
             || event.equals(SyncStatusEvent.LOGGING_IN);
         allInSyncButton.setVisible(synchronized_);
         syncingButton.setVisible(spinning);
         syncingButton.spin(spinning);
         noticeWarningButton.setVisible(event.equals(SyncStatusEvent.WARNING));
         noticeInfoButton.setVisible(event.equals(SyncStatusEvent.INFORMATION));
-        // The "not connected / not logged in" text stays for the login-failed error;
-        // the connecting states now show the spinner instead.
-        notConnectedLoggedInLabel.setVisible(event
-            .equals(SyncStatusEvent.NOT_LOGGED_IN)
+        // Warning indicator for a logged-in client that is not connected or whose
+        // login failed - so the user can tell "offline" apart from "syncing".
+        notConnectedLoggedInLabel.setVisible(
+            (event.equals(SyncStatusEvent.NOT_LOGGED_IN)
+                || event.equals(SyncStatusEvent.NOT_CONNECTED))
             && client.isLoginExecuted());
 
         // Default sync date.
