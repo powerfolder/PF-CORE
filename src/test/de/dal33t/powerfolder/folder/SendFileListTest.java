@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.message.FolderRelatedMessage;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,19 +63,26 @@ public class SendFileListTest extends TwoControllerTestCase {
     @Test
     public void testAfterFolderJoin() {
         joinTestFolder(SyncProfile.HOST_FILES);
-        TestHelper.waitForCondition(20, new Condition() {
+        final FolderInfo folderInfo = getFolderAtBart().getInfo();
+        final FolderInfo metaFolderInfo = getContollerBart()
+            .getFolderRepository().getMetaFolder(folderInfo).getInfo();
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.messages.size() == 2;
+                return lisasListener.fileListFor(folderInfo) != null
+                    && lisasListener.fileListFor(metaFolderInfo) != null;
+            }
+
+            public String message() {
+                return "Lisa did not receive a file list for both folders. Received: "
+                    + lisasListener.messages;
             }
         });
-        assertEquals( 2,
-            lisasListener.messages.size(),"Received: " + lisasListener.messages);
-        assertTrue(lisasListener.messages.get(0) instanceof FileList);
-        assertTrue(lisasListener.messages.get(1) instanceof FileList);
-        FileList list = (FileList) lisasListener.messages.get(0);
+        assertEquals(2, lisasListener.fileLists().size(),
+            "Received: " + lisasListener.messages);
+        FileList list = lisasListener.fileListFor(folderInfo);
         assertEquals(0, list.nFollowingDeltas);
         assertEquals(0, list.files.length);
-        list = (FileList) lisasListener.messages.get(1);
+        list = lisasListener.fileListFor(metaFolderInfo);
         assertEquals(0, list.nFollowingDeltas);
         // Members file
         assertEquals( 1,
@@ -117,8 +126,27 @@ public class SendFileListTest extends TwoControllerTestCase {
     }
 
     private static final class MyMessageListener implements MessageListener {
-        public List<FolderRelatedMessage> messages = new ArrayList<FolderRelatedMessage>();
+        public List<FolderRelatedMessage> messages = new CopyOnWriteArrayList<FolderRelatedMessage>();
         public boolean ignoreMetaFolder;
+
+        public List<FileList> fileLists() {
+            List<FileList> fileLists = new ArrayList<FileList>();
+            for (FolderRelatedMessage m : messages) {
+                if (m instanceof FileList) {
+                    fileLists.add((FileList) m);
+                }
+            }
+            return fileLists;
+        }
+
+        public FileList fileListFor(FolderInfo foInfo) {
+            for (FileList list : fileLists()) {
+                if (list.folder.equals(foInfo)) {
+                    return list;
+                }
+            }
+            return null;
+        }
 
         public void handleMessage(Member source, Message message) {
             if (message instanceof FileList
