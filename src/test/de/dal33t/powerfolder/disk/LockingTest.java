@@ -35,8 +35,8 @@ package de.dal33t.powerfolder.disk;
  import java.io.IOException;
  import java.nio.file.Files;
  import java.nio.file.Path;
- import java.util.LinkedList;
  import java.util.List;
+ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LockingTest extends TwoControllerTestCase {
     private Locking lockingBart;
@@ -70,8 +70,8 @@ public class LockingTest extends TwoControllerTestCase {
         assertFalse(lockingBart.isLocked(testFInfo));
         assertNull(lockingBart.getLock(testFInfo));
         assertTrue(lockingBart.unlock(testFInfo));
-        assertEquals(0, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(0, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
 
         // Lock
         assertTrue(lockingBart.lock(testFInfo));
@@ -86,8 +86,8 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(getContollerBart().getOSClient().getAccountInfo(),
             lock.getAccountInfo());
 
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
 
         // Unlock
         assertTrue(lockingBart.unlock(testFInfo));
@@ -97,8 +97,8 @@ public class LockingTest extends TwoControllerTestCase {
         assertNull(lockingBart.getLock(testFInfo));
         assertTrue(lockingBart.unlock(testFInfo));
 
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(1, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(1, lockingListenerBart.unlocked(testFInfo));
     }
 
     @Test
@@ -114,30 +114,18 @@ public class LockingTest extends TwoControllerTestCase {
         assertFalse(lockingBart.isLocked(testFInfo));
         assertNull(lockingBart.getLock(testFInfo));
         assertTrue(lockingBart.unlock(testFInfo));
-        assertEquals(0, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(0, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
 
         assertFalse(lockingLisa.isLocked(testFInfo));
         assertNull(lockingLisa.getLock(testFInfo));
         assertTrue(lockingLisa.unlock(testFInfo));
-        assertEquals(0, lockingListenerLisa.locked.size());
-        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(0, lockingListenerLisa.locked(testFInfo));
+        assertEquals(0, lockingListenerLisa.unlocked(testFInfo));
 
         // Lock
         assertTrue(lockingBart.lock(testFInfo));
-        // Wait
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return lockingLisa.isLocked(testFInfo)
-                    && lockingListenerLisa.locked.size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "File wasn't locked at lisa: " + testFInfo;
-            }
-        });
+        waitForLocked(lockingLisa, lockingListenerLisa, testFInfo);
 
         // Test
         assertTrue(lockingLisa.isLocked(testFInfo));
@@ -148,46 +136,65 @@ public class LockingTest extends TwoControllerTestCase {
             lock.getMemberInfo());
         assertEquals(getContollerBart().getOSClient().getAccountInfo(),
             lock.getAccountInfo());
-        assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(0, lockingListenerLisa.unlocked.size());
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertEquals(0, lockingListenerLisa.unlocked(testFInfo));
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
 
         // Unlock
         assertTrue(lockingLisa.unlock(testFInfo));
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return !lockingBart.isLocked(testFInfo)
-                    && lockingListenerBart.unlocked.size() == 1;
-            }
+        waitForUnlocked(lockingBart, lockingListenerBart, testFInfo);
 
-            @Override
-            public String message() {
-                return "File wasn't unlocked at bart: " + testFInfo
-                    + ". locked now? " + lockingBart.isLocked(testFInfo);
-            }
-        });
-        
         // Test
         assertFalse(lockingLisa.isLocked(testFInfo));
         assertNull(lockingLisa.getLock(testFInfo));
         assertTrue(lockingLisa.unlock(testFInfo));
-        assertEquals(1, lockingListenerLisa.locked.size());
-        // PFS-5561: >= instead of ==. The unlock deletes the lock file in the
-        // metafolder; the deletion syncs to the remote side, whose tombstone
-        // can sync back and fire a duplicate unlocked event on a loaded
-        // runner. The lock STATE is asserted exactly above - only the event
-        // count may see an echo.
-        assertTrue(lockingListenerLisa.unlocked.size() >= 1,
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertTrue(lockingListenerLisa.unlocked(testFInfo) >= 1,
             "No unlocked event at lisa");
 
         assertFalse(lockingBart.isLocked(testFInfo));
         assertNull(lockingBart.getLock(testFInfo));
         assertTrue(lockingBart.unlock(testFInfo));
-        assertTrue(lockingListenerBart.unlocked.size() >= 1,
+        assertTrue(lockingListenerBart.unlocked(testFInfo) >= 1,
             "No unlocked event at bart");
-        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+    }
+
+    private static void waitForLocked(final Locking locking,
+        final LoggingLockingListener listener, final FileInfo fInfo)
+    {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return locking.isLocked(fInfo) && listener.locked(fInfo) == 1;
+            }
+
+            @Override
+            public String message() {
+                return "File wasn't locked at " + locking.getController().getMySelf().getNick()
+                    + ": " + fInfo + ". Lock file present? " + locking.isLocked(fInfo)
+                    + ". Locked events: " + listener.locked;
+            }
+        });
+    }
+
+    private static void waitForUnlocked(final Locking locking,
+        final LoggingLockingListener listener, final FileInfo fInfo)
+    {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return !locking.isLocked(fInfo) && listener.unlocked(fInfo) >= 1;
+            }
+
+            @Override
+            public String message() {
+                return "File wasn't unlocked at " + locking.getController().getMySelf().getNick()
+                    + ": " + fInfo + ". Lock file present? " + locking.isLocked(fInfo)
+                    + ". Unlocked events: " + listener.unlocked;
+            }
+        });
     }
     
     @Test
@@ -234,26 +241,26 @@ public class LockingTest extends TwoControllerTestCase {
             + testFile.getFileName().toString().substring(2));
 
         TestHelper.scanFolder(getFolderAtLisa());
-        TestHelper.waitMilliSeconds(500);
+        waitForLocked(lockingBart, lockingListenerBart, testFInfo);
 
-        assertEquals(0, lockingListenerBart.unlocked.size());
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.forbidden.size());
-        assertEquals(0, lockingListenerLisa.unlocked.size());
-        assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(0, lockingListenerLisa.forbidden.size());
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.forbidden(testFInfo));
+        assertEquals(0, lockingListenerLisa.unlocked(testFInfo));
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertEquals(0, lockingListenerLisa.forbidden(testFInfo));
 
         // PFC-2705: Now remove the lock file
         Files.delete(officeLockFile);
         TestHelper.scanFolder(getFolderAtLisa());
-        TestHelper.waitMilliSeconds(500);
+        waitForUnlocked(lockingBart, lockingListenerBart, testFInfo);
 
-        assertEquals(0, lockingListenerLisa.forbidden.size());
-        assertEquals(1, lockingListenerLisa.unlocked.size());
-        assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(0, lockingListenerBart.forbidden.size());
-        assertEquals(1, lockingListenerBart.unlocked.size());
-        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerLisa.forbidden(testFInfo));
+        assertEquals(1, lockingListenerLisa.unlocked(testFInfo));
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.forbidden(testFInfo));
+        assertEquals(1, lockingListenerBart.unlocked(testFInfo));
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
 
         assertFalse(testFInfo.isLocked(getContollerLisa()));
         assertFalse(testFInfo.isLocked(getContollerBart()));
@@ -299,29 +306,27 @@ public class LockingTest extends TwoControllerTestCase {
             testFile.getFileName())));
 
         lockingBart.lock(testFInfo);
+        waitForLocked(lockingLisa, lockingListenerLisa, testFInfo);
 
-        TestHelper.waitMilliSeconds(500);
-
-        assertEquals(0, lockingListenerBart.unlocked.size());
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.forbidden.size());
-        assertEquals(0, lockingListenerLisa.unlocked.size());
-        assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(0, lockingListenerLisa.forbidden.size());
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.forbidden(testFInfo));
+        assertEquals(0, lockingListenerLisa.unlocked(testFInfo));
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertEquals(0, lockingListenerLisa.forbidden(testFInfo));
 
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
             Constants.MS_OFFICE_FILENAME_PREFIX
                 + testFile.getFileName().toString());
 
         TestHelper.scanFolder(getFolderAtLisa());
-        TestHelper.waitMilliSeconds(500);
 
-        assertEquals(0, lockingListenerBart.unlocked.size());
-        assertEquals(1, lockingListenerBart.locked.size());
-        assertEquals(0, lockingListenerBart.forbidden.size());
-        assertEquals(0, lockingListenerLisa.unlocked.size());
-        assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(1, lockingListenerLisa.forbidden.size());
+        assertEquals(0, lockingListenerBart.unlocked(testFInfo));
+        assertEquals(1, lockingListenerBart.locked(testFInfo));
+        assertEquals(0, lockingListenerBart.forbidden(testFInfo));
+        assertEquals(0, lockingListenerLisa.unlocked(testFInfo));
+        assertEquals(1, lockingListenerLisa.locked(testFInfo));
+        assertEquals(1, lockingListenerLisa.forbidden(testFInfo));
     }
 
     @Test
@@ -427,22 +432,7 @@ public class LockingTest extends TwoControllerTestCase {
     @Test
     public void testLockUnlockMultiple() {
         for (int i = 0; i < 25; i++) {
-            lockingListenerBart.locked.clear();
-            lockingListenerBart.unlocked.clear();
-            lockingListenerBart.forbidden.clear();
             testLockUnlockLocal();
-
-            // PFS-5561: let in-flight lock-sync events settle before the
-            // counters are cleared, otherwise a late event of the previous
-            // round pollutes the next round's exact-count assertions.
-            TestHelper.waitMilliSeconds(500);
-
-            lockingListenerBart.locked.clear();
-            lockingListenerBart.unlocked.clear();
-            lockingListenerBart.forbidden.clear();
-            lockingListenerLisa.locked.clear();
-            lockingListenerLisa.unlocked.clear();
-            lockingListenerLisa.forbidden.clear();
             testLockUnlockRemote();
         }
     }
@@ -591,10 +581,32 @@ public class LockingTest extends TwoControllerTestCase {
             .getRelativeName() + ".lck"));
     }
 
-    private class LoggingLockingListener implements LockingListener {
-        List<LockingEvent> locked = new LinkedList<>();
-        List<LockingEvent> unlocked = new LinkedList<>();
-        List<LockingEvent> forbidden = new LinkedList<>();
+    private static class LoggingLockingListener implements LockingListener {
+        List<LockingEvent> locked = new CopyOnWriteArrayList<>();
+        List<LockingEvent> unlocked = new CopyOnWriteArrayList<>();
+        List<LockingEvent> forbidden = new CopyOnWriteArrayList<>();
+
+        int locked(FileInfo fInfo) {
+            return count(locked, fInfo);
+        }
+
+        int unlocked(FileInfo fInfo) {
+            return count(unlocked, fInfo);
+        }
+
+        int forbidden(FileInfo fInfo) {
+            return count(forbidden, fInfo);
+        }
+
+        private static int count(List<LockingEvent> events, FileInfo fInfo) {
+            int n = 0;
+            for (LockingEvent event : events) {
+                if (fInfo.equals(event.getFileInfo())) {
+                    n++;
+                }
+            }
+            return n;
+        }
 
         @Override
         public boolean fireInEventDispatchThread() {
