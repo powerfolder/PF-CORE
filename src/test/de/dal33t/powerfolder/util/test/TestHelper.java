@@ -267,14 +267,22 @@ public class TestHelper {
         return h2TcpPort;
     }
 
+    private static final int FIRST_PROBE_PORT = 20000;
+    private static final int PROBE_PORT_COUNT = 10000;
+
     public static int findFreePort() {
-        try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
-            socket.setReuseAddress(true);
-            socket.bind(new InetSocketAddress("127.0.0.1", 0));
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to find a free TCP port", e);
+        Random random = new Random();
+        for (int attempt = 0; attempt < PROBE_PORT_COUNT; attempt++) {
+            int port = FIRST_PROBE_PORT + random.nextInt(PROBE_PORT_COUNT);
+            try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
+                socket.setReuseAddress(false);
+                socket.bind(new InetSocketAddress(port));
+                return socket.getLocalPort();
+            } catch (IOException e) {
+            }
         }
+        throw new RuntimeException("Unable to find a free TCP port between "
+            + FIRST_PROBE_PORT + " and " + (FIRST_PROBE_PORT + PROBE_PORT_COUNT - 1));
     }
 
     public static Path getTestDir() {
