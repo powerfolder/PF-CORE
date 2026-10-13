@@ -31,6 +31,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFS-5867: what a folder reports as its size when the inheritance of a subfolder below it is
  * interrupted.
@@ -43,6 +48,7 @@ import java.nio.file.Path;
  */
 public class SubFolderStatisticTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -52,6 +58,7 @@ public class SubFolderStatisticTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -59,6 +66,7 @@ public class SubFolderStatisticTest extends TwoControllerTestCase {
     }
 
     /** The bytes move with the rows: off the top folder, onto the subfolder, and the sum stays. */
+    @Test
     public void testTheBytesMoveToTheInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path outside = TestHelper.createRandomFile(topFolder.getPhysicalDir(), "Outside.txt");
@@ -68,18 +76,20 @@ public class SubFolderStatisticTest extends TwoControllerTestCase {
         topFolder.getStatistic().calculate0();
         long sizeOutside = Files.size(outside);
         long sizeInside = Files.size(inside);
-        assertEquals("Sanity: the folder counts both files",
-            sizeOutside + sizeInside, topFolder.getStatistic().getLocalSize());
+        assertEquals(sizeOutside + sizeInside, topFolder.getStatistic().getLocalSize(),
+            "Sanity: the folder counts both files");
 
         Folder subFolder = shareInterrupted(topFolder, "projects/reports");
 
         assertSize("The top folder keeps what is still its own", topFolder, sizeOutside);
         assertSize("The subfolder counts what moved to it", subFolder, sizeInside);
-        assertEquals("Together: what the folder held before", sizeOutside + sizeInside,
-            topFolder.getStatistic().getLocalSize() + subFolder.getStatistic().getLocalSize());
+        assertEquals(sizeOutside + sizeInside,
+            topFolder.getStatistic().getLocalSize() + subFolder.getStatistic().getLocalSize(),
+            "Together: what the folder held before");
     }
 
     /** And back: restoring the inheritance hands the bytes to the top folder again. */
+    @Test
     public void testRestoringTheInheritanceHandsTheBytesBack() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path outside = TestHelper.createRandomFile(topFolder.getPhysicalDir(), "Outside.txt");
@@ -98,7 +108,7 @@ public class SubFolderStatisticTest extends TwoControllerTestCase {
 
     private Folder shareInterrupted(Folder topFolder, String relativeName) {
         FileInfo fInfo = topFolder.getFileInfo(relativeName);
-        assertNotNull(topFolder + ": no row for " + relativeName, fInfo);
+        assertNotNull(fInfo, topFolder + ": no row for " + relativeName);
         Folder subFolder = topFolder.share((DirectoryInfo) fInfo);
         subFolder.setInheritsPermissions(false);
         return subFolder;

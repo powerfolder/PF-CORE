@@ -19,14 +19,11 @@
  */
 package de.dal33t.powerfolder.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -187,8 +184,9 @@ public class GroupTest {
             owners.grant(FolderPermission.owner(inheriting));
             owners.grant(FolderPermission.owner(interrupted));
 
-            assertTrue("A group must not hold any folder permission from an owner grant: "
-                + owners.getPermissions(), owners.getPermissions().isEmpty());
+            assertTrue(owners.getPermissions().isEmpty(),
+                "A group must not hold any folder permission from an owner grant: "
+                + owners.getPermissions());
             assertEquals(AccessMode.NO_ACCESS, owners.getAllowedAccess(top));
             assertEquals(AccessMode.NO_ACCESS, owners.getAllowedAccess(interrupted));
         } finally {
@@ -219,8 +217,8 @@ public class GroupTest {
 
         // The supported way down: revoke, then grant
         team.revokeAllFolderPermissions(top);
-        assertTrue("Revoke must clear every mode: " + team.getPermissions(),
-            team.getPermissions().isEmpty());
+        assertTrue(team.getPermissions().isEmpty(),
+            "Revoke must clear every mode: " + team.getPermissions());
         assertEquals(AccessMode.NO_ACCESS, team.getAllowedAccess(top));
 
         team.grant(FolderPermission.readWrite(top));

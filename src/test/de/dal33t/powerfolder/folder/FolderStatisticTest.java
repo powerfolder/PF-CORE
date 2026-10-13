@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -43,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for FolderStatistic.
@@ -52,7 +57,7 @@ import java.util.List;
  */
 public class FolderStatisticTest extends FiveControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         Profiling.setEnabled(true);
@@ -64,6 +69,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
     }
 
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -71,6 +77,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     /**
      * Tests the sync percentage with one file that gets updated
      */
+    @Test
     public void testOneFile() throws IOException {
         forceStatsCals();
         assertHasLastSyncDate(false, false, false, false, false);
@@ -127,6 +134,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     /**
      * Tests the sync percentage with one file that gets updated
      */
+    @Test
     public void testOneFileSameVersion() {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
@@ -170,6 +178,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         }
     }
 
+    @Test
     public void testInitialSync() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
@@ -219,6 +228,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, Files.size(testFile));
     }
 
+    @Test
     public void testMultipleFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         int nFiles = 100;
@@ -270,6 +280,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(nFiles, totalSize);
     }
 
+    @Test
     public void testIncomingFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
@@ -294,6 +305,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, Files.size(testFile));
     }
 
+    @Test
     public void testDeletedFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
@@ -349,6 +361,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, 500);
     }
 
+    @Test
     public void testAutodownload() throws IOException {
         assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
@@ -402,6 +415,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     /**
      * Test the sync calculation with multiple files and mixed sync profiles
      */
+    @Test
     public void testMultipleFilesComplex() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
@@ -576,8 +590,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     private void assertTotalFileCount(int nFiles) {
-        assertEquals(nFiles + " expected. got: " + getFolderAtHomer().getKnownFiles(),
-                    nFiles, getFolderAtHomer().getStatistic().getTotalFilesCount());
+        assertEquals(
+                    nFiles, getFolderAtHomer().getStatistic().getTotalFilesCount(),nFiles + " expected. got: " + getFolderAtHomer().getKnownFiles());
         assertEquals(nFiles, getFolderAtBart().getStatistic().getTotalFilesCount());
         assertEquals(nFiles, getFolderAtMarge().getStatistic().getTotalFilesCount());
         assertEquals(nFiles, getFolderAtLisa().getStatistic().getTotalFilesCount());

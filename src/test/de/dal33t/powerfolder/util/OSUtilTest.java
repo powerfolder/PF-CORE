@@ -18,8 +18,9 @@
  */
 package de.dal33t.powerfolder.util.os;
 
-import junit.framework.TestCase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.InputStream;
 import java.net.URL;
@@ -27,15 +28,16 @@ import java.net.URL;
 /**
  * Simple tests for {@link OSUtil#configureTruststore()}.
  */
-public class OSUtilTest extends TestCase {
+public class OSUtilTest {
 
     /**
      * Integration check: after configureTruststore() we should be able
      * to open an HTTPS connection to a well-known site with a public CA.
      */
+    @Test
     public void testHttpsConnectionAfterConfigureTruststore() throws Exception {
         boolean result = OSUtil.configureTruststore();
-        assertTrue("configureTruststore() should succeed", result);
+        assertTrue( result,"configureTruststore() should succeed");
 
         URL url = new URL("https://www.google.com");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -43,17 +45,18 @@ public class OSUtilTest extends TestCase {
         conn.setReadTimeout(5000);
 
         int code = conn.getResponseCode();
-        assertEquals("Expected HTTP 200 OK", 200, code);
+        assertEquals( 200, code,"Expected HTTP 200 OK");
 
         InputStream in = conn.getInputStream();
-        assertNotNull("Response stream should not be null", in);
+        assertNotNull( in,"Response stream should not be null");
         in.close();
         conn.disconnect();
     }
 
 
+    @Test
     public void testHttpsConnectionToPrepsysh() throws Exception {
-        assertTrue("configureTruststore() should succeed", OSUtil.configureTruststore());
+        assertTrue( OSUtil.configureTruststore(),"configureTruststore() should succeed");
 
         URL url = new URL("https://prepsysh.nas.lrz.de/");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -62,10 +65,10 @@ public class OSUtilTest extends TestCase {
 
         int code = conn.getResponseCode();
         // we don't know the exact status code in advance, but must be >=200 and <500
-        assertTrue("Unexpected HTTP response code from prepsysh: " + code, code >= 200 && code < 500);
+        assertTrue( code >= 200 && code < 500,"Unexpected HTTP response code from prepsysh: " + code);
 
         InputStream in = conn.getInputStream();
-        assertNotNull("Response stream from prepsysh should not be null", in);
+        assertNotNull( in,"Response stream from prepsysh should not be null");
         in.close();
         conn.disconnect();
     }

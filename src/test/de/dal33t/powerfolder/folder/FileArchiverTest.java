@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,9 +39,10 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileArchiverTest extends TwoControllerTestCase {
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         deleteTestFolderContents();
@@ -48,6 +52,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
     }
 
+    @Test
     public void testCopyOrMoveFileArchiver() throws IOException {
         Folder fb = getFolderAtBart();
         Path tb = TestHelper.createRandomFile(fb.getLocalBase(), 1024);
@@ -85,6 +90,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
      * the versions were not listed, not restorable, and the nightly maintenance skipped them for
      * good with "File not in archive".
      */
+    @Test
     public void testArchiveFileWithoutExtensionBelowDottedDirectory() throws IOException {
         Folder fb = getFolderAtBart();
         Path dir = Files.createDirectories(fb.getLocalBase().resolve("2. Facharbeitsgruppe"));
@@ -103,13 +109,14 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         Path expected = archive.resolve("2. Facharbeitsgruppe")
             .resolve("Betriebsartenliste_K_" + fib.getVersion());
-        assertTrue("Not archived at " + expected, Files.exists(expected));
+        assertTrue(Files.exists(expected), "Not archived at " + expected);
 
         List<FileInfo> versions = fa.getArchivedFilesInfos(fib);
         assertEquals(1, versions.size());
         assertEquals(fib.getRelativeName(), versions.get(0).getRelativeName());
     }
 
+    @Test
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
 
@@ -139,6 +146,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertFalse(Files.exists(eLisa));
     }
 
+    @Test
     public void testLimitedVersions() {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(3);
@@ -191,6 +199,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(ver[3]));
     }
 
+    @Test
     public void testChangeVersionsPerFile() {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(3);
@@ -244,6 +253,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertFalse(Files.exists(ver[4]));
     }
 
+    @Test
     public void testUnlimitedFileArchive() throws IOException {
         int nVersion = 6;
         getFolderAtBart().setArchiveVersions(-1);
@@ -259,9 +269,9 @@ public class FileArchiverTest extends TwoControllerTestCase {
             TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
             assertTrue(
+                aBart.getArchivedFilesInfos(fInfo).size() > 0,
                 "Archived versions not found. Got: "
-                    + aBart.getArchivedFilesInfos(fInfo),
-                aBart.getArchivedFilesInfos(fInfo).size() > 0);
+                    + aBart.getArchivedFilesInfos(fInfo));
         }
         assertTrue(getFolderAtBart().getFileArchiver().getSize() > 0);
         assertEquals(nVersion, aBart.getArchivedFilesInfos(fInfo).size());
@@ -280,6 +290,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(nVersion, archived.size());
     }
 
+    @Test
     public void testRestoreInDeletedSubdir() throws IOException {
         getFolderAtLisa().setArchiveVersions(1);
         Path f = TestHelper.createRandomFile(
@@ -294,6 +305,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(f));
     }
 
+    @Test
     public void testNoConflictOnRestore() throws IOException {
         Path fileAtBart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase());
@@ -356,6 +368,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtBart().countProblems());
     }
 
+    @Test
     public void testMaintainAndCleanup() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(5);
@@ -397,6 +410,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(1, archiver.getArchivedFilesInfos(fib).size());
     }
 
+    @Test
     public void testMaintainAndCleanupWithDate() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -431,6 +445,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
     }
 
     /** Versions archived without a _K_n marker (old dotted-directory bug) age out like any other version. */
+    @Test
     public void testCleanupFileWithoutVersionMarker() throws IOException {
         Folder fb = getFolderAtBart();
         Path archive = Files.createDirectories(fb.getSystemSubDir().resolve("archive"));
@@ -441,13 +456,14 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
         archiver.maintainAndCleanup(cal.getTime(), fb.getDAO(), fb.getInfo(), me);
-        assertTrue("Within retention, must be kept", Files.exists(legacy));
+        assertTrue(Files.exists(legacy), "Within retention, must be kept");
 
         cal.add(Calendar.DATE, 2);
         archiver.maintainAndCleanup(cal.getTime(), fb.getDAO(), fb.getInfo(), me);
-        assertFalse("Past retention, must be deleted", Files.exists(legacy));
+        assertFalse(Files.exists(legacy), "Past retention, must be deleted");
     }
 
+    @Test
     public void testRecoverLostFileInfos() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -490,10 +506,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         // Verify DAO entry was recovered
         FileInfo recovered = fb.getFile(fib);
-        assertNotNull("FileInfo should have been recovered from archive", recovered);
-        assertTrue("Recovered FileInfo should be marked as deleted", recovered.isDeleted());
+        assertNotNull(recovered, "FileInfo should have been recovered from archive");
+        assertTrue(recovered.isDeleted(), "Recovered FileInfo should be marked as deleted");
     }
 
+    @Test
     public void testNightlyArchiveMaintenanceSizeRecalculated() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(5);
@@ -534,6 +551,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, archiver.getSize());
     }
 
+    @Test
     public void testRestoreWithCurrentFile() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -575,16 +593,17 @@ public class FileArchiverTest extends TwoControllerTestCase {
         // Restore archived version, passing currentFile
         boolean restored = archiver.restore(
             archivedVersion, currentFile, target);
-        assertTrue("Restore should succeed", restored);
-        assertTrue("Restored file should exist", Files.exists(target));
+        assertTrue(restored, "Restore should succeed");
+        assertTrue(Files.exists(target), "Restored file should exist");
 
         // The current file should now be archived as well
         List<FileInfo> archivedAfter =
             archiver.getArchivedFilesInfos(fib);
-        assertEquals("Current file should have been archived "
-            + "before restoring", 2, archivedAfter.size());
+        assertEquals(2, archivedAfter.size(),
+            "Current file should have been archived before restoring");
     }
 
+    @Test
     public void testRestoreWithCurrentFileNull() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -620,13 +639,13 @@ public class FileArchiverTest extends TwoControllerTestCase {
         // Restore with null currentFile — should not archive anything
         boolean restored = archiver.restore(
             archivedVersion, null, restoreTarget);
-        assertTrue("Restore should succeed", restored);
-        assertTrue("Restored file should exist",
-            Files.exists(restoreTarget));
+        assertTrue(restored, "Restore should succeed");
+        assertTrue(Files.exists(restoreTarget),
+            "Restored file should exist");
 
         // No additional version should have been archived
-        assertEquals("No additional version should be archived",
-            1, archiver.getArchivedFilesInfos(fib).size());
+        assertEquals(1, archiver.getArchivedFilesInfos(fib).size(),
+            "No additional version should be archived");
     }
 
     private FileInfo modLisaFile(Path file, final FileInfo fInfo) {

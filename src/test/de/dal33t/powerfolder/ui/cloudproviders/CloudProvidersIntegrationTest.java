@@ -18,16 +18,13 @@
  */
 package de.dal33t.powerfolder.ui.cloudproviders;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Map;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.types.Variant;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the pure logic of the Linux libcloudproviders integration
@@ -98,8 +95,8 @@ public class CloudProvidersIntegrationTest {
 
         // Status must marshal as D-Bus "i" -> an Integer, value 2 (syncing).
         Object status = a.get("Status").getValue();
-        assertTrue("Status must be an Integer (D-Bus 'i')",
-            status instanceof Integer);
+        assertTrue(status instanceof Integer,
+            "Status must be an Integer (D-Bus 'i')");
         assertEquals(Integer.valueOf(CloudProvidersIntegration.STATUS_SYNCING),
             status);
     }
@@ -113,8 +110,8 @@ public class CloudProvidersIntegrationTest {
                 "/home/user/PowerFolders", "powerfolder",
                 CloudProvidersIntegration.STATUS_IDLE, "");
 
-        assertEquals("Exactly the provider + account objects", 2,
-            managed.size());
+        assertEquals(2, managed.size(),
+            "Exactly the provider + account objects");
 
         boolean foundProvider = false;
         boolean foundAccount = false;
@@ -137,8 +134,8 @@ public class CloudProvidersIntegrationTest {
                     props.get("Status").getValue());
             }
         }
-        assertTrue("Provider object present", foundProvider);
-        assertTrue("Account object present", foundAccount);
+        assertTrue(foundProvider, "Provider object present");
+        assertTrue(foundAccount, "Account object present");
     }
 
     @Test
@@ -150,8 +147,8 @@ public class CloudProvidersIntegrationTest {
         boolean account = false;
         for (DBusPath path : managed.keySet()) {
             String p = path.getPath();
-            assertTrue("Managed objects must be under the base path: " + p,
-                p.startsWith(CloudProvidersIntegration.BASE_PATH + "/"));
+            assertTrue(p.startsWith(CloudProvidersIntegration.BASE_PATH + "/"),
+                "Managed objects must be under the base path: " + p);
             if (p.equals(CloudProvidersIntegration.PROVIDER_PATH)) {
                 provider = true;
             }
@@ -181,8 +178,8 @@ public class CloudProvidersIntegrationTest {
             "de.dal33t.powerfolder.CloudProvider",
             "/de/dal33t/powerfolder/CloudProvider");
 
-        assertTrue("must start with the group header",
-            content.startsWith("[Cloud Providers]\n"));
+        assertTrue(content.startsWith("[Cloud Providers]\n"),
+            "must start with the group header");
         assertTrue(content.contains(
             "\nBusName=de.dal33t.powerfolder.CloudProvider\n"));
         assertTrue(content.contains(

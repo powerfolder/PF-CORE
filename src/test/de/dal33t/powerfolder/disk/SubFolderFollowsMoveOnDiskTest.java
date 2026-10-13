@@ -32,6 +32,11 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 /**
  * PFC-3645, follow-up of PFS-5926: a shared subfolder whose directory moved on disk - renamed, or moved with a parent
  * directory, by whatever way: web, WebDAV, desktop client, file system - follows its data. A scan used to report
@@ -47,6 +52,7 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
 
     private Folder top;
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -56,6 +62,7 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
         top = getFolderAtBart();
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -107,8 +114,8 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
         repository().getFolder(innerFolder.getInfo()).setInheritsPermissions(false);
         FolderInfo outer = repository().getFolder(outerFolder.getInfo()).getInfo();
         FolderInfo inner = repository().getFolder(innerFolder.getInfo()).getInfo();
-        assertFalse("Sanity: outer interrupted", outer.inheritsPermissions());
-        assertFalse("Sanity: inner interrupted", inner.inheritsPermissions());
+        assertFalse(outer.inheritsPermissions(), "Sanity: outer interrupted");
+        assertFalse(inner.inheritsPermissions(), "Sanity: inner interrupted");
 
         move("area/old", "area/new");
         scanFolder(top);
@@ -126,18 +133,19 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
 
         FileInfo stray = top.getDAO().find(
             FileInfoFactory.lookupInstance(top.getInfo(), "area/new/restricted/report.pdf"), null);
-        assertTrue("The top folder holds no row of the subfolder's content: " + stray,
-            stray == null || stray.isDeleted());
+        assertTrue(stray == null || stray.isDeleted(),
+            "The top folder holds no row of the subfolder's content: " + stray);
     }
 
     /** Really deleted: then, and only then, the share is dissolved - as before. */
+    @Test
     public void testDeletingTheParentDirectoryStillDissolvesTheSubFolder() throws IOException {
         FolderInfo restricted = interruptedSubFolder("area/old/restricted", "report.pdf");
 
         PathUtils.recursiveDelete(top.getLocalBase().resolve("area/old"));
         scanFolder(top);
 
-        assertNull("A deleted subfolder is dissolved", repository().getFolder(restricted));
+        assertNull(repository().getFolder(restricted), "A deleted subfolder is dissolved");
     }
 
     // Helpers ****************************************************************
@@ -148,11 +156,11 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(dir, fileName);
         scanFolder(top);
         FileInfo row = top.getFileInfo(location);
-        assertNotNull(location + ": no row to share", row);
+        assertNotNull(row, location + ": no row to share");
         Folder subFolder = top.share((DirectoryInfo) row);
-        assertNotNull(location + ": not shared", subFolder);
+        assertNotNull(subFolder, location + ": not shared");
         subFolder.setInheritsPermissions(false);
-        assertFalse("Sanity: " + location + " is interrupted", subFolder.getInfo().inheritsPermissions());
+        assertFalse(subFolder.getInfo().inheritsPermissions(), "Sanity: " + location + " is interrupted");
         return subFolder.getInfo();
     }
 
@@ -175,14 +183,15 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
 
     private void assertFollowed(FolderInfo before, String newLocation, String fileName) {
         Folder followed = repository().getFolder(before);
-        assertNotNull(before.getLocalizedName() + ": the share is gone - it was dissolved instead of followed",
-            followed);
-        assertEquals("Same folder at the new place", newLocation, followed.getInfo().locationPath());
-        assertFalse("Still interrupted", followed.getInfo().inheritsPermissions());
-        assertEquals("Mounted at the new place", top.getLocalBase().resolve(newLocation).toAbsolutePath().normalize(),
-            followed.getLocalBase().toAbsolutePath().normalize());
+        assertNotNull(followed,
+            before.getLocalizedName() + ": the share is gone - it was dissolved instead of followed");
+        assertEquals(newLocation, followed.getInfo().locationPath(), "Same folder at the new place");
+        assertFalse(followed.getInfo().inheritsPermissions(), "Still interrupted");
+        assertEquals(top.getLocalBase().resolve(newLocation).toAbsolutePath().normalize(),
+            followed.getLocalBase().toAbsolutePath().normalize(),
+            "Mounted at the new place");
         FileInfo content = followed.getFileInfo(fileName);
-        assertNotNull("It still holds its content", content);
+        assertNotNull(content, "It still holds its content");
         assertFalse(content.isDeleted());
     }
 

@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -25,10 +28,11 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DownloadCleanupTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         deleteTestFolderContents();
@@ -56,6 +60,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testExpertNoCleanupOfDownloads() throws IOException {
         ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerLisa(), 4); // Never
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true); // Expert
@@ -63,7 +68,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
 
         // Lisa's download should NOT have been cleaned up.
         int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
-        assertEquals("Expert No Cleanup", 1, downloadsSize);
+        assertEquals( 1, downloadsSize,"Expert No Cleanup");
     }
 
     /**
@@ -71,6 +76,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testExpertImmediateCleanupOfDownloads() throws IOException {
         ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerLisa(), 0); // Immediate
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true); // Expert
@@ -78,7 +84,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
 
         // Lisa's download should have been cleaned up.
         int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
-        assertEquals("Expert Immediate Cleanup", 0, downloadsSize);
+        assertEquals( 0, downloadsSize,"Expert Immediate Cleanup");
     }
 
     /**
@@ -88,6 +94,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testBeginnerModeAutoCleanupOfDownloads() throws IOException {
         ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.removeValue(getContollerLisa());
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), false);
@@ -96,7 +103,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         // Lisa's download should have been cleaned up.
         int downloadsSize = getContollerLisa().getTransferManager()
             .getCompletedDownloadsCollection().size();
-        assertEquals("Novice No Cleanup", 0, downloadsSize);
+        assertEquals( 0, downloadsSize,"Novice No Cleanup");
     }
 
 }

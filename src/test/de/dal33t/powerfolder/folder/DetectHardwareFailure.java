@@ -19,6 +19,9 @@
 */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,9 +31,11 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DetectHardwareFailure extends ControllerTestCase {
 
+    @BeforeEach
     public void setUp() throws Exception {
 
         super.setUp();
@@ -51,13 +56,16 @@ public class DetectHardwareFailure extends ControllerTestCase {
         }
     }
 
+    @Test
     public void testHardwareFailure() throws IOException {
         scanFolder(getFolder());
         assertEquals(200, getFolder().getKnownFiles().size());
         // now delete the folder :-D
-        PathUtils.recursiveDelete(getFolder().getLocalBase());
+        getFolder().getFolderWatcher().setIngoreAll(true);
+        getController().getFolderRepository().setSuspendNewFolderSearch(true);
+        deleteWithRetry(getFolder().getLocalBase());
 
-        scanFolder(getFolder());
+        getFolder().scanLocalFiles();
         assertEquals(200, getFolder().getKnownFiles().size());
         // on hardware failure of deletion of folder of disk we don't want to
         // mark them as deleted. to prevent the los of files to spread over more
@@ -65,5 +73,24 @@ public class DetectHardwareFailure extends ControllerTestCase {
         for (FileInfo fileInfo : getFolder().getKnownFiles()) {
             assertFalse(fileInfo.isDeleted());
         }
+    }
+
+    private static void deleteWithRetry(Path dir) throws IOException {
+        IOException last = null;
+        for (int attempt = 0; attempt < 10; attempt++) {
+            try {
+                PathUtils.recursiveDelete(dir);
+                return;
+            } catch (java.nio.file.DirectoryNotEmptyException e) {
+                last = e;
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException(ie);
+                }
+            }
+        }
+        throw last;
     }
 }
