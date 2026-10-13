@@ -95,7 +95,6 @@ test-macOS:
 test-Windows:
   stage: test
   extends: .rules-test
-  parallel: 2
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -103,11 +102,10 @@ test-Windows:
   tags:
     - Windows
   script:
-    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Old Java processes killed (if any)'"
     - echo CPUs=%NUMBER_OF_PROCESSORS%
+    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Select-Object Id,StartTime,WorkingSet64,Path | Format-Table"
     - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
-    - set /a SHARD_INDEX=%CI_NODE_INDEX%-1
-    - call ant run-tests -Dshard.total=%CI_NODE_TOTAL% -Dshard.index=%SHARD_INDEX% -Dtest.threads=2
+    - call ant run-tests -Dtest.threads=4
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
