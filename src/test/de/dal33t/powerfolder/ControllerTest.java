@@ -23,10 +23,15 @@ package de.dal33t.powerfolder;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,13 +41,13 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -136,147 +141,227 @@ public final class ControllerTest extends ControllerTestCase {
         assertTrue( run,"Not run yet");
     }
 
-    /**
-     * PFS-2232 / PFC-2941
-     * 
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
     @Test
-    public void testAvoidPeaks()
-        throws InterruptedException, ExecutionException
-    {
+    public void testAvoidPeaks() {
         ConfigurationEntry.FOLDER_WATCHER_ENABLED.setValue(getController(), false);
         int nFolders = 500;
-        final AtomicInteger maxThreads = new AtomicInteger(0);
-        getController().scheduleAndRepeat(() -> { 
-            int tCount = ((ScheduledThreadPoolExecutor) getController()
-                .getThreadPool()).getActiveCount();
-            if (tCount > maxThreads.get()) {
-                maxThreads.set(tCount);
-            }
-        }, 1);
-
         for (int i = 0; i < nFolders; i++) {
-            //FolderInfo foInfo = new FolderInfo("Test-Folder-" + i, IdGenerator.makeFolderId());
             FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Test-Folder" + i);
             joinFolder(foInfo,
                 getController().getFolderRepository().getFoldersBasedir()
                     .resolve(foInfo.getName()),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
-        
-        TestHelper.waitMilliSeconds(1000);
+        StatisticCalculationCounter calculated = new StatisticCalculationCounter(
+            getController().getFolderRepository().getFolders(true));
 
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders(true))
-        {
-            folder.getStatistic().scheduleCalculate();
+        List<Long> delays = new ArrayList<>();
+        for (int round = 0; round < 3; round++) {
+            Map<Folder, Integer> before = calculated.snapshot();
+            Map<Folder, Long> scheduled = scheduleStatisticCalculationOfAllFolders();
+            delays.addAll(scheduled.values());
+            calculated.waitForCalculationsSince(before, scheduled.keySet());
         }
-        TestHelper.waitMilliSeconds(1000);
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders(true))
-        {
-            folder.getStatistic().scheduleCalculate();
+
+        assertTrue(delays.size() >= nFolders,
+            "Only " + delays.size() + " calculations were scheduled for " + nFolders + " folders");
+        int slotMillis = 100;
+        Map<Long, Integer> dueInSlot = new HashMap<>();
+        for (Long delay : delays) {
+            dueInSlot.merge(delay / slotMillis, 1, Integer::sum);
         }
-        TestHelper.waitMilliSeconds(1000);
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders(true))
-        {
-            folder.getStatistic().scheduleCalculate();
-        }
-        
-        TestHelper.waitMilliSeconds(1000);
-        assertTrue(
-            maxThreads
-                .get() < WrappedScheduledThreadPoolExecutor.WARN_NUMBER_WORKERS,"Saw a too big peak in threads in pool: " + maxThreads.get());
+        int peak = Collections.max(dueInSlot.values());
+        assertTrue(peak <= delays.size() / 4,
+            "Statistic calculations are not spread: " + peak + " of " + delays.size()
+                + " are due within the same " + slotMillis + "ms slot: " + dueInSlot);
     }
-    /**
-     * PFS-2232 / PFC-2941
-     * 
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
+
+    private Map<Folder, Long> scheduleStatisticCalculationOfAllFolders() {
+        Map<Folder, Long> scheduled = new HashMap<>();
+        for (Folder folder : getController().getFolderRepository().getFolders(true)) {
+            if (!folder.isStarted()) {
+                continue;
+            }
+            long delay = folder.getStatistic().scheduleCalculate();
+            if (delay >= 0) {
+                scheduled.put(folder, delay);
+            }
+        }
+        return scheduled;
+    }
+
+    private static final class StatisticCalculationCounter extends FolderAdapter {
+        private final Map<Folder, AtomicInteger> calculations = new ConcurrentHashMap<>();
+
+        StatisticCalculationCounter(Collection<Folder> folders) {
+            for (Folder folder : folders) {
+                calculations.put(folder, new AtomicInteger());
+                folder.addFolderListener(this);
+            }
+        }
+
+        @Override
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            calculations.get(folderEvent.getFolder()).incrementAndGet();
+        }
+
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        Map<Folder, Integer> snapshot() {
+            Map<Folder, Integer> counts = new HashMap<>();
+            for (Map.Entry<Folder, AtomicInteger> entry : calculations.entrySet()) {
+                counts.put(entry.getKey(), entry.getValue().get());
+            }
+            return counts;
+        }
+
+        void waitForCalculationsSince(Map<Folder, Integer> before, Collection<Folder> folders) {
+            TestHelper.waitForCondition(30, new ConditionWithMessage() {
+                @Override
+                public boolean reached() {
+                    return pending(before, folders).isEmpty();
+                }
+
+                @Override
+                public String message() {
+                    return "Statistics not calculated for " + pending(before, folders);
+                }
+            });
+        }
+
+        private List<Folder> pending(Map<Folder, Integer> before, Collection<Folder> folders) {
+            List<Folder> pending = new ArrayList<>();
+            for (Folder folder : folders) {
+                if (calculations.get(folder).get() <= before.get(folder)) {
+                    pending.add(folder);
+                }
+            }
+            return pending;
+        }
+    }
+
+    private static final class ConcurrencyTracker {
+        private final AtomicInteger running = new AtomicInteger();
+        private final AtomicInteger peak = new AtomicInteger();
+
+        void enter() {
+            peak.accumulateAndGet(running.incrementAndGet(), Math::max);
+        }
+
+        void exit() {
+            running.decrementAndGet();
+        }
+
+        int peak() {
+            return peak.get();
+        }
+
+        int running() {
+            return running.get();
+        }
+    }
+
     @Test
-    public void testScheduledTasks()
-        throws InterruptedException, ExecutionException
-    {
-        final AtomicBoolean interrupted = new AtomicBoolean();
-        // 1) Schedule tasks and wait for execution
+    public void testScheduledTasks() {
         int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 10;
-        final AtomicInteger maxThreads = new AtomicInteger(0);
         int waitMS = 1000;
+        ConcurrencyTracker tracker = new ConcurrencyTracker();
+        AtomicBoolean interrupted = new AtomicBoolean();
+        AtomicBoolean overlapped = new AtomicBoolean();
+        List<AtomicInteger> runsPerTask = new ArrayList<>();
+        List<ScheduledFuture<?>> futures = new ArrayList<>();
         for (int i = 0; i < nTasks; i++) {
-            getController().getThreadPool().scheduleWithFixedDelay(() -> {
+            AtomicBoolean busy = new AtomicBoolean();
+            AtomicInteger runs = new AtomicInteger();
+            runsPerTask.add(runs);
+            futures.add(getController().getThreadPool().scheduleWithFixedDelay(() -> {
+                if (!busy.compareAndSet(false, true)) {
+                    overlapped.set(true);
+                    return;
+                }
+                tracker.enter();
                 try {
-                    int tCount = ((ScheduledThreadPoolExecutor) getController()
-                        .getThreadPool()).getActiveCount();
-                    if (tCount > maxThreads.get()) {
-                        maxThreads.set(tCount);
-                    }
                     TestHelper.waitMilliSeconds(waitMS);
+                    runs.incrementAndGet();
                 } catch (RuntimeException e) {
                     interrupted.set(true);
+                } finally {
+                    tracker.exit();
+                    busy.set(false);
                 }
-            } , 1, 1, TimeUnit.MILLISECONDS);
+            }, 1, 1, TimeUnit.MILLISECONDS));
             TestHelper.waitMilliSeconds(1);
         }
-        TestHelper.waitMilliSeconds(5000);
-        assertTrue(
-            maxThreads.get() < nTasks * 5,"Saw a too big peak in threads in pool: " + maxThreads.get());
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return runsPerTask.stream().allMatch(runs -> runs.get() >= 2);
+            }
+
+            @Override
+            public String message() {
+                return "Runs per task: " + runsPerTask;
+            }
+        });
+        for (ScheduledFuture<?> future : futures) {
+            future.cancel(false);
+        }
+        TestHelper.waitForCondition(10, () -> tracker.running() == 0);
+
+        assertFalse(overlapped.get(), "A fixed delay task was run concurrently with itself");
+        assertTrue(tracker.peak() <= nTasks,
+            "Saw a too big peak in concurrently running tasks: " + tracker.peak());
+        assertFalse(interrupted.get(), "Tasks were cancelled");
     }
 
-    /**
-     * PFS-2232 / PFC-2941
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
     @Test
-    public void testManyThreadPoolTasks()
-        throws InterruptedException, ExecutionException
-    {
-        final AtomicBoolean interrupted = new AtomicBoolean();
-        // 1) Schedule tasks and wait for execution
+    public void testManyThreadPoolTasks() throws InterruptedException {
         int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 100;
-        final AtomicInteger maxThreads = new AtomicInteger(0);
         int waitMS = 1000;
+        ConcurrencyTracker tracker = new ConcurrencyTracker();
+        AtomicBoolean interrupted = new AtomicBoolean();
+        AtomicInteger completed = new AtomicInteger();
         for (int i = 0; i < nTasks; i++) {
             getController().getThreadPool().schedule(() -> {
-                int tCount = ((ScheduledThreadPoolExecutor) getController()
-                    .getThreadPool()).getActiveCount();
-                if (tCount > maxThreads.get()) {
-                    maxThreads.set(tCount);
-                }
+                tracker.enter();
                 try {
                     TestHelper.waitMilliSeconds(waitMS);
+                    completed.incrementAndGet();
                 } catch (RuntimeException e) {
-                    e.printStackTrace();
                     interrupted.set(true);
+                } finally {
+                    tracker.exit();
                 }
-            } , 1, TimeUnit.MILLISECONDS);
+            }, 1, TimeUnit.MILLISECONDS);
             TestHelper.waitMilliSeconds(1);
         }
-        TestHelper.waitMilliSeconds(500);
-        assertTrue(
-            maxThreads.get() < nTasks * 2,"Saw a too big peak in threads in pool: " + maxThreads.get());
-        
-        // 2) Terminate
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return completed.get() == nTasks;
+            }
+
+            @Override
+            public String message() {
+                return "Completed " + completed.get() + " of " + nTasks + " tasks";
+            }
+        });
+        assertFalse(interrupted.get(), "Tasks were cancelled. Threadpool was likely exhausted");
+        assertTrue(tracker.peak() > Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL,
+            "Threadpool did not grow beyond its core size, peak was " + tracker.peak());
+        assertTrue(tracker.peak() <= nTasks,
+            "Saw a too big peak in concurrently running tasks: " + tracker.peak());
+
         getController().getThreadPool().shutdown();
         getController().getThreadPool().awaitTermination(waitMS * 2,
             TimeUnit.MILLISECONDS);
         List<Runnable> remainingTasks = getController().getThreadPool()
             .shutdownNow();
-        TestHelper.waitMilliSeconds(1000);
-
-        // 3) Check empty threadpool
-        // Two tasks may remain:
-        // LimitedConnectivityChecker
-        // Controller#performHousekeeping
-        assertTrue(
-            remainingTasks.size() <= 5,
+        assertTrue(remainingTasks.size() <= 5,
             "Too many tasks remaining. Got " + remainingTasks.size()
                 + " tasks remaining: " + remainingTasks);
-        assertFalse( interrupted.get(),
-            "Tasks were not completed, but cancelled. Threadpool was likely exhausted");
     }
 }
