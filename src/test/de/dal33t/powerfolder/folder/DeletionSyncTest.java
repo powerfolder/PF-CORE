@@ -25,7 +25,12 @@ import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -41,6 +46,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -716,6 +722,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         disconnectBartAndLisa();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        waitForMaintenance(getFolderAtBart());
+        waitForMaintenance(getFolderAtLisa());
 
         Path fBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -764,6 +772,40 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
             .getFileName().toString(), new byte[0]);
+    }
+
+    private static void waitForMaintenance(final Folder folder) {
+        FolderRepository repository = folder.getController().getFolderRepository();
+        final AtomicBoolean maintained = new AtomicBoolean();
+        FolderRepositoryListener listener = new FolderRepositoryAdapter() {
+            @Override
+            public void maintenanceFinished(FolderRepositoryEvent e) {
+                if (folder.equals(e.getFolder())) {
+                    maintained.set(true);
+                }
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        };
+        repository.addFolderRepositoryListener(listener);
+        try {
+            TestHelper.waitForCondition(10, new ConditionWithMessage() {
+                @Override
+                public boolean reached() {
+                    return maintained.get();
+                }
+
+                @Override
+                public String message() {
+                    return folder + " still has the maintenance run pending that its sync profile change asked for";
+                }
+            });
+        } finally {
+            repository.removeFolderRepositoryListener(listener);
+        }
     }
 
     /**

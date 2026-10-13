@@ -30,10 +30,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -468,22 +470,27 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             dirInfoAtBart.getVersion(),dirInfoAtBart.toDetailString());
         assertDirMatch(dirBart, dirInfoAtBart, getContollerBart());
 
+        final Member bartAtLisa = getContollerLisa().getNodeManager()
+            .getNode(getContollerBart().getMySelf().getId());
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
-                return "Dir at lisa not existing: " + dirLisa;
+                return "Deletion of " + dirInfoAtBart.toDetailString()
+                    + " has not reached lisa, who sees: "
+                    + bartAtLisa.getFile(dirInfoAtBart);
             }
 
             public boolean reached() {
-                return Files.exists(dirLisa) && Files.isDirectory(dirLisa);
+                FileInfo dirAtBartSeenByLisa = bartAtLisa.getFile(dirInfoAtBart);
+                return dirAtBartSeenByLisa != null
+                    && dirAtBartSeenByLisa.isDeleted()
+                    && dirAtBartSeenByLisa.getVersion() == dirInfoAtBart.getVersion();
             }
         });
-
-        TestHelper.waitMilliSeconds(1000);
+        getFolderAtLisa().syncRemoteDeletedFiles(Collections.singleton(bartAtLisa), false);
+        assertTrue(Files.isDirectory(dirLisa), "Dir at lisa not existing: " + dirLisa);
 
         FileInfo dirInfoAtLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
-        // SHOULD STILL be version 0 = could not sync version 1 (=deleted) from
-        // bart.
         assertEquals( 0,
             dirInfoAtLisa.getVersion(),dirInfoAtLisa.toDetailString());
         assertFalse( dirInfoAtLisa.isDeleted(),dirInfoAtLisa.toDetailString());

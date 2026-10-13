@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -90,12 +91,31 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
         Path reports = createTree(topFolder);
         DirectoryInfo deleted = deletionMarkerFor(topFolder, "projects/reports");
         Folder subFolder = shareInterrupted(topFolder, "projects/reports");
-        PathUtils.recursiveDelete(reports);
+        deleteTree(reports);
         assertFalse(Files.exists(reports), "Sanity: the directory is gone from disk");
 
         topFolder.unshareDeletedSubFolders(Collections.singletonList(deleted));
 
         assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
+    }
+
+    private static void deleteTree(final Path dir) {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                try {
+                    PathUtils.recursiveDelete(dir);
+                } catch (IOException e) {
+                    return false;
+                }
+                return Files.notExists(dir);
+            }
+
+            @Override
+            public String message() {
+                return dir + " keeps being written to while it is deleted";
+            }
+        });
     }
 
     /** "projects/reports" with a file in it, scanned. Returns the "reports" directory. */
