@@ -109,8 +109,8 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                 case 4 :
                     JCheckBox box = new JCheckBox("", member.isOnLAN());
                     box.setBackground(row % 2 == 0
-                        ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+                        ? ColorUtil.getEvenTableRowColor()
+                        : ColorUtil.getOddTableRowColor());
                     box.setHorizontalAlignment(CENTER);
                     return box;
 
@@ -121,8 +121,8 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
         if (!isSelected) {
             setBackground(row % 2 == 0
-                ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                : ColorUtil.ODD_TABLE_ROW_COLOR);
+                ? ColorUtil.getEvenTableRowColor()
+                : ColorUtil.getOddTableRowColor());
         }
 
         return super.getTableCellRendererComponent(table, value, isSelected,

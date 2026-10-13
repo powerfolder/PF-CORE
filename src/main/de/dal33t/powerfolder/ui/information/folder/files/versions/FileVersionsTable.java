@@ -162,8 +162,8 @@ public class FileVersionsTable extends JTable {
             ((JLabel) c).setToolTipText(toolTip);
 
             if (!isSelected) {
-                setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+                setBackground(row % 2 == 0 ? ColorUtil.getEvenTableRowColor()
+                        : ColorUtil.getOddTableRowColor());
             }
 
             return c;

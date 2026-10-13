@@ -56,6 +56,7 @@ import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.UIThemeState;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -67,8 +68,15 @@ public class FilesTable extends JTable {
     private static final Color AVAILABLE = Color.GRAY;
     private static final Color DOWNLOADING = new Color(40, 170, 40);
     private static final Color DELETED = Color.RED;
-    private static final Color NORMAL = Color.BLACK;
     private static final Color NEWER_AVAILABLE = Color.BLUE;
+    // PFC-3643: the default file-name colour must follow the theme - black text was
+    // invisible on the dark background. Near-white in dark mode, black in light mode.
+    private static final Color NORMAL_LIGHT = Color.BLACK;
+    private static final Color NORMAL_DARK = new Color(0xF5, 0xF5, 0xF5);
+
+    private static Color normalForeground() {
+        return UIThemeState.isDark() ? NORMAL_DARK : NORMAL_LIGHT;
+    }
 
     /**
      * Constructor
@@ -202,7 +210,7 @@ public class FilesTable extends JTable {
                     case 1 : // dir name
                         myValue = dir.getFilenameOnly();
                         if (folder.getDiskItemFilter().isExcluded(dir)) {
-                            setForeground(NORMAL);
+                            setForeground(normalForeground());
                             // File filtered out by blacklist.
                             strikethrough = true;
                         } else if (dir.isDeleted()) {
@@ -214,7 +222,7 @@ public class FilesTable extends JTable {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
                         } else {
-                            setForeground(NORMAL);
+                            setForeground(normalForeground());
                         }
                         setHorizontalAlignment(LEFT);
 
@@ -225,7 +233,7 @@ public class FilesTable extends JTable {
                 Folder folder = controller.getFolderRepository().getFolder(
                     fileInfo.getFolderInfo());
                 setIcon(null);
-                setForeground(NORMAL);
+                setForeground(normalForeground());
                 switch (column) {
                     case 0 : // file type
                         Icon icon = Icons.getIconFor(fileInfo, controller);
@@ -401,8 +409,8 @@ public class FilesTable extends JTable {
 
             if (!isSelected) {
                 setBackground(row % 2 == 0
-                    ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+                    ? ColorUtil.getEvenTableRowColor()
+                    : ColorUtil.getOddTableRowColor());
             }
 
             if (strikethrough) {
