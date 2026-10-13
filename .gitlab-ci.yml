@@ -103,7 +103,6 @@ test-Windows:
     - Windows
   script:
     - echo CPUs=%NUMBER_OF_PROCESSORS%
-    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Select-Object Id,StartTime,WorkingSet64,Path | Format-Table"
     - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
     - call ant run-tests -Dtest.threads=4
   artifacts:
