@@ -75,6 +75,7 @@ public class FolderStatistic extends PFComponent {
     // Used to calculate ETA
     private TransferCounter downloadCounter;
     private volatile MyCalculatorTask calculatorTask;
+    private volatile boolean recalculationRequested;
     private NodeManagerListener nodeManagerListener;
 
     FolderStatistic(Folder folder) {
@@ -109,9 +110,6 @@ public class FolderStatistic extends PFComponent {
 
     // package protected called from Folder
     public long scheduleCalculate() {
-        if (calculating != null) {
-            return -1L;
-        }
         if (!getController().getFolderRepository().hasJoinedFolder(
             folder.getInfo()))
         {
@@ -119,8 +117,11 @@ public class FolderStatistic extends PFComponent {
             return -1L;
         }
 
-        // long millisPast = System.currentTimeMillis() - lastCalc;
-        if (calculatorTask != null) {
+        MyCalculatorTask task = calculatorTask;
+        if (task != null) {
+            if (task.running) {
+                recalculationRequested = true;
+            }
             return -1L;
         }
         long delay = current.getAnalyzedFiles() / 1000;
@@ -714,9 +715,19 @@ public class FolderStatistic extends PFComponent {
     // Inner classes *********************************************************
 
     private class MyCalculatorTask extends TimerTask {
+        private volatile boolean running;
+
         public void run() {
-            calculate0();
-            calculatorTask = null;
+            running = true;
+            try {
+                calculate0();
+            } finally {
+                calculatorTask = null;
+                if (recalculationRequested) {
+                    recalculationRequested = false;
+                    scheduleCalculate();
+                }
+            }
         }
 
         @Override

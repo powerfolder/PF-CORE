@@ -21,10 +21,12 @@ package de.dal33t.powerfolder.folder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.Date;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,22 +50,11 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(3000);
+        waitForLastSyncDate(getFolderAtBart());
+        waitForLastSyncDate(getFolderAtLisa());
+        waitForSyncWarningDue(getFolderAtLisa());
         getFolderAtLisa().checkSync();
         assertEquals(1, getFolderAtLisa().getProblems().size());
-
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolderAtBart().getLastSyncDate() != null;
-            }
-        });
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolderAtLisa().getLastSyncDate() != null;
-            }
-        });
-        assertNotNull(getFolderAtBart().getLastSyncDate());
-        assertNotNull(getFolderAtLisa().getLastSyncDate());
     }
 
     @Test
@@ -71,19 +62,45 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncWarnSeconds(2);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolderAtLisa().getLastSyncDate() != null;
-            }
-        });
+        waitForLastSyncDate(getFolderAtLisa());
 
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(2100);
+        waitForSyncWarningDue(getFolderAtLisa());
         getFolderAtLisa().checkSync();
         assertEquals(1, getFolderAtLisa().getProblems().size());
+    }
+
+    private static void waitForLastSyncDate(final Folder folder) {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return folder.getLastSyncDate() != null;
+            }
+
+            public String message() {
+                return folder + " never recorded a sync date. Harmonized sync: "
+                    + folder.getStatistic().getHarmonizedSyncPercentage();
+            }
+        });
+    }
+
+    private static void waitForSyncWarningDue(final Folder folder) {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                Date lastSync = folder.getLastSyncDate();
+                return lastSync != null
+                    && lastSync.getTime() + folder.getSyncWarnSeconds() * 1000L
+                        < System.currentTimeMillis();
+            }
+
+            public String message() {
+                return folder + " sync warning never became due. Last sync: "
+                    + folder.getLastSyncDate() + ", warn seconds: "
+                    + folder.getSyncWarnSeconds();
+            }
+        });
     }
 
 }
