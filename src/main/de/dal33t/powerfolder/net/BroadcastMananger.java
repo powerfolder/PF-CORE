@@ -130,11 +130,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      * @throws ConnectionException
      *             if the broadcast manager could not be initalized.
      */
+    private int broadcastPort() {
+        return ConfigurationEntry.NET_BROADCAST_PORT.getValueInt(getController());
+    }
+
     public void start() throws ConnectionException {
         String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         try {
             // open multicast socket
-            socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
+            socket = new MulticastSocket(broadcastPort());
             InetAddress bindAddr = null;
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
@@ -598,7 +602,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             DatagramPacket broadcast = null;
             byte[] msg = broadCastString.getBytes();
             broadcast = new DatagramPacket(msg, msg.length, group,
-                DEFAULT_BROADCAST_PORT);
+                broadcastPort());
             if (isFiner()) {
                 logFiner("Sending network broadcast");
             }

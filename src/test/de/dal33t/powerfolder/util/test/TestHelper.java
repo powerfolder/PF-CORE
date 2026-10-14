@@ -235,6 +235,8 @@ public class TestHelper {
         for (String line : Files.readAllLines(source)) {
             if (line.startsWith("net.port=")) {
                 lines.add("net.port=" + findFreePort());
+            } else if (line.startsWith("net.broadcast.port=")) {
+                lines.add("net.broadcast.port=" + broadcastPort());
             } else if (line.startsWith("net.port.rcon=")) {
                 // a fixed rcon port makes a parallel test JVM look like an already running instance
                 lines.add("net.port.rcon=" + findFreePort());
@@ -250,6 +252,16 @@ public class TestHelper {
             } else {
                 lines.add(line);
             }
+        }
+        boolean hasBroadcastPort = false;
+        for (String line : lines) {
+            if (line.startsWith("net.broadcast.port=")) {
+                hasBroadcastPort = true;
+                break;
+            }
+        }
+        if (!hasBroadcastPort) {
+            lines.add("net.broadcast.port=" + broadcastPort());
         }
         if (target.getParent() != null) {
             Files.createDirectories(target.getParent());
@@ -286,6 +298,15 @@ public class TestHelper {
 
     private static final int FIRST_PROBE_PORT = 20000;
     private static final int PROBE_PORT_COUNT = 10000;
+
+    private static int broadcastPort;
+
+    private static synchronized int broadcastPort() {
+        if (broadcastPort == 0) {
+            broadcastPort = findFreePort();
+        }
+        return broadcastPort;
+    }
 
     public static int findFreePort() {
         Random random = new Random();

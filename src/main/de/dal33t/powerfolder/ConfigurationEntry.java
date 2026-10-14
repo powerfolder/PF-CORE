@@ -788,6 +788,8 @@ public enum ConfigurationEntry {
     /**
      * PFC-3001: Reduce network UDP broadcast from 10 to 60 seconds (configurable)
      */
+    NET_BROADCAST_PORT("net.broadcast.port", de.dal33t.powerfolder.net.BroadcastMananger.DEFAULT_BROADCAST_PORT),
+
     NET_BROADCAST_INTERVAL_SECONDS("net.broadcast.interval.seconds", 60),
 
     /**
