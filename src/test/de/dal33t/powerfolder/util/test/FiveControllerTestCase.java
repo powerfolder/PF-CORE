@@ -25,7 +25,10 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -39,6 +42,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -416,41 +420,44 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected void waitForCompletedDownloads(final int h, final int b,
         final int mar, final int l, final int mag)
     {
+        final Map<Controller, Integer> expected = new LinkedHashMap<Controller, Integer>();
+        expected.put(getContollerHomer(), h);
+        expected.put(getContollerBart(), b);
+        expected.put(getContollerMarge(), mar);
+        expected.put(getContollerLisa(), l);
+        expected.put(getContollerMaggie(), mag);
         TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerHomer().getTransferManager()
-                    .getCompletedDownloadsCollection().size() >= h
-                    && getContollerBart().getTransferManager()
-                        .getCompletedDownloadsCollection().size() >= b
-                    && getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size() >= mar
-                    && getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size() >= l
-                    && getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size() >= mag;
+                return pending().isEmpty();
             }
 
             public String message() {
-                return "Completed downloads. Homer: "
-                    + getContollerHomer().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + "/" + h
-                    + ", Bart: "
-                    + getContollerBart().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + "/" + b
-                    + ", Marge: "
-                    + getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + "/" + mar
-                    + ", Lisa: "
-                    + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + "/" + l
-                    + ", Maggie: "
-                    + getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + "/" + mag;
+                return "Downloads not settled at: " + pending();
+            }
+
+            private List<String> pending() {
+                List<String> pending = new ArrayList<String>();
+                for (Map.Entry<Controller, Integer> entry : expected.entrySet())
+                {
+                    TransferManager tm = entry.getKey().getTransferManager();
+                    int finished = 0;
+                    for (DownloadManager dm : tm
+                        .getCompletedDownloadsCollection())
+                    {
+                        if (dm.isCompleted()) {
+                            finished++;
+                        }
+                    }
+                    if (finished < entry.getValue()
+                        || tm.countActiveDownloads() > 0)
+                    {
+                        pending.add(entry.getKey().getMySelf().getNick() + ": "
+                            + finished + "/" + entry.getValue()
+                            + " finished downloads, "
+                            + tm.countActiveDownloads() + " still active");
+                    }
+                }
+                return pending;
             }
         });
     }
