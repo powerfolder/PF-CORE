@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -73,15 +75,16 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .getCompletedDownloadsCollection().size() >= nFiles;
+                return filesNotInSyncAtLisa(0).isEmpty()
+                    && getContollerLisa().getTransferManager()
+                        .countActiveDownloads() == 0;
             }
 
             public String message() {
-                return "Completed downloads at lisa: "
+                return "Files of bart not yet in sync at lisa: "
+                    + filesNotInSyncAtLisa(0) + ". Active downloads at lisa: "
                     + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size()
-                    + ". Expected: " + nFiles;
+                        .countActiveDownloads();
             }
         });
 
@@ -145,14 +148,16 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(nFiles * 5, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .getCompletedDownloadsCollection().size() == nFiles * 2;
+                return filesNotInSyncAtLisa(1).isEmpty()
+                    && getContollerLisa().getTransferManager()
+                        .countActiveDownloads() == 0;
             }
 
             public String message() {
-                return "Completed dls at lisa: "
+                return "Updated files of bart not yet in sync at lisa: "
+                    + filesNotInSyncAtLisa(1) + ". Active downloads at lisa: "
                     + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size();
+                        .countActiveDownloads();
             }
         });
 
@@ -172,6 +177,22 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             assertEquals(1, fInfo.getVersion());
             assertTrue(fInfo.getSize() > 0);
         }
+    }
+
+    private List<String> filesNotInSyncAtLisa(int version) {
+        List<String> notInSync = new ArrayList<String>();
+        for (FileInfo fInfoAtBart : getFolderAtBart().getKnownFiles()) {
+            FileInfo fInfoAtLisa = getFolderAtLisa().getFile(fInfoAtBart);
+            if (fInfoAtLisa == null) {
+                notInSync.add(fInfoAtBart.getRelativeName() + " (unknown)");
+            } else if (fInfoAtLisa.getVersion() != version
+                || !fInfoAtLisa.inSyncWithDisk(fInfoAtLisa
+                    .getDiskFile(getContollerLisa().getFolderRepository())))
+            {
+                notInSync.add(fInfoAtLisa.toDetailString());
+            }
+        }
+        return notInSync;
     }
 
 }
