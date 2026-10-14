@@ -31,10 +31,31 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import org.junit.jupiter.api.AfterEach;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LoginUtilTest {
+    private final List<Controller> startedControllers = new ArrayList<Controller>();
+
+    private Controller newController() {
+        Controller controller = new Controller();
+        startedControllers.add(controller);
+        return controller;
+    }
+
+    @AfterEach
+    public void shutdownStartedControllers() {
+        for (Controller controller : startedControllers) {
+            if (controller.isStarted()) {
+                controller.shutdown();
+            }
+        }
+        startedControllers.clear();
+    }
+
     @Test
 
     public void testDecorateUrlNullPass() {
@@ -166,7 +187,7 @@ public class LoginUtilTest {
     @Test
 
     public void testIsUsernameAny() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
         FileWriter fileWriter = new FileWriter(file);
@@ -195,7 +216,7 @@ public class LoginUtilTest {
     @Test
 
     public void testIsBooleanConfValueNull() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
         FileWriter fileWriter = new FileWriter(file);
@@ -232,7 +253,7 @@ public class LoginUtilTest {
     @Test
 
     public void testGetInviteUsernameShibboleth() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
 
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
@@ -265,7 +286,7 @@ public class LoginUtilTest {
     @Test
 
     public void testGetInviteUsername() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
         FileWriter fileWriter = new FileWriter(file);
@@ -311,7 +332,7 @@ public class LoginUtilTest {
     @Test
 
     public void testGetUsernameTestOk() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
 
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
@@ -343,7 +364,7 @@ public class LoginUtilTest {
     @Test
 
     public void testIsUsernameEmailOnlyTest() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
         FileWriter fileWriter = new FileWriter(file);
@@ -368,7 +389,7 @@ public class LoginUtilTest {
     @Test
 
     public void testIsValidUsername() throws IOException {
-        Controller controller = new Controller();
+        Controller controller = newController();
         File file = new File("build/test/testConfig.config");
         file.createNewFile();
         FileWriter fileWriter = new FileWriter(file);
@@ -834,7 +855,7 @@ public class LoginUtilTest {
     @Test
 
     public void testControllerNotStarter() {
-        Controller controller = new Controller();
+        Controller controller = newController();
         try {
             LoginUtil.getUsernameText(controller);
             fail("Did not throw NullPointerException but controller config was null");
