@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -197,15 +198,12 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // Wait for answer
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getNodeManager()
-                    .getNodesAsCollection().size() >= nNodes;
+                return nodesMissingAtLisa(testNodes).isEmpty();
             }
 
             public String message() {
-                return "Lisas known nodes "
-                    + getContollerLisa().getNodeManager()
-                        .getNodesAsCollection().size()
-                    + ". content: "
+                return "Requested nodes not known at lisa: "
+                    + nodesMissingAtLisa(testNodes) + ". Lisas known nodes: "
                     + getContollerLisa().getNodeManager()
                         .getNodesAsCollection();
             }
@@ -241,17 +239,16 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // Wait for answer
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getNodeManager()
-                    .getNodesAsCollection().size() >= N_TOTAL_NODES;
+                return nodesMissingAtLisa(getContollerBart().getNodeManager()
+                    .getNodesAsCollection()).isEmpty();
             }
 
             public String message() {
-                return "Lisas known nodes "
-                    + getContollerLisa().getNodeManager()
-                        .getNodesAsCollection().size()
-                    + ". content: "
-                    + getContollerLisa().getNodeManager()
-                        .getNodesAsCollection();
+                return "Nodes of bart not known at lisa: "
+                    + nodesMissingAtLisa(getContollerBart().getNodeManager()
+                        .getNodesAsCollection())
+                    + ". Supernodes at lisa: "
+                    + getContollerLisa().getNodeManager().countSupernodes();
             }
         });
 
@@ -267,6 +264,20 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // isConnected = false
         // assertEquals(N_CON_NORMAL_NODES + N_CON_SUPERNODES + 1,
         // getContollerLisa().getNodeManager().countOnlineNodes());
+    }
+
+    private List<String> nodesMissingAtLisa(Collection<Member> nodes) {
+        List<String> missing = new ArrayList<String>();
+        for (Member node : nodes) {
+            if (node.getId().equals(getContollerLisa().getMySelf().getId())) {
+                continue;
+            }
+            if (getContollerLisa().getNodeManager().getNode(node.getId()) == null)
+            {
+                missing.add(node.getNick());
+            }
+        }
+        return missing;
     }
 
     private MemberInfo createSampleMemberInfo(String nick,
