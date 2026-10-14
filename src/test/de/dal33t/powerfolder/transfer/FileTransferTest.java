@@ -55,6 +55,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -788,15 +790,27 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         long totalSize = 0;
         final int nFiles = 450;
+        Set<String> created = new HashSet<String>();
         for (int i = 0; i < nFiles; i++) {
             Path f = TestHelper.createRandomFile(getFolderAtBart()
                 .getLocalBase(), (long) (Math.random() * 40) + 1);
+            created.add(f.getFileName().toString());
             totalSize += Files.size(f);
         }
 
-        // Let him scan the new content
         scanFolder(getFolderAtBart());
-        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
+        Set<String> unexpected = new HashSet<String>();
+        for (FileInfo known : getFolderAtBart().getKnownFiles()) {
+            if (!created.contains(known.getFilenameOnly())) {
+                unexpected.add(known.toDetailString());
+            }
+        }
+        assertEquals(nFiles, created.size(), "Random file names collided");
+        assertTrue(unexpected.isEmpty(),
+            "Bart knows items this test did not create: " + unexpected);
+        assertEquals(nFiles, getFolderAtBart().getKnownItemCount(),
+            "Known at bart: " + getFolderAtBart().getKnownItemCount()
+                + ", created: " + nFiles + ", unexpected: " + unexpected);
 
         long start = System.currentTimeMillis();
         // Wait for copy
