@@ -83,7 +83,7 @@ test-macOS:
         done
       ) &
       WATCHDOG_PID=$!
-    - ant run-tests
+    - ant run-tests -Dtest.threads=2
     - kill $WATCHDOG_PID 2>/dev/null || true
   artifacts:
     reports:
