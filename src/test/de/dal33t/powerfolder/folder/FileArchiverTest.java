@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiverImpl;
 import de.dal33t.powerfolder.disk.Folder;
@@ -35,7 +36,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -125,13 +125,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
         Path eBart = fb.getSystemSubDir().resolve("archive");
         eBart = eBart.resolve(
             fib.getRelativeName().replace(".", "_K_" + fib.getVersion() + "."));
@@ -156,16 +150,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-
-            public String message() {
-                return "Known files: " + fb.getKnownFiles();
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         for (int i = 0; i < 4; i++) {
             TestHelper.waitMilliSeconds(2100);
@@ -209,12 +194,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
         assertEquals(0, fb.getFileArchiver().getSize());
 
         Path ver[] = new Path[5];
@@ -261,6 +241,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
+        waitForDownloadedAtBart(getFolderAtLisa(), f);
         TestHelper.waitMilliSeconds(2100);
         modLisaFile(f, fInfo);
 
@@ -310,15 +291,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path fileAtBart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() == 1;
-            }
-
-            public String message() {
-                return "Files at lisa: " + getFolderAtLisa().getKnownFiles();
-            }
-        });
+        waitForDownloadedAtLisa(getFolderAtBart(), fileAtBart);
         TestHelper.waitMilliSeconds(3000);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
@@ -377,12 +350,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         for (int i = 0; i < 4; i++) {
             TestHelper.waitMilliSeconds(2100);
@@ -419,12 +387,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         for (int i = 0; i < 3; i++) {
             TestHelper.waitMilliSeconds(2100);
@@ -472,12 +435,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         // Create some versions
         for (int i = 0; i < 3; i++) {
@@ -519,12 +477,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-        });
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         for (int i = 0; i < 4; i++) {
             TestHelper.waitMilliSeconds(2100);
@@ -560,17 +513,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-
-            public String message() {
-                return "Known files at bart: " + fb.getKnownFiles();
-            }
-        });
-
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         // Create version 1
         TestHelper.waitMilliSeconds(2100);
@@ -612,17 +555,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
         scanFolder(fl);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return fb.getKnownFiles().size() > 0;
-            }
-
-            public String message() {
-                return "Known files at bart: " + fb.getKnownFiles();
-            }
-        });
-
-        FileInfo fib = fb.getKnownFiles().iterator().next();
+        FileInfo fib = waitForDownloadedAtBart(fl, tl);
 
         // Create a version
         TestHelper.waitMilliSeconds(2100);
@@ -646,6 +579,35 @@ public class FileArchiverTest extends TwoControllerTestCase {
         // No additional version should have been archived
         assertEquals(1, archiver.getArchivedFilesInfos(fib).size(),
             "No additional version should be archived");
+    }
+
+    private FileInfo waitForDownloadedAtBart(Folder atLisa, Path file) {
+        return waitForInSync(getFolderAtBart(), getContollerBart(),
+            FileInfoFactory.lookupInstance(atLisa, file));
+    }
+
+    private FileInfo waitForDownloadedAtLisa(Folder atBart, Path file) {
+        return waitForInSync(getFolderAtLisa(), getContollerLisa(),
+            FileInfoFactory.lookupInstance(atBart, file));
+    }
+
+    private static FileInfo waitForInSync(final Folder folder,
+        final Controller controller, final FileInfo lookup)
+    {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            public boolean reached() {
+                FileInfo local = folder.getFile(lookup);
+                return local != null && local.inSyncWithDisk(
+                    local.getDiskFile(controller.getFolderRepository()));
+            }
+
+            public String message() {
+                return "Not in sync at "
+                    + controller.getMySelf().getNick() + ": " + lookup
+                    + ". Known files: " + folder.getKnownFiles();
+            }
+        });
+        return folder.getFile(lookup);
     }
 
     private FileInfo modLisaFile(Path file, final FileInfo fInfo) {

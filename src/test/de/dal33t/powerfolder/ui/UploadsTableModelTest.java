@@ -21,9 +21,10 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -125,24 +126,26 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     @Test
     public void testSingleFileUpload() {
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        final String fileName = TestHelper.createRandomFile(
+            getFolderAtBart().getLocalBase()).getFileName().toString();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
-        // Wait until the completed upload has been auto-removed from the model
-        // (INSERT ... DELETE seen). PFS-5561: a slow CI runner interleaves extra
-        // UPDATE events (transfer progress), so wait on the final DELETE instead
-        // of a fixed delay and assert the event shape, not an exact count.
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                int size = bartModelListener.events.size();
-                return size >= 2 && bartModelListener.events.get(size - 1)
-                    .getType() == TableModelEvent.DELETE;
+                return inSyncAtLisa(fileName) && uploadRowOf(fileName) == null
+                    && countType(bartModelListener.events,
+                        TableModelEvent.INSERT) >= 1
+                    && countType(bartModelListener.events,
+                        TableModelEvent.DELETE) >= 1;
             }
 
             public String message() {
-                return "Upload was not removed from the model. Events: "
+                return "Completed upload of " + fileName
+                    + " was not removed from the model. In sync at lisa: "
+                    + inSyncAtLisa(fileName) + ". Row: "
+                    + uploadRowOf(fileName) + ". Events: "
                     + bartModelListener.events;
             }
         });
@@ -159,6 +162,41 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(countType(events, TableModelEvent.INSERT) >= 1, events.toString());
         assertTrue(countType(events, TableModelEvent.DELETE) >= 1,
             "completed upload should have been removed: " + events);
+    }
+
+    private Upload uploadRowOf(String fileName) {
+        for (int row = 0; row < bartModel.getRowCount(); row++) {
+            Upload upload = bartModel.getUploadAtRow(row);
+            if (upload != null
+                && fileName.equals(upload.getFile().getFilenameOnly()))
+            {
+                return upload;
+            }
+        }
+        return null;
+    }
+
+    private boolean uploadCompletedAtBart(String fileName) {
+        for (Upload upload : getContollerBart().getTransferManager()
+            .getCompletedUploadsCollection())
+        {
+            if (fileName.equals(upload.getFile().getFilenameOnly())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean inSyncAtLisa(String fileName) {
+        for (FileInfo fInfo : getFolderAtLisa().getKnownFiles()) {
+            if (fileName.equals(fInfo.getFilenameOnly())
+                && fInfo.inSyncWithDisk(fInfo.getDiskFile(
+                    getContollerLisa().getFolderRepository())))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int countType(List<TableModelEvent> events, int type) {
@@ -179,28 +217,27 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testSingleFileUploadNoAutoCleanup() {
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
             .setValue(getContollerBart(), Integer.MAX_VALUE);
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        final String fileName = TestHelper.createRandomFile(
+            getFolderAtBart().getLocalBase()).getFileName().toString();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
-        // Wait until the upload completed and reached the model. PFS-5561: a
-        // slow CI runner interleaves extra UPDATE events (transfer progress),
-        // so wait on completion instead of a fixed delay and assert the event
-        // shape, not an exact count.
-        TestHelper.waitForCondition(30, () -> getContollerBart()
-            .getTransferManager().getCompletedUploadsCollection().size() == 1);
-        TestHelper.waitForEmptyEDT();
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return bartModelListener.events.size() >= 3;
+                return uploadCompletedAtBart(fileName)
+                    && uploadRowOf(fileName) != null;
             }
 
             public String message() {
-                return "Expected at least 3 events. Events: "
-                    + bartModelListener.events;
+                return "Completed upload of " + fileName
+                    + " did not reach the model. Completed at bart: "
+                    + getContollerBart().getTransferManager()
+                        .getCompletedUploadsCollection()
+                    + ". Events: " + bartModelListener.events;
             }
         });
+        TestHelper.waitForEmptyEDT();
 
         // The feature under test is "cleanup off => the completed upload is
         // NOT removed", which the final row count captures: the row is still
@@ -216,7 +253,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testRunningUpload() {
         // Throttle so the upload stays observable as running; 20MB at 2MB/s = ~10 seconds
         getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
+        final String fileName = TestHelper.createRandomFile(
+            getFolderAtBart().getLocalBase(), 20 * 1024 * 1024).getFileName()
+            .toString();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -224,12 +263,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "bartModel.getRowCount()=" + bartModel.getRowCount();
+                return "Upload of " + fileName + " not in the model. Rows: "
+                    + bartModel.getRowCount();
             }
 
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
-                return bartModel.getRowCount() > 0;
+                return uploadRowOf(fileName) != null;
             }
         });
 
@@ -238,11 +278,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return bartModel.getRowCount() == 0;
+                return inSyncAtLisa(fileName) && uploadRowOf(fileName) == null;
             }
 
             public String message() {
-                return "Bart rowcount:" + bartModel.getRowCount();
+                return "Upload of " + fileName + " still in the model. In sync"
+                    + " at lisa: " + inSyncAtLisa(fileName) + ". Rows: "
+                    + bartModel.getRowCount();
             }
         });
 
@@ -261,17 +303,25 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         assertEquals(0, bartModelListener.events.size());
         // Create a 20 megs file. At 1MB/s the transfer runs ~20 seconds - the abort happens mid-transfer.
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
+        final String fileName = TestHelper.createRandomFile(
+            getFolderAtBart().getLocalBase(), 20 * 1024 * 1024).getFileName()
+            .toString();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .getActiveUploads().size() == 1
-                    && getContollerLisa().getTransferManager()
-                        .countActiveDownloads() == 1;
+                Upload upload = uploadRowOf(fileName);
+                return upload != null && upload.isStarted()
+                    && !upload.isCompleted()
+                    && bartModelListener.events.size() >= 2;
+            }
+
+            public String message() {
+                return "Upload of " + fileName + " not running in the model: "
+                    + uploadRowOf(fileName) + ". Events: "
+                    + bartModelListener.events;
             }
         });
         TestHelper.waitForEmptyEDT();
@@ -283,9 +333,16 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Abort thru change of sync profile
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
 
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(50, new ConditionWithMessage() {
             public boolean reached() {
-                return bartModel.getRowCount() == 0;
+                return uploadRowOf(fileName) == null
+                    && bartModelListener.events.size() >= 3;
+            }
+
+            public String message() {
+                return "Aborted upload of " + fileName
+                    + " still in the model: " + uploadRowOf(fileName)
+                    + ". Events: " + bartModelListener.events;
             }
         });
         getContollerLisa().getFolderRepository().getFileRequestor()
@@ -325,23 +382,27 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
 
         // Create a 10 megs file. At ~40KB/s the upload is guaranteed to be still running when disconnecting.
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10 * 1024 * 1024);
+        final String fileName = TestHelper.createRandomFile(
+            getFolderAtBart().getLocalBase(), 10 * 1024 * 1024).getFileName()
+            .toString();
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countActiveUploads() > 0 && bartModel.getRowCount() >= 1
+                Upload upload = uploadRowOf(fileName);
+                return upload != null && upload.isStarted()
+                    && !upload.isCompleted()
                     && bartModelListener.events.size() >= 2;
             }
 
             @Override
             public String message() {
-                return "Bart rowcount: " + bartModel.getRowCount()
-                    + ". Bart events: " + bartModelListener.events.size() +
-                        ". Bart active uploads: " + getContollerBart().getTransferManager().countActiveUploads();
+                return "Upload of " + fileName + " not running in the model: "
+                    + uploadRowOf(fileName) + ". Bart events: "
+                    + bartModelListener.events + ". Bart active uploads: "
+                    + getContollerBart().getTransferManager().countActiveUploads();
             }
         });
 
@@ -375,14 +436,15 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return bartModel.getRowCount() == 0
-                    && bartModelListener.events.size() == 3;
+                return uploadRowOf(fileName) == null
+                    && bartModelListener.events.size() >= 3;
             }
 
             @Override
             public String message() {
-                return "Bart rowcount: " + bartModel.getRowCount()
-                    + ". Bart events: " + bartModelListener.events.size();
+                return "Aborted upload of " + fileName
+                    + " still in the model: " + uploadRowOf(fileName)
+                    + ". Bart events: " + bartModelListener.events;
             }
         });
 

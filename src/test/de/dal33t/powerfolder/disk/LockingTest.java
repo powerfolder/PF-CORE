@@ -161,6 +161,25 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.locked(testFInfo));
     }
 
+    private void waitForFileAtLisa(final FileInfo fInfo) {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo atLisa = getFolderAtLisa().getFile(fInfo);
+                return atLisa != null
+                    && atLisa.inSyncWithDisk(atLisa.getDiskFile(
+                        getContollerLisa().getFolderRepository()));
+            }
+
+            @Override
+            public String message() {
+                return "File did not arrive at lisa: " + fInfo
+                    + ". Known at lisa: " + getFolderAtLisa().getFile(fInfo)
+                    + ". Incoming: " + getFolderAtLisa().getIncomingFiles();
+            }
+        });
+    }
+
     private static void waitForLocked(final Locking locking,
         final LoggingLockingListener listener, final FileInfo fInfo)
     {
@@ -212,25 +231,7 @@ public class LockingTest extends TwoControllerTestCase {
             getFolderAtBart(), testFile);
         TestHelper.scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return !getContollerBart().getTransferManager()
-                    .getCompletedUploadsCollection().isEmpty()
-                    && !getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().isEmpty();
-            }
-
-            @Override
-            public String message() {
-                return "Bart: Completed uploads: "
-                    + getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection()
-                    + ". Lisa: Completed downloads: "
-                    + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection();
-            }
-        });
+        waitForFileAtLisa(testFInfo);
 
         assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
             testFile.getFileName())));
@@ -282,25 +283,7 @@ public class LockingTest extends TwoControllerTestCase {
 
         TestHelper.scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return !getContollerBart().getTransferManager()
-                    .getCompletedUploadsCollection().isEmpty()
-                    && !getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().isEmpty();
-            }
-
-            @Override
-            public String message() {
-                return "Bart: Completed uploads: "
-                    + getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection()
-                    + ". Lisa: Completed downloads: "
-                    + getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection();
-            }
-        });
+        waitForFileAtLisa(testFInfo);
 
         assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
             testFile.getFileName())));
@@ -345,53 +328,14 @@ public class LockingTest extends TwoControllerTestCase {
 
         TestHelper.scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return 1 == getFolderAtLisa().getIncomingFiles().size();
-            }
-
-            @Override
-            public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 1";
-            }
-        });
-
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return 0 == getFolderAtLisa().getIncomingFiles().size();
-            }
-
-            @Override
-            public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 0";
-            }
-        });
+        waitForFileAtLisa(testFInfo);
 
         assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
             testFile.getFileName())));
 
         lockingBart.lock(testFInfo);
 
-        // PFS-5561: the lock syncs to lisa via the metafolder - on a loaded
-        // runner a fixed 500ms was not always enough. Wait on the event.
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return lockingListenerLisa.locked.size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "Lock did not arrive at lisa. Locked events: "
-                    + lockingListenerLisa.locked.size();
-            }
-        });
+        waitForLocked(lockingLisa, lockingListenerLisa, testFInfo);
 
         assertEquals(0, lockingListenerBart.unlocked.size());
         assertEquals(1, lockingListenerBart.locked.size());
@@ -406,18 +350,16 @@ public class LockingTest extends TwoControllerTestCase {
 
         TestHelper.scanFolder(getFolderAtLisa());
 
-        // PFS-5561: same as above - wait for the forbidden event instead of
-        // sleeping a fixed 500ms.
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return lockingListenerLisa.forbidden.size() == 1;
+                return lockingListenerLisa.forbidden(testFInfo) >= 1;
             }
 
             @Override
             public String message() {
-                return "Forbidden event did not arrive at lisa. Events: "
-                    + lockingListenerLisa.forbidden.size();
+                return "Forbidden event did not arrive at lisa for " + testFInfo
+                    + ". Events: " + lockingListenerLisa.forbidden;
             }
         });
 
