@@ -101,7 +101,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
         LoggingManager.setConsoleLogging(Level.FINE);
-        waitForSyncedFile(20, getFolderAtLisa(), fInfo);
+        waitForCompletedDownload(20, getContollerLisa(), fInfo);
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
                 .next();
         assertEquals(filename, fInfoLisa.getRelativeName());
@@ -116,7 +116,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test update
         TestHelper.changeFile(fLisa);
         scanFolder(getFolderAtLisa());
-        waitForSyncedFile(20, getFolderAtBart(), getFolderAtLisa()
+        waitForCompletedDownload(20, getContollerBart(), getFolderAtLisa()
                 .getKnownFiles().iterator().next());
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         fInfo = getFolderAtBart().getKnownFiles().iterator().next();
@@ -146,7 +146,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
-        waitForSyncedFile(20, getFolderAtLisa(), fInfo);
+        waitForCompletedDownload(20, getContollerLisa(), fInfo);
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
         assertEquals(filename, fInfoLisa.getRelativeName());
@@ -161,7 +161,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test update
         TestHelper.changeFile(fLisa);
         scanFolder(getFolderAtLisa());
-        waitForSyncedFile(20, getFolderAtBart(), getFolderAtLisa()
+        waitForCompletedDownload(20, getContollerBart(), getFolderAtLisa()
             .getKnownFiles().iterator().next());
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         fInfo = getFolderAtBart().getKnownFiles().iterator().next();
@@ -1174,7 +1174,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         Files.setLastModifiedTime(testFile,
             FileTime.fromMillis(System.currentTimeMillis() - 6000));
         scanFolder(getFolderAtBart());
-        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(),
+        waitForCompletedDownload(LONG_WAIT_TIME_SECONDS, getContollerLisa(),
             getFolderAtBart().getKnownFiles().iterator().next());
 
         TestHelper.changeFile(testFile, 10 * 1024 * 1024);
@@ -1276,7 +1276,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
-        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(), fBart);
+        waitForCompletedDownload(LONG_WAIT_TIME_SECONDS, getContollerLisa(), fBart);
 
         Path fileBart = fBart.getDiskFile(getContollerBart()
             .getFolderRepository());
@@ -1817,7 +1817,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        waitForSyncedFile(20, getFolderAtLisa(), getFolderAtBart()
+        waitForCompletedDownload(20, getContollerLisa(), getFolderAtBart()
             .getKnownFiles().iterator().next());
         waitForTransfersIdle(20);
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
@@ -1863,7 +1863,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartListener.uploadRequested >= 2
                     && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2
-                    && syncedFileInfo(getFolderAtLisa(), updatedAtBart) != null;
+                    && hasCompletedDownloadOf(getContollerLisa(), updatedAtBart);
             }
 
             @Override
@@ -1928,7 +1928,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        waitForSyncedFile(20, getFolderAtLisa(), getFolderAtBart()
+        waitForCompletedDownload(20, getContollerLisa(), getFolderAtBart()
             .getKnownFiles().iterator().next());
         waitForTransfersIdle(20);
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
@@ -1995,7 +1995,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartListener.uploadRequested >= 2
                     && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2
-                    && syncedFileInfo(getFolderAtLisa(), updatedAtBart) != null;
+                    && hasCompletedDownloadOf(getContollerLisa(), updatedAtBart);
             }
 
             @Override
@@ -2211,7 +2211,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Switch back, dls should continue
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(),
+        waitForCompletedDownload(LONG_WAIT_TIME_SECONDS, getContollerLisa(),
             fileAtBart);
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
 
@@ -2266,35 +2266,59 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(countDeletedItems(getFolderAtLisa()) == 0, "Deleted items after scan at lisa be 0");
     }
 
-    private static FileInfo syncedFileInfo(Folder folder, FileInfo expected) {
-        FileInfo local = folder.getFile(expected);
-        if (local == null || local.isDeleted()
-            || !local.isVersionDateAndSizeIdentical(expected))
-        {
-            return null;
+    private static long sizeOnDisk(Path file) {
+        try {
+            return Files.size(file);
+        } catch (IOException ioe) {
+            return -1L;
         }
-        return local.inSyncWithDisk(local.getDiskFile(folder.getController()
-            .getFolderRepository())) ? local : null;
     }
 
-    private void waitForSyncedFile(int secondsTimeout, final Folder folder,
-        final FileInfo expected)
+    private static long lastModifiedOnDisk(Path file) {
+        try {
+            return Files.getLastModifiedTime(file).toMillis();
+        } catch (IOException ioe) {
+            return -1L;
+        }
+    }
+
+    private static boolean hasCompletedDownloadOf(Controller receiver,
+        FileInfo expected)
+    {
+        return receiver.getTransferManager()
+            .getCompletedDownload(expected) != null;
+    }
+
+    private void waitForCompletedDownload(int secondsTimeout,
+        final Controller receiver, final FileInfo expected)
     {
         TestHelper.waitForCondition(secondsTimeout, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                folder.getController().getFolderRepository()
-                    .getFileRequestor()
-                    .triggerFileRequesting(folder.getInfo());
-                return syncedFileInfo(folder, expected) != null;
+                receiver.getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(expected.getFolderInfo());
+                return hasCompletedDownloadOf(receiver, expected);
             }
 
             @Override
             public String message() {
-                return "Expected " + expected.toDetailString() + " at "
-                    + folder.getController().getMySelf().getNick()
-                    + ". Known files: " + folder.getKnownFiles()
-                    + ". Incoming: " + folder.getIncomingFiles();
+                Folder folder = receiver.getFolderRepository().getFolder(
+                    expected.getFolderInfo());
+                FileInfo local = folder == null ? null : folder
+                    .getFile(expected);
+                Path diskFile = expected.getDiskFile(receiver
+                    .getFolderRepository());
+                return "No completed download of " + expected.toDetailString()
+                    + " at " + receiver.getMySelf().getNick()
+                    + ". Local FileInfo: "
+                    + (local == null ? "none" : local.toDetailString())
+                    + ". Disk file " + diskFile + ": size "
+                    + sizeOnDisk(diskFile) + ", lastModified "
+                    + lastModifiedOnDisk(diskFile)
+                    + ". Completed download: "
+                    + receiver.getTransferManager().getCompletedDownload(
+                        expected) + ". Active downloads: "
+                    + receiver.getTransferManager().getActiveDownloads();
             }
         });
     }
