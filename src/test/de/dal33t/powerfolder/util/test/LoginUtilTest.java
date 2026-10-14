@@ -785,7 +785,7 @@ public class LoginUtilTest {
     public void testOTP() {
         // Valid
         for (int i = 0; i < 10000; i++) {
-            String otp = LoginUtil.generateOTP(1000L);
+            String otp = LoginUtil.generateOTP(60000L);
             // 11BrLcYZedRqKqHhdy2sWhT2WCrNrxDEdSvDGgYDzCsFs58BRxYWG
             assertTrue(otp.length() >= 53);
             assertTrue(LoginUtil.isOTPValid(otp));
