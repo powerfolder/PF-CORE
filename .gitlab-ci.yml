@@ -104,7 +104,7 @@ test-Windows:
   script:
     - echo CPUs=%NUMBER_OF_PROCESSORS%
     - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
-    - call ant run-tests -Dtest.threads=4
+    - call ant run-tests -Dtest.threads=2
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
