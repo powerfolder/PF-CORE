@@ -337,7 +337,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
 
     private void assertFilesAndDirs(final Folder folder,
         final int expectedDirs, final int expectedFiles,
-        int expectedActualSubdirs)
+        final int expectedActualSubdirs)
     {
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public String message() {
@@ -346,7 +346,10 @@ public class DirectorySyncTest extends FiveControllerTestCase {
                     + folder.getKnownDirectories().size() + " (expected "
                     + expectedDirs + "), known files: "
                     + folder.getKnownFiles().size() + " (expected "
-                    + expectedFiles + "), directories not matching disk: "
+                    + expectedFiles + "), subdirs on disk: "
+                    + countSubDirs(folder.getLocalBase()) + " (expected "
+                    + expectedActualSubdirs
+                    + "), directories not matching disk: "
                     + mismatching.size()
                     + (mismatching.isEmpty() ? "" : ", e.g. "
                         + mismatching.get(0));
@@ -355,7 +358,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             public boolean reached() {
                 return folder.getKnownDirectories().size() == expectedDirs
                     && folder.getKnownFiles().size() == expectedFiles
-                    && dirsNotMatchingDisk(folder).isEmpty();
+                    && dirsNotMatchingDisk(folder).isEmpty()
+                    && countSubDirs(folder.getLocalBase()) == expectedActualSubdirs;
             }
         });
         int subdirs = countSubDirs(folder.getLocalBase());
