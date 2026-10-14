@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.util.test;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Feature;
+import java.nio.file.Paths;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
@@ -41,6 +43,9 @@ public class LoginUtilTest {
     private final List<Controller> startedControllers = new ArrayList<Controller>();
 
     private Controller newController() {
+        System.setProperty("user.home", Paths.get("build/test/home")
+            .toAbsolutePath().toString());
+        Feature.setupForTests();
         Controller controller = new Controller();
         startedControllers.add(controller);
         return controller;
