@@ -16,8 +16,7 @@ variables:
 
 security-java-scan:
   stage: test
-  rules:
-    - when: never
+  extends: .rules-test
   tags:
     - Linux
     - Development
@@ -46,7 +45,6 @@ test-Linux:
   tags:
     - Linux
   script:
-    - nproc; free -m; uptime; ps -eo pid,etimes,rss,args --sort=-rss | grep -c "[j]ava" || true
     - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=1 -Dtest.fork.heap=1g
   artifacts:
     reports:
@@ -58,6 +56,7 @@ test-Linux:
 test-macOS:
   stage: test
   extends: .rules-test
+  resource_group: tests-macOS
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -66,7 +65,6 @@ test-macOS:
     - macOS
   script:
     - pkill -f java || true
-    - sysctl -n hw.ncpu hw.memsize; uptime
     - mkdir -p test-reports
     # PFC-3573: external thread-dump watchdog. If a test JVM runs longer than ~10 minutes it is considered hung;
     # jstack -F works even when the JVM is frozen (safepoint stall). Dumps land in the test-reports artifact.
@@ -95,6 +93,7 @@ test-macOS:
 test-Windows:
   stage: test
   extends: .rules-test
+  resource_group: tests-Windows
   cache:
     key: toolchain-jdk-21.0.10_7-ant-1.10.17
     paths:
@@ -103,8 +102,6 @@ test-Windows:
     - Windows
   script:
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -lt (Get-Date).AddHours(-2) } | Stop-Process -Force; exit 0"
-    - echo CPUs=%NUMBER_OF_PROCESSORS%
-    - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
     - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
   artifacts:
     reports:
