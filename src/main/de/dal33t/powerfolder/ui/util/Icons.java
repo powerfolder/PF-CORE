@@ -450,7 +450,9 @@ public class Icons {
             java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(java.awt.RenderingHints.KEY_STROKE_CONTROL,
             java.awt.RenderingHints.VALUE_STROKE_PURE);
-        float inset = Math.max(1f, size * 0.02f);
+        // PFC-3643 feedback: inset the accent disc so its visible footprint matches
+        // the folder/other icons (line-art with a margin), not a full-box solid disc.
+        float inset = 0f;
         g.setColor(LookAndFeelSupport.getAccentColor());
         g.fill(new java.awt.geom.Ellipse2D.Double(inset, inset,
             size - 2.0 * inset, size - 2.0 * inset));
@@ -646,6 +648,58 @@ public class Icons {
     /** Cache for composite folder+badge icons, keyed by badge id + dark-mode. */
     private static final Map<String, Icon> FOLDER_BADGE_MAP = new HashMap<>();
 
+    /** PFC-3643 feedback: uniform folder-icon container size (matches the account /
+     *  status / bottom-bar icons). The 24px source is scaled up to this. */
+    public static final int FOLDER_ICON_SIZE = 28;
+
+    /** Cache for the plain (no-badge) folder icon, keyed by dark-mode. */
+    private static final Map<String, Icon> FOLDER_ICON_MAP = new HashMap<>();
+
+    /**
+     * PFC-3643 feedback: the plain folder icon at the uniform {@link #FOLDER_ICON_SIZE}
+     * (dark-mode aware, multi-resolution for crisp HiDPI), so not-synced folders match
+     * the badged folders and the other 28px icons. Use instead of
+     * {@code getIconById(FOLDER)} in the folder list.
+     */
+    public static Icon getFolderIcon() {
+        String key = "plain|" + darkMode;
+        Icon cached = FOLDER_ICON_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Image baseImg = getImageById(FOLDER);
+        if (baseImg == null) {
+            return getIconById(FOLDER);
+        }
+        if (darkMode) {
+            Icon whiteFolder = whiten(new ImageIcon(baseImg));
+            if (whiteFolder instanceof ImageIcon) {
+                baseImg = ((ImageIcon) whiteFolder).getImage();
+            }
+        }
+        Image[] variants = new Image[3];
+        for (int i = 0; i < variants.length; i++) {
+            int s = i + 1;
+            int cw = FOLDER_ICON_SIZE * s, ch = FOLDER_ICON_SIZE * s;
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(
+                cw, ch, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = img.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,
+                java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g.drawImage(baseImg, 0, 0, cw, ch, null);
+            g.dispose();
+            variants[i] = img;
+        }
+        Icon result = new ImageIcon(
+            new java.awt.image.BaseMultiResolutionImage(variants));
+        FOLDER_ICON_MAP.put(key, result);
+        return result;
+    }
+
     /**
      * Android-style folder glyph: the (dark-mode-aware) black/white folder icon
      * with a small coloured sync-state badge in the bottom-right corner, so a
@@ -692,10 +746,13 @@ public class Icons {
         } else {
             badgeImg = getImageById(badgeIconId);
         }
-        int w = baseImg.getWidth(null), h = baseImg.getHeight(null);
-        if (badgeImg == null || w <= 0 || h <= 0) {
+        if (badgeImg == null || baseImg.getWidth(null) <= 0) {
             return new ImageIcon(baseImg);
         }
+        // PFC-3643 feedback: render the folder at the uniform 28px container size
+        // (scaled from the 24px source) so folder-list icons match the account /
+        // status / bottom-bar icons.
+        int w = FOLDER_ICON_SIZE, h = FOLDER_ICON_SIZE;
         Image[] variants = new Image[3];
         for (int i = 0; i < variants.length; i++) {
             int s = i + 1;

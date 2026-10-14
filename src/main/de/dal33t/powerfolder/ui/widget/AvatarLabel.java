@@ -274,16 +274,22 @@ public class AvatarLabel extends JComponent {
                 RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            Ellipse2D circle = new Ellipse2D.Double(0, 0, size, size);
+            // PFC-3643 feedback: inset the disc so its visible footprint matches the
+            // folder/other icons (which are line-art with a margin inside their box),
+            // instead of a solid disc filling the whole box and looking larger.
+            float inset = 0f;
+            float d = size - 2 * inset;
+            Ellipse2D circle = new Ellipse2D.Double(inset, inset, d, d);
             BufferedImage img = avatar;
             if (img != null) {
                 g.setClip(circle);
-                g.drawImage(img, 0, 0, size, size, null);
+                g.drawImage(img, Math.round(inset), Math.round(inset),
+                    Math.round(d), Math.round(d), null);
             } else {
                 g.setColor(de.dal33t.powerfolder.ui.LookAndFeelSupport.getAccentColor());
                 g.fill(circle);
                 g.setColor(Color.WHITE);
-                g.setFont(new Font("SansSerif", Font.BOLD, Math.round(size * 0.36f)));
+                g.setFont(new Font("SansSerif", Font.BOLD, Math.round(d * 0.36f)));
                 int tw = g.getFontMetrics().stringWidth(initials);
                 int asc = g.getFontMetrics().getAscent();
                 int th = g.getFontMetrics().getHeight();

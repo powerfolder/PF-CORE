@@ -106,7 +106,15 @@ public class MainFrame extends PFUIComponent {
     // PFC-3643: all status glyphs (the static "in sync" check and the blue spinner
     // shown while syncing/connecting) render at the avatar size so they are clearly
     // visible and the glyph area does not resize between states.
-    private static final int STATUS_GLYPH_SIZE = 46;
+    // PFC-3643 feedback (Christian): the account-header icons were too big (46px)
+    // and pushed the name/status text further right than the folder names below.
+    // Match the 24px folder-row icons so all icons are the same size and the top
+    // text lines up flush with the folder names.
+    // PFC-3643 feedback: one uniform 28x28 icon container for the account/status
+    // glyphs, the bottom-bar menu icons and the folder-list icons; icons centered.
+    private static final int STATUS_GLYPH_SIZE = 28;
+    // PFC-3643 feedback: the bottom-bar icons should be a bit smaller and not bold.
+    private static final int MENU_ICON_SIZE = 24;
     private SyncIconButtonMini syncingButton;
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
@@ -199,7 +207,9 @@ public class MainFrame extends PFUIComponent {
         // column was a cramped 100dlu, leaving the name/progress bar/status squeezed
         // with lots of empty space to the right - widened so they use that space.
         // Rows carry small gaps so the fields breathe instead of stacking tightly.
-        FormLayout layout = new FormLayout("pref, 8dlu, 160dlu",
+        // PFC-3643 feedback: the icon->text gap must match the folder rows (3dlu)
+        // so the account name / status text lines up flush with the folder names.
+        FormLayout layout = new FormLayout("pref, 3dlu, 160dlu",
             "pref, 3dlu, pref, 2dlu, pref, 10dlu, pref, 2dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
@@ -254,26 +264,18 @@ public class MainFrame extends PFUIComponent {
         // the web interface moved to the logo / account name / email links, so
         // neither is a tray icon any more.
         applyTrayIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
-        applyTrayIcon(openTransfersActionLabel, ActionIcons.Type.TRANSFERS);
-        applyTrayIcon(openDebugActionLabel, ActionIcons.Type.LOGGING);
         applyTrayIcon(createFolderActionLabel, ActionIcons.Type.CREATE_FOLDER);
         applyTrayIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
 
+        // PFC-3643 feedback (Christian): bottom bar order Create Folder, Pause,
+        // Preferences. Transfers and Logging were removed from the bar; they now live
+        // in Preferences > Information.
         java.util.List<ActionLabel> items = new java.util.ArrayList<ActionLabel>();
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            items.add(createFolderActionLabel);
             items.add(pauseResumeActionLabel);
         }
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            items.add(openTransfersActionLabel);
-        }
-        if (getController().isVerbose()) {
-            items.add(openDebugActionLabel);
-        }
-        // PFC-3643: tray order - Pause, Transfers, Logging, Preferences, Create Folder.
         items.add(configurationActionLabel);
-        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            items.add(createFolderActionLabel);
-        }
 
         StringBuilder colSpec = new StringBuilder();
         for (int i = 0; i < items.size(); i++) {
@@ -315,7 +317,8 @@ public class MainFrame extends PFUIComponent {
             return;
         }
         label.setNeverUnderline(true);
-        label.setIcon(ActionIcons.get(type, 22));
+        // PFC-3643 feedback: bottom-bar (menu) icons sized to match the folder icons.
+        label.setIcon(ActionIcons.get(type, MENU_ICON_SIZE));
         JComponent ui = label.getUIComponent();
         if (ui instanceof JLabel) {
             JLabel jl = (JLabel) ui;
@@ -635,7 +638,8 @@ public class MainFrame extends PFUIComponent {
         styleUsageBar();
 
         // PFC-3643: account header avatar (initials until the server image loads).
-        avatarLabel = new AvatarLabel(46);
+        // Same size as the status glyph / folder-row icons (see STATUS_GLYPH_SIZE).
+        avatarLabel = new AvatarLabel(STATUS_GLYPH_SIZE);
         avatarLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         avatarLabel.setToolTipText(Translation.get("main_frame.avatar.tip"));
         avatarLabel.addMouseListener(accountLoginOpener);
@@ -1531,14 +1535,14 @@ public class MainFrame extends PFUIComponent {
                 .get("action_resume_sync.description"));
             // PFC-3643: paused -> the action resumes, so show a play glyph.
             pauseResumeActionLabel.setIcon(
-                ActionIcons.get(ActionIcons.Type.PLAY, 22));
+                ActionIcons.get(ActionIcons.Type.PLAY, MENU_ICON_SIZE));
         } else {
             pauseResumeActionLabel.setText(Translation
                 .get("action_pause_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
                 .get("action_pause_sync.description"));
             pauseResumeActionLabel.setIcon(
-                ActionIcons.get(ActionIcons.Type.PAUSE, 22));
+                ActionIcons.get(ActionIcons.Type.PAUSE, MENU_ICON_SIZE));
         }
     }
 

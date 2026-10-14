@@ -88,15 +88,61 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         // section spans the full width, with PowerFolder / System side by side below.
         FormLayout layout = new FormLayout(
             "pref:grow, 14dlu, pref:grow",
-            "pref, 12dlu, pref");
+            "pref, 12dlu, pref, 14dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 12dlu, 10dlu, 12dlu"));
         CellConstraints cc = new CellConstraints();
         builder.add(createGeneralBox(), cc.xyw(1, 1, 3));
         builder.add(createPowerFolderBox(), cc.xy(1, 3, "fill, top"));
         builder.add(createSystemBox(), cc.xy(3, 3, "fill, top"));
+        // PFC-3643: Transfers and Logging were removed from the bottom bar; they now
+        // open from here.
+        builder.add(createTransfersButton(), cc.xy(1, 5, "left, center"));
+        builder.add(createLoggingButton(), cc.xy(3, 5, "left, center"));
 
         panel = builder.getPanel();
+    }
+
+    /**
+     * PFC-3643: open the Transfers (downloads/uploads) view. Transfers was taken out
+     * of the bottom bar on request; this button is its new home. The Preferences
+     * dialog is modal, so close it first, then open the transfers information view.
+     */
+    private JButton createTransfersButton() {
+        JButton button = new JButton(
+            Translation.get("exp.action_open_transfers_information.name"));
+        button.setToolTipText(Translation
+            .get("exp.action_open_transfers_information.description"));
+        button.addActionListener(e -> {
+            java.awt.Window w = javax.swing.SwingUtilities
+                .getWindowAncestor((java.awt.Component) e.getSource());
+            if (w != null) {
+                w.setVisible(false);
+            }
+            getController().getUIController().openTransfersInformation();
+        });
+        return button;
+    }
+
+    /**
+     * PFC-3643: open the Logging (real-time logs) view. Logging was taken out of the
+     * bottom bar and is always on now; this button is its new home. The Preferences
+     * dialog is modal, so close it first, then open the logging information view.
+     */
+    private JButton createLoggingButton() {
+        JButton button = new JButton(
+            Translation.get("action_open_debug_information.name"));
+        button.setToolTipText(Translation
+            .get("action_open_debug_information.description"));
+        button.addActionListener(e -> {
+            java.awt.Window w = javax.swing.SwingUtilities
+                .getWindowAncestor((java.awt.Component) e.getSource());
+            if (w != null) {
+                w.setVisible(false);
+            }
+            getController().getUIController().openDebugInformation();
+        });
+        return button;
     }
 
     private JButton createActivateButton() {

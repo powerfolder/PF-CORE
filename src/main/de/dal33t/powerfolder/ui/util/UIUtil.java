@@ -304,7 +304,34 @@ public class UIUtil {
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
-        window.setOpacity(opacity);
+        if (window == null || opacity == null) {
+            return;
+        }
+        // PFC-3643: Window.setOpacity() throws IllegalComponentStateException on a
+        // DECORATED Frame/Dialog (overall translucency needs an undecorated window).
+        // After the FlatLaf migration the wizard dialog is decorated, so the fade
+        // animation crashed on every open. Skip the fade for decorated windows
+        // instead of crashing; undecorated windows (e.g. the notification slider)
+        // still fade. The try/catch guards any remaining platform limitation.
+        if (opacity < 1f) {
+            if (window instanceof java.awt.Dialog
+                && !((java.awt.Dialog) window).isUndecorated())
+            {
+                return;
+            }
+            if (window instanceof java.awt.Frame
+                && !((java.awt.Frame) window).isUndecorated())
+            {
+                return;
+            }
+        }
+        try {
+            window.setOpacity(opacity);
+        } catch (java.awt.IllegalComponentStateException
+            | UnsupportedOperationException ex)
+        {
+            // Translucency not available for this window - skip the effect.
+        }
     }
 
     /**

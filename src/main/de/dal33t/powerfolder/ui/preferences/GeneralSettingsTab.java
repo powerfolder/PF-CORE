@@ -76,9 +76,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private Action cleanupAction;
     private JComboBox<Locale> languageChooser;
     private JCheckBox modeChooser;
-    private JCheckBox verboseCB;
-    private boolean originalVerbose;
-    
+
     private boolean needsRestart;
 
     GeneralSettingsTab(Controller controller) {
@@ -114,8 +112,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         xBehaviorChooser = createXBehaviorChooser();
 
-        originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
-        
         if (OSUtil.isStartupItemSupported()) {
             if(OSUtil.isMacOS()) {
                 runOnStartupBox = new JCheckBox(
@@ -198,8 +194,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         modeChooser
             .setText(Translation.get("preferences_show_advaned_options"));
         // END PFC-2385
-        verboseCB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.verbose"));
-        verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
     }
 
     /**
@@ -254,9 +248,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
             builder.addLabel(Translation.get("preferences.general.exit_behavior"), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
-
-            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
-            builder.add(verboseCB, cc.xy(3, row));
 
             // Start: PFC-2385
             if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
@@ -429,13 +420,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        // Verbose logging
-        if (originalVerbose ^ verboseCB.isSelected()) {
-            // Verbose setting changed.
-            needsRestart = true;
-        }
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseCB.isSelected()));
-        
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {
             Locale locale = (Locale) languageChooser.getSelectedItem();

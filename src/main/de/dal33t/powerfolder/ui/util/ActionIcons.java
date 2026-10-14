@@ -81,7 +81,9 @@ public final class ActionIcons {
                     g.scale(s, s);
                     Color col = c != null ? c.getForeground() : Color.BLACK;
                     g.setColor(col);
-                    g.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND,
+                    // PFC-3643 feedback: thin, light stroke - the bottom-bar glyphs
+                    // should not look bold.
+                    g.setStroke(new BasicStroke(1.3f, BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_ROUND));
                     paint(type, g);
                 } finally {
@@ -95,8 +97,9 @@ public final class ActionIcons {
     private static void paint(Type type, Graphics2D g) {
         switch (type) {
             case PAUSE :
-                g.fillRect(4, 3, 5, 16);
-                g.fillRect(13, 3, 5, 16);
+                // PFC-3643 feedback: thin bars so Pause is not bold.
+                g.fillRect(6, 3, 3, 16);
+                g.fillRect(13, 3, 3, 16);
                 break;
             case PLAY :
                 java.awt.geom.Path2D.Double tri = new java.awt.geom.Path2D.Double();
@@ -174,7 +177,9 @@ public final class ActionIcons {
         }
         gear.subtract(new java.awt.geom.Area(
             new Ellipse2D.Double(cx - hole, cy - hole, 2 * hole, 2 * hole)));
-        g.fill(gear);
+        // PFC-3643 feedback: draw the gear as a thin outline (like Logging /
+        // Create-Folder) instead of a solid fill, so it is not bold/heavier.
+        g.draw(gear);
     }
 
     private static void arrow(Graphics2D g, double x1, double y1, double x2,

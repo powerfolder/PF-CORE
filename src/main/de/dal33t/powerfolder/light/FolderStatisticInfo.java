@@ -207,9 +207,11 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         }
         if (totalSize == 0) {
             return 100.0;
-        } else if (size == 0) {
-            return 0;
         } else {
+            // PFS-5949: count partial transfers even when no whole file is in
+            // sync yet (size == 0). The old "size == 0 -> return 0" short-circuit
+            // ignored partials, so a folder whose files are all still mid-download
+            // showed a stuck 0 % instead of climbing 0 -> 100 as bytes arrive.
             // Total up partial transfers for this member.
             Map<FileInfo, Long> map = getPartialSyncStatMap().get(memberInfo);
             long partialTotal = 0;

@@ -915,49 +915,50 @@ public class Controller extends PFComponent {
             LoggingManager.setPrefix(configName);
         }
 
+        // PFC-3643: logging is always on (the "Enable Logging" toggle was removed).
+        // File and in-app (document) logging default to INFO; console and syslog
+        // stay opt-in (verbose/dev or an explicit syslog host).
+        String str = ConfigurationEntry.LOG_LEVEL_FILE.getValue(this);
+        boolean rotate = ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(this);
+        Level fileLevel = LoggingManager.levelForName(str);
+        LoggingManager.setFileLogging(fileLevel != null
+            ? fileLevel
+            : Level.INFO, rotate);
+
+        // Switch on the document handler (the in-app log view).
+        if (isUIEnabled()) {
+            str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
+            Level uiLogLevel = LoggingManager.levelForName(str);
+            LoggingManager.setDocumentLogging(uiLogLevel != null
+                ? uiLogLevel
+                : Level.INFO, this);
+        }
+
+        if (LoggingManager.isLogToFile()) {
+            logFine("Logging to file '"
+                + LoggingManager.getLoggingFileName() + '\'');
+        } else {
+            logInfo("No logging to file");
+        }
+
         if (verbose) {
-            String str = ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this);
+            str = ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this);
             Level consoleLevel = LoggingManager.levelForName(str);
             LoggingManager.setConsoleLogging(consoleLevel != null
                 ? consoleLevel
                 : Level.WARNING);
+        }
 
-            // Enable file logging
-            str = ConfigurationEntry.LOG_LEVEL_FILE.getValue(this);
-            boolean rotate = ConfigurationEntry.LOG_FILE_ROTATE
-                .getValueBoolean(this);
-            Level fileLevel = LoggingManager.levelForName(str);
-            LoggingManager.setFileLogging(fileLevel != null
-                ? fileLevel
-                : Level.FINE, rotate);
-
-            // Switch on the document handler.
-            if (isUIEnabled()) {
-                str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
-                Level uiLogLevel = LoggingManager.levelForName(str);
-                LoggingManager.setDocumentLogging(uiLogLevel != null
-                    ? uiLogLevel
-                    : Level.WARNING, this);
-            }
-
-            if (LoggingManager.isLogToFile()) {
-                logFine("Logging to file '"
-                    + LoggingManager.getLoggingFileName() + '\'');
-            } else {
-                logInfo("No logging to file");
-            }
-
-            if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
-                str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
-                Level syslogLevel = LoggingManager.levelForName(str);
-                LoggingManager.setSyslogLogging(syslogLevel != null
-                    ? syslogLevel
-                    : Level.WARNING, this);
-            }
+        if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
+            str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
+            Level syslogLevel = LoggingManager.levelForName(str);
+            LoggingManager.setSyslogLogging(syslogLevel != null
+                ? syslogLevel
+                : Level.WARNING, this);
         }
 
         if (commandLine != null && commandLine.hasOption('l')) {
-            String str = commandLine.getOptionValue('l');
+            str = commandLine.getOptionValue('l');
             Level consoleLevel = LoggingManager.levelForName(str);
             if (consoleLevel != null) {
                 LoggingManager.setConsoleLogging(consoleLevel);
