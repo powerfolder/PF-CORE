@@ -239,6 +239,8 @@ public class Controller extends PFComponent {
     /** global Threadpool */
     private ScheduledExecutorService threadPool;
 
+    private Scheduler housekeepingScheduler;
+
     /** Remembers if a port on the local firewall was opened */
     private final boolean portWasOpened = false;
 
@@ -1244,10 +1246,10 @@ public class Controller extends PFComponent {
                 .build();
 
         try {
-            Scheduler sched = new StdSchedulerFactory().getScheduler();
-            sched.scheduleJob(housekeepingJob, housekeepingTrigger);
-            sched.getContext().put("controller", this);
-            sched.start();
+            housekeepingScheduler = new StdSchedulerFactory().getScheduler();
+            housekeepingScheduler.scheduleJob(housekeepingJob, housekeepingTrigger);
+            housekeepingScheduler.getContext().put("controller", this);
+            housekeepingScheduler.start();
         } catch (SchedulerException e) {
             logFine("Could not initiate housekeeping: " + e.getMessage());
         }
@@ -2054,12 +2056,26 @@ public class Controller extends PFComponent {
     /**
      * Shuts down all activities of this controller
      */
+    private void shutdownHousekeepingScheduler() {
+        Scheduler scheduler = housekeepingScheduler;
+        housekeepingScheduler = null;
+        if (scheduler == null) {
+            return;
+        }
+        try {
+            scheduler.shutdown(false);
+        } catch (SchedulerException e) {
+            logFine("Could not stop housekeeping: " + e.getMessage());
+        }
+    }
+
     public synchronized void shutdown() {
         if (shuttingDown || !started) {
             return;
         }
         PathUtils.setIOExceptionListener(null);
         shuttingDown = true;
+        shutdownHousekeepingScheduler();
         logInfo("Shutting down...");
         setFirstStart(false);
         // if (started && !OSUtil.isSystemService()) {

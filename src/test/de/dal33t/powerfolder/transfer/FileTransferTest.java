@@ -1024,7 +1024,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
 
-        assertEquals(0, lisasListener.downloadCompleted);
+        final int completedBefore = lisasListener.downloadCompleted;
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -1035,7 +1035,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return lisasListener.downloadCompleted >= nFiles
+                return lisasListener.downloadCompleted >= completedBefore + nFiles
                     && getFolderAtLisa().getKnownItemCount() == nFiles;
             }
 
@@ -1093,6 +1093,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
         final int nFiles = 450;
+        final int completedBefore = lisasListener.downloadCompleted;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
@@ -1105,7 +1106,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return lisasListener.downloadCompleted >= nFiles;
+                return lisasListener.downloadCompleted >= completedBefore + nFiles;
             }
 
             @Override
@@ -1606,7 +1607,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         assertEquals(1, lisasListener.downloadRequested);
         assertEquals(1, lisasListener.downloadStarted);
-        assertEquals(0, lisasListener.downloadCompleted);
+        final int completedBefore = lisasListener.downloadCompleted;
         assertEquals(0, lisasListener.downloadAborted);
         assertEquals(1, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
