@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
@@ -70,7 +72,7 @@ public class SendFileListTest extends TwoControllerTestCase {
             public boolean reached() {
                 FileList metaList = lisasListener.fileListFor(metaFolderInfo);
                 return lisasListener.fileListFor(folderInfo) != null
-                    && metaList != null && metaList.files.length == 1;
+                    && metaList != null && containsMembersFile(metaList);
             }
 
             public String message() {
@@ -126,6 +128,15 @@ public class SendFileListTest extends TwoControllerTestCase {
             .get(0);
         assertEquals(nFiles, list.getFiles().length);
         assertNull(list.getRemoved());
+    }
+
+    private static boolean containsMembersFile(FileList list) {
+        for (FileInfo fInfo : list.files) {
+            if (Folder.METAFOLDER_MEMBERS.equals(fInfo.getRelativeName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final class MyMessageListener implements MessageListener {
