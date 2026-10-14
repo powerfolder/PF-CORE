@@ -280,18 +280,26 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtBart().getKnownItemCount());
 
         // Give them time to copy
+        final FileInfo fInfoAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
 
             @Override
             public boolean reached() {
-                return 1 == getFolderAtLisa().getKnownItemCount() &&
-                        getContollerBart().getTransferManager().getCompletedUploadsCollection().size() >= 1;
+                FileInfo fInfoAtLisa = getFolderAtLisa().getFile(fInfoAtBart);
+                return fInfoAtLisa != null
+                    && fInfoAtLisa.getSize() == testContent.length
+                    && fInfoAtLisa.inSyncWithDisk(fInfoAtLisa
+                        .getDiskFile(getContollerLisa()
+                            .getFolderRepository()));
             }
 
             @Override
             public String message() {
-                return "Known items at Lisa: "
-                    + getFolderAtLisa().getKnownItemCount();
+                FileInfo fInfoAtLisa = getFolderAtLisa().getFile(fInfoAtBart);
+                return "File at Lisa: "
+                    + (fInfoAtLisa == null ? "unknown" : fInfoAtLisa
+                        .toDetailString());
             }
         });
 
@@ -2084,15 +2092,28 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .getPendingDownloads().size() >= 1;
+                if (getContollerLisa().getTransferManager()
+                    .countActiveDownloads() != 0)
+                {
+                    return false;
+                }
+                for (Download download : getContollerLisa()
+                    .getTransferManager().getPendingDownloads())
+                {
+                    if (download.getFile().equals(fInfo)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             @Override
             public String message() {
                 return "Pending downloads at lisa: "
                     + getContollerLisa().getTransferManager()
-                        .getPendingDownloads().size();
+                        .getPendingDownloads() + ", active downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .countActiveDownloads();
             }
         });
 
