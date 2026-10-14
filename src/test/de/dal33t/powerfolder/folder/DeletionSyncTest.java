@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -694,20 +695,20 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isDeleted());
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() == 1;
+                return getFolderAtLisa().getKnownItemCount() == 1
+                    && getFolderAtLisa().getKnownFiles().iterator().next()
+                        .isDeleted();
             }
 
             @Override
             public String message() {
-                return "Know files at lisa: "
-                    + getFolderAtLisa().getKnownItemCount();
+                return "Lisa has not seen the deletion yet. Known at lisa: "
+                    + getFolderAtLisa().getKnownFiles();
             }
         });
-        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next()
-            .isDeleted());
         assertFileMatch(testFile, getFolderAtBart().getKnownFiles().iterator()
             .next(), getContollerBart());
         disconnectBartAndLisa();
@@ -716,10 +717,27 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         Files.createFile(testFile);
         TestHelper.changeFile(testFile);
 
-        // Not scanned yet
         connectBartAndLisa();
 
-        TestHelper.waitMilliSeconds(1000);
+        final Member lisaAtBart = getContollerBart().getNodeManager()
+            .getNode(getContollerLisa().getMySelf().getId());
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo deletedAtLisa = lisaAtBart.getFile(getFolderAtBart()
+                    .getKnownFiles().iterator().next());
+                return deletedAtLisa != null && deletedAtLisa.isDeleted();
+            }
+
+            @Override
+            public String message() {
+                return "Bart has not received lisa's deletion record yet: "
+                    + lisaAtBart.getFile(getFolderAtBart().getKnownFiles()
+                        .iterator().next());
+            }
+        });
+        getFolderAtBart().syncRemoteDeletedFiles(
+            Collections.singleton(lisaAtBart), false);
         assertTrue(Files.exists(testFile));
     }
 
