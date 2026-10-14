@@ -78,15 +78,25 @@ public class DelayedUpdaterTest extends ControllerTestCase {
             updater.schedule(new Update());
             TestHelper.waitMilliSeconds(interval);
         }
-        long scheduling = System.currentTimeMillis() - start;
-        int minExpectedUpdates = (int) (scheduling / (updater.getDelay() + interval));
-        int maxExpectedUpdates = (int) (scheduling / updater.getDelay()) + 1;
+        long lastSchedule = System.currentTimeMillis();
 
-        waitForUpdates(minExpectedUpdates);
-        assertTrue(
-                updates.size() >= minExpectedUpdates
-                    && updates.size() <= maxExpectedUpdates,"Got wrong number of updates: " + updates.size() + " not within ["
-                    + minExpectedUpdates + "," + maxExpectedUpdates + "]: " + updates);
+        waitForUpdates(1);
+        assertTrue(updates.size() < nEvents,
+            "The updater ran once per event instead of coalescing: " + updates.size()
+                + " updates for " + nEvents + " events: " + updates);
+        assertTrue(updates.get(updates.size() - 1).getTime() >= start,
+            "An update predates the first event: " + updates);
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return !updates.isEmpty()
+                    && updates.get(updates.size() - 1).getTime() >= lastSchedule;
+            }
+
+            public String message() {
+                return "No update covers the last event scheduled at "
+                    + lastSchedule + ": " + updates;
+            }
+        });
     }
 
 
