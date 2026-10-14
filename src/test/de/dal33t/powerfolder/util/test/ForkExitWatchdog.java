@@ -59,6 +59,26 @@ public class ForkExitWatchdog implements TestExecutionListener {
         watchdog.start();
     }
 
+    private static String registeredHooks() {
+        StringBuilder hooks = new StringBuilder("Shutdown hooks still registered: ");
+        try {
+            java.lang.reflect.Field field = Class.forName("java.lang.ApplicationShutdownHooks")
+                .getDeclaredField("hooks");
+            field.setAccessible(true);
+            Map<?, ?> registered = (Map<?, ?>) field.get(null);
+            hooks.append(registered.size());
+            for (Object hook : registered.keySet()) {
+                Thread thread = (Thread) hook;
+                hooks.append(System.lineSeparator()).append("\t\"").append(thread.getName())
+                    .append("\" ").append(thread.getClass().getName())
+                    .append(' ').append(thread.getState());
+            }
+        } catch (Throwable t) {
+            hooks.append("unreadable, ").append(t);
+        }
+        return hooks.toString();
+    }
+
     private static int graceSeconds() {
         String configured = System.getProperty(GRACE_SECONDS_PROPERTY);
         if (configured == null || configured.trim().isEmpty()) {
@@ -100,6 +120,7 @@ public class ForkExitWatchdog implements TestExecutionListener {
                 dump.append("\tat ").append(frame).append(System.lineSeparator());
             }
         }
+        dump.append(System.lineSeparator()).append(registeredHooks());
         System.err.println(dump);
         System.err.flush();
         System.out.flush();
