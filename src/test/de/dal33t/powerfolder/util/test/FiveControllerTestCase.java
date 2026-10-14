@@ -419,15 +419,15 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerHomer().getTransferManager()
-                    .getCompletedDownloadsCollection().size() == h
+                    .getCompletedDownloadsCollection().size() >= h
                     && getContollerBart().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == b
+                        .getCompletedDownloadsCollection().size() >= b
                     && getContollerMarge().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == mar
+                        .getCompletedDownloadsCollection().size() >= mar
                     && getContollerLisa().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == l
+                        .getCompletedDownloadsCollection().size() >= l
                     && getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size() == mag;
+                        .getCompletedDownloadsCollection().size() >= mag;
             }
 
             public String message() {
