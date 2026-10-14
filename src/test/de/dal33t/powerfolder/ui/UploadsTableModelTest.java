@@ -199,6 +199,19 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         return false;
     }
 
+    private boolean eventTypesAre(int... types) {
+        List<TableModelEvent> events = bartModelListener.events;
+        if (events.size() != types.length) {
+            return false;
+        }
+        for (int i = 0; i < types.length; i++) {
+            if (events.get(i).getType() != types[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static int countType(List<TableModelEvent> events, int type) {
         int n = 0;
         for (TableModelEvent e : events) {
@@ -315,7 +328,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 Upload upload = uploadRowOf(fileName);
                 return upload != null && upload.isStarted()
                     && !upload.isCompleted()
-                    && bartModelListener.events.size() >= 2;
+                    && eventTypesAre(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE);
             }
 
             public String message() {
@@ -336,7 +350,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(50, new ConditionWithMessage() {
             public boolean reached() {
                 return uploadRowOf(fileName) == null
-                    && bartModelListener.events.size() >= 3;
+                    && eventTypesAre(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE, TableModelEvent.DELETE);
             }
 
             public String message() {
@@ -394,7 +409,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 Upload upload = uploadRowOf(fileName);
                 return upload != null && upload.isStarted()
                     && !upload.isCompleted()
-                    && bartModelListener.events.size() >= 2;
+                    && eventTypesAre(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE);
             }
 
             @Override
@@ -437,7 +453,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return uploadRowOf(fileName) == null
-                    && bartModelListener.events.size() >= 3;
+                    && eventTypesAre(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE, TableModelEvent.DELETE);
             }
 
             @Override
