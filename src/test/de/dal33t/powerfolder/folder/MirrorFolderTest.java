@@ -188,6 +188,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getInfo());
+        final FileInfo fileAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         TestHelper.waitForCondition(30, new EqualsCondition() {
             public Object expected() {
                 return 500;
@@ -199,12 +201,20 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         });
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles().size() >= 1;
+                for (FileInfo fInfo : getFolderAtLisa().getIncomingFiles()) {
+                    if (fInfo.equals(fileAtBart)
+                        && fInfo.getSize() == fileAtBart.getSize())
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public String message() {
-                return "Incoming files at lisa: "
-                        + getFolderAtLisa().getIncomingFiles().size();
+                return "File of bart (" + fileAtBart.toDetailString()
+                        + ") not incoming at lisa. Incoming files at lisa: "
+                        + getFolderAtLisa().getIncomingFiles();
             }
         });
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
