@@ -52,6 +52,8 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         // files stay at version 0; a background watcher scan would re-process a
         // file and bump it to 1, flaking "expected 0 but was 1" on loaded runners.
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(),
+            getFolderAtLisa());
     }
 
     public void xtestStoreCompletedDownloadsMultiple() throws Exception {
@@ -103,6 +105,8 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         // PFS-5561: the restart created a fresh Lisa with an active watcher -
         // mute it again so a background scan does not bump the version.
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(),
+            getFolderAtLisa());
 
         TestHelper.waitMilliSeconds(2500);
 

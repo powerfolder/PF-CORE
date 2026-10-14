@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.util.test;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -38,6 +40,7 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +52,20 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version $Revision: 1.5 $
  */
 public class TestHelper {
+
+    private static final String PREFERENCES_FACTORY_PROPERTY = "java.util.prefs.PreferencesFactory";
+
+    static {
+        isolatePreferencesStore();
+    }
+
+    private static void isolatePreferencesStore() {
+        if (System.getProperty(PREFERENCES_FACTORY_PROPERTY) == null) {
+            System.setProperty(PREFERENCES_FACTORY_PROPERTY,
+                MemoryPreferencesFactory.class.getName());
+        }
+    }
+
     /**
      * FIXME: Change to "server.powerfolder.com" after successfully migration.
      */
@@ -675,6 +692,100 @@ public class TestHelper {
             }
         }
         folder.getController().setPaused(pausedBefore);
+    }
+
+    public static void waitForQuietMaintenance(final Folder... folders) {
+        final Map<Folder, MaintenanceCycle> cycles = new LinkedHashMap<>();
+        for (Folder folder : folders) {
+            MaintenanceCycle cycle = new MaintenanceCycle(folder);
+            cycles.put(folder, cycle);
+            folder.getController().getFolderRepository()
+                .addFolderRepositoryListener(cycle);
+        }
+        try {
+            for (Folder folder : folders) {
+                folder.recommendScanOnNextMaintenance();
+            }
+            for (MaintenanceCycle cycle : cycles.values()) {
+                cycle.arm();
+            }
+            waitForCondition(30, new ConditionWithMessage() {
+                @Override
+                public boolean reached() {
+                    return pending().isEmpty();
+                }
+
+                @Override
+                public String message() {
+                    return "Folders whose armed maintenance scan has not run yet: "
+                        + pending();
+                }
+
+                private List<String> pending() {
+                    List<String> pending = new ArrayList<>();
+                    for (MaintenanceCycle cycle : cycles.values()) {
+                        if (!cycle.hasRun()) {
+                            pending.add(cycle.toString());
+                        }
+                    }
+                    return pending;
+                }
+            });
+        } finally {
+            for (MaintenanceCycle cycle : cycles.values()) {
+                cycle.getFolder().getController().getFolderRepository()
+                    .removeFolderRepositoryListener(cycle);
+            }
+        }
+    }
+
+    private static final class MaintenanceCycle extends FolderRepositoryAdapter {
+        private static final int ARMED = 0;
+        private static final int RUNNING = 1;
+        private static final int RUN = 2;
+
+        private final Folder folder;
+        private final AtomicInteger state = new AtomicInteger(ARMED);
+
+        MaintenanceCycle(Folder folder) {
+            this.folder = folder;
+        }
+
+        Folder getFolder() {
+            return folder;
+        }
+
+        void arm() {
+            state.set(ARMED);
+        }
+
+        boolean hasRun() {
+            return state.get() == RUN;
+        }
+
+        @Override
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            if (folder.equals(e.getFolder())) {
+                state.compareAndSet(ARMED, RUNNING);
+            }
+        }
+
+        @Override
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            if (folder.equals(e.getFolder())) {
+                state.compareAndSet(RUNNING, RUN);
+            }
+        }
+
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return folder + (state.get() == ARMED ? " (scan armed)" : " (scan running)");
+        }
     }
 
     public static final boolean compareFiles(Path a, Path b) {

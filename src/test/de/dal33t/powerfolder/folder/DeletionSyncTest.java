@@ -26,11 +26,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -43,17 +39,9 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.Map;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.HashSet;
-import java.util.Collections;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -288,6 +276,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testMultipleFileDeleteSync() throws IOException {
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(),
+            getFolderAtLisa());
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
@@ -727,14 +717,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     @Test
     public void testDupeDeletedDBEntries() throws IOException {
         disconnectBartAndLisa();
-        MaintenanceWatch watch = new MaintenanceWatch(getFolderAtBart(), getFolderAtLisa());
-        try {
-            getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-            getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-            watch.awaitAll();
-        } finally {
-            watch.close();
-        }
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(),
+            getFolderAtLisa());
 
         Path fBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -783,55 +769,6 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
             .getFileName().toString(), new byte[0]);
-    }
-
-    private static final class MaintenanceWatch {
-        private final Map<Folder, FolderRepositoryListener> listeners = new LinkedHashMap<>();
-        private final Set<Folder> maintained = Collections.synchronizedSet(new HashSet<Folder>());
-
-        MaintenanceWatch(Folder... folders) {
-            for (final Folder folder : folders) {
-                FolderRepositoryListener listener = new FolderRepositoryAdapter() {
-                    @Override
-                    public void maintenanceFinished(FolderRepositoryEvent e) {
-                        if (folder.equals(e.getFolder())) {
-                            maintained.add(folder);
-                        }
-                    }
-
-                    @Override
-                    public boolean fireInEventDispatchThread() {
-                        return false;
-                    }
-                };
-                listeners.put(folder, listener);
-                folder.getController().getFolderRepository()
-                    .addFolderRepositoryListener(listener);
-            }
-        }
-
-        void awaitAll() {
-            TestHelper.waitForCondition(10, new ConditionWithMessage() {
-                @Override
-                public boolean reached() {
-                    return maintained.containsAll(listeners.keySet());
-                }
-
-                @Override
-                public String message() {
-                    Set<Folder> pending = new LinkedHashSet<>(listeners.keySet());
-                    pending.removeAll(maintained);
-                    return pending + " still have the maintenance run pending that their sync profile change asked for";
-                }
-            });
-        }
-
-        void close() {
-            for (Entry<Folder, FolderRepositoryListener> entry : listeners.entrySet()) {
-                entry.getKey().getController().getFolderRepository()
-                    .removeFolderRepositoryListener(entry.getValue());
-            }
-        }
     }
 
     /**

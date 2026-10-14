@@ -80,19 +80,8 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(reports, "Quarterly Report.txt");
         TestHelper.scanFolder(topFolder);
         waitForIndex(topFolder);
-        // The queue is empty before the commit is visible - wait for the hit, not for the queue.
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return topFolder.searchFiles(criteria(topFolder, "quarterly")).size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "Sanity: the top folder's index does not find the file ("
-                    + topFolder.getSearchIndexManager().getIndexEntryCount() + " entries)";
-            }
-        });
+        waitForIndexedHits(topFolder, 1,
+            "Sanity: the top folder's index does not find the file");
         FileInfoCriteria scoped = criteria(topFolder, "quarterly");
         scoped.setPath("reports");
         assertEquals(1, topFolder.searchFiles(scoped).size(), "Sanity: the top folder's index finds the file below the path");
@@ -110,36 +99,17 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         // --- Interrupt: the subfolder owns its rows and gets an index for them ---
         subFolder.setInheritsPermissions(false);
         assertNotNull(subFolder.getSearchIndexManager(), "An interrupted subfolder owns an index");
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return subFolder.searchFiles(criteria(subFolder, "quarterly")).size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "The interrupted subfolder's own index did not pick up its file";
-            }
-        });
+        waitForIndexedHits(subFolder, 1,
+            "The interrupted subfolder's own index did not pick up its file");
+        waitForIndexedHits(topFolder, 0, "The top folder's index did not let go of the rows");
         assertEquals(0, topFolder.searchFiles(criteria(topFolder, "quarterly")).size(), "The top folder's index let go of the rows");
 
         // --- Restore: the rows are the top folder's again, the own index is gone ---
         subFolder.setInheritsPermissions(true);
         assertNull(subFolder.getSearchIndexManager(), "A restored subfolder has no index of its own");
         assertFalse(Files.exists(subFolder.getSystemSubDir().resolve("index")), "... and its index directory is gone");
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return topFolder.searchFiles(criteria(topFolder, "quarterly")).size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "The top folder's index did not take the rows back (pending "
-                    + topFolder.getSearchIndexManager().getPendingCount() + ", entries "
-                    + topFolder.getSearchIndexManager().getIndexEntryCount() + ")";
-            }
-        });
+        waitForIndexedHits(topFolder, 1,
+            "The top folder's index did not take the rows back");
         assertEquals(1, subFolder.searchFiles(criteria(subFolder, "quarterly")).size(), "The subfolder finds it through the top folder's index");
     }
 
@@ -150,6 +120,30 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         criteria.setRecursive(true);
         criteria.setPath("");
         return criteria;
+    }
+
+    private static void waitForIndexedHits(final Folder folder, final int expected,
+        final String failure)
+    {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return indexedHits() == expected;
+            }
+
+            @Override
+            public String message() {
+                return failure + " (" + indexedHits() + " of " + expected
+                    + " hits in the index of " + folder + ", pending "
+                    + folder.getSearchIndexManager().getPendingCount() + ", entries "
+                    + folder.getSearchIndexManager().getIndexEntryCount() + ")";
+            }
+
+            private int indexedHits() {
+                return folder.getSearchIndexManager()
+                    .searchFiles(criteria(folder, "quarterly")).size();
+            }
+        });
     }
 
     private static void waitForIndex(final Folder folder) {
