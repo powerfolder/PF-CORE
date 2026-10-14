@@ -22,9 +22,11 @@ package de.dal33t.powerfolder.folder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -46,6 +48,23 @@ public class RedownloadTest extends TwoControllerTestCase {
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+    }
+
+    private void waitForUploadsFinished(Controller controller) {
+        TransferManager transferManager = controller.getTransferManager();
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Uploads at " + controller.getMySelf().getNick() + ": active "
+                    + transferManager.getActiveUploads() + ", queued " + transferManager.getQueuedUploads();
+            }
+
+            @Override
+            public boolean reached() {
+                return transferManager.countActiveUploads() == 0
+                    && transferManager.countQueuedUploads() == 0;
+            }
+        });
     }
 
     @Test
@@ -80,8 +99,7 @@ public class RedownloadTest extends TwoControllerTestCase {
                 return folderLisa.getKnownFiles().size() == 1;
             }
         });
-        // Wait to complete upload at BART to release file.
-        TestHelper.waitMilliSeconds(500);
+        waitForUploadsFinished(getContollerBart());
 
         // Delete the file at Bart.
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();

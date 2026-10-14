@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,6 +103,19 @@ public class PriorityTransferTest extends TwoControllerTestCase {
         targetFiles.add(fInfos[2].getRelativeName());
         allDownloaded = new CountDownLatch(3);
         downloadSequence.clear();
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtBart().getIncomingFiles(false).size() == fInfos.length;
+            }
+
+            @Override
+            public String message() {
+                return "Bart knows " + getFolderAtBart().getIncomingFiles(false)
+                    + " of Lisa's files, expected " + fInfos.length;
+            }
+        });
 
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 

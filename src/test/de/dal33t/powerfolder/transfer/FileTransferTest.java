@@ -1345,17 +1345,29 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            private boolean recoveredFileLandedAtLisa() {
+                if (getFolderAtLisa().getKnownItemCount() != 1) {
+                    return false;
+                }
+                FileInfo fileAtLisa = getFolderAtLisa().getKnownFiles()
+                    .iterator().next();
+                return fileAtLisa.getVersion() == 1
+                    && fileAtLisa.inSyncWithDisk(fileAtLisa
+                        .getDiskFile(getContollerLisa().getFolderRepository()));
+            }
+
             @Override
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting();
-                return getContollerLisa().getTransferManager()
-                    .countCompletedDownloads() > 1;
+                return recoveredFileLandedAtLisa();
             }
 
             @Override
             public String message() {
-                return "getContollerLisa.countCompletedDownloads(): "
+                return "Recovered file at lisa: "
+                    + getFolderAtLisa().getKnownFiles()
+                    + ", completed downloads: "
                     + getContollerLisa().getTransferManager()
                         .countCompletedDownloads();
             }
@@ -2026,8 +2038,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         disconnectBartAndLisa();
 
-        // Wait at least 3000ms
-        TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
         Path tmpCopy = Paths.get(System.getProperty("java.io.tmpdir"), fbart
             .getFileName().toString());
@@ -2048,6 +2058,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         Files.delete(tmpCopy);
+        Files.setLastModifiedTime(fbart, FileTime.fromMillis(Files
+            .getLastModifiedTime(flisa).toMillis() + 3000));
         assertTrue(Files.size(fbart) > chunkSize, "Testfile is smaller than max chunk size: " + chunkSize + ". File: " +
                 Files.size(fbart));
 
