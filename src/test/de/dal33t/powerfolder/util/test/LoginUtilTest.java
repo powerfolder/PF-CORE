@@ -721,6 +721,17 @@ public class LoginUtilTest {
      */
     @Test
     public void testTimingAttackResistance() {
+        String iterations = System.clearProperty(LoginUtil.PROPERTY_ARGON2_ITERATIONS);
+        String memory = System.clearProperty(LoginUtil.PROPERTY_ARGON2_MEMORY_KB);
+        try {
+            measureTimingAttackResistance();
+        } finally {
+            restoreProperty(LoginUtil.PROPERTY_ARGON2_ITERATIONS, iterations);
+            restoreProperty(LoginUtil.PROPERTY_ARGON2_MEMORY_KB, memory);
+        }
+    }
+
+    private void measureTimingAttackResistance() {
         String password = "TimingT3st!";
         String hashed = LoginUtil.hashAndSalt(password.toCharArray());
 
