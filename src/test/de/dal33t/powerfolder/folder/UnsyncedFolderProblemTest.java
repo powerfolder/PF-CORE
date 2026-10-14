@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -73,7 +75,12 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 folder.checkSync();
-                return folder.getProblems().size() == 1;
+                for (Problem problem : folder.getProblems()) {
+                    if (problem instanceof UnsynchronizedFolderProblem) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public String message() {
