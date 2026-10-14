@@ -43,6 +43,13 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.Collections;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -720,10 +727,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     @Test
     public void testDupeDeletedDBEntries() throws IOException {
         disconnectBartAndLisa();
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        waitForMaintenance(getFolderAtBart());
-        waitForMaintenance(getFolderAtLisa());
+        MaintenanceWatch watch = new MaintenanceWatch(getFolderAtBart(), getFolderAtLisa());
+        try {
+            getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            watch.awaitAll();
+        } finally {
+            watch.close();
+        }
 
         Path fBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -774,37 +785,52 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .getFileName().toString(), new byte[0]);
     }
 
-    private static void waitForMaintenance(final Folder folder) {
-        FolderRepository repository = folder.getController().getFolderRepository();
-        final AtomicBoolean maintained = new AtomicBoolean();
-        FolderRepositoryListener listener = new FolderRepositoryAdapter() {
-            @Override
-            public void maintenanceFinished(FolderRepositoryEvent e) {
-                if (folder.equals(e.getFolder())) {
-                    maintained.set(true);
-                }
-            }
+    private static final class MaintenanceWatch {
+        private final Map<Folder, FolderRepositoryListener> listeners = new LinkedHashMap<>();
+        private final Set<Folder> maintained = Collections.synchronizedSet(new HashSet<Folder>());
 
-            @Override
-            public boolean fireInEventDispatchThread() {
-                return false;
+        MaintenanceWatch(Folder... folders) {
+            for (final Folder folder : folders) {
+                FolderRepositoryListener listener = new FolderRepositoryAdapter() {
+                    @Override
+                    public void maintenanceFinished(FolderRepositoryEvent e) {
+                        if (folder.equals(e.getFolder())) {
+                            maintained.add(folder);
+                        }
+                    }
+
+                    @Override
+                    public boolean fireInEventDispatchThread() {
+                        return false;
+                    }
+                };
+                listeners.put(folder, listener);
+                folder.getController().getFolderRepository()
+                    .addFolderRepositoryListener(listener);
             }
-        };
-        repository.addFolderRepositoryListener(listener);
-        try {
+        }
+
+        void awaitAll() {
             TestHelper.waitForCondition(10, new ConditionWithMessage() {
                 @Override
                 public boolean reached() {
-                    return maintained.get();
+                    return maintained.containsAll(listeners.keySet());
                 }
 
                 @Override
                 public String message() {
-                    return folder + " still has the maintenance run pending that its sync profile change asked for";
+                    Set<Folder> pending = new LinkedHashSet<>(listeners.keySet());
+                    pending.removeAll(maintained);
+                    return pending + " still have the maintenance run pending that their sync profile change asked for";
                 }
             });
-        } finally {
-            repository.removeFolderRepositoryListener(listener);
+        }
+
+        void close() {
+            for (Entry<Folder, FolderRepositoryListener> entry : listeners.entrySet()) {
+                entry.getKey().getController().getFolderRepository()
+                    .removeFolderRepositoryListener(entry.getValue());
+            }
         }
     }
 

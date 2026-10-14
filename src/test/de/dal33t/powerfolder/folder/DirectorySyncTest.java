@@ -424,6 +424,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
      */
     @Test
     public void testUnableToDeleteDirectory() throws IOException {
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
         Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
         try {
             Files.createDirectory(dirBart);
