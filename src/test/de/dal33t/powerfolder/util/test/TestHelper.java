@@ -308,10 +308,27 @@ public class TestHelper {
         return broadcastPort;
     }
 
-    public static int findFreePort() {
-        Random random = new Random();
-        for (int attempt = 0; attempt < PROBE_PORT_COUNT; attempt++) {
-            int port = FIRST_PROBE_PORT + random.nextInt(PROBE_PORT_COUNT);
+    private static final int PORTS_PER_JVM = 100;
+
+    private static int nextPort;
+
+    private static int sliceStart() {
+        int slices = PROBE_PORT_COUNT / PORTS_PER_JVM;
+        int slice = Math.abs(Paths.get("").toAbsolutePath().toString()
+            .hashCode() % slices);
+        return FIRST_PROBE_PORT + slice * PORTS_PER_JVM;
+    }
+
+    public static synchronized int findFreePort() {
+        int start = sliceStart();
+        if (nextPort < start || nextPort >= start + PORTS_PER_JVM) {
+            nextPort = start;
+        }
+        for (int attempt = 0; attempt < PORTS_PER_JVM; attempt++) {
+            int port = nextPort++;
+            if (nextPort >= start + PORTS_PER_JVM) {
+                nextPort = start;
+            }
             try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
                 socket.setReuseAddress(false);
                 socket.bind(new InetSocketAddress(port));
@@ -320,7 +337,7 @@ public class TestHelper {
             }
         }
         throw new RuntimeException("Unable to find a free TCP port between "
-            + FIRST_PROBE_PORT + " and " + (FIRST_PROBE_PORT + PROBE_PORT_COUNT - 1));
+            + start + " and " + (start + PORTS_PER_JVM - 1));
     }
 
     public static Path getTestDir() {
