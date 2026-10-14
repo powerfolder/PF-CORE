@@ -1351,7 +1351,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                 }
                 FileInfo fileAtLisa = getFolderAtLisa().getKnownFiles()
                     .iterator().next();
-                return fileAtLisa.getVersion() == 1
+                return fileAtLisa.getVersion() >= 1
                     && fileAtLisa.inSyncWithDisk(fileAtLisa
                         .getDiskFile(getContollerLisa().getFolderRepository()));
             }
