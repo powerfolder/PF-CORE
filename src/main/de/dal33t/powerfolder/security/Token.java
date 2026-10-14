@@ -87,6 +87,11 @@ public class Token implements Serializable {
 
     public static final String NOTES_PASSWORD_RESET_PREFIX = "password_reset:";
 
+    public static final String NOTES_MCP_PREFIX = "mcp:";
+
+    private static final String NOTES_ACCESS_TOKEN = "access_token";
+    private static final String NOTES_REFRESH_TOKEN = "refresh_token";
+
     @Id
     private String id;
     private String secrect;
@@ -250,6 +255,21 @@ public class Token implements Serializable {
         return token;
     }
 
+    public static Token newMCPAccessToken(long validMS, AccountInfo aInfo, String clientId) {
+        return newMCPToken(validMS, aInfo, clientId, NOTES_ACCESS_TOKEN);
+    }
+
+    public static Token newMCPRefreshToken(long validMS, AccountInfo aInfo, String clientId) {
+        return newMCPToken(validMS, aInfo, clientId, NOTES_REFRESH_TOKEN);
+    }
+
+    private static Token newMCPToken(long validMS, AccountInfo aInfo, String clientId, String kind) {
+        Reject.ifBlank(clientId, "Client ID");
+        Token token = newAccessToken(validMS, aInfo);
+        token.setNotes(kind + "\n" + NOTES_MCP_PREFIX + clientId);
+        return token;
+    }
+
     /**
      * Constructs and prepares a new token.
      *
@@ -401,6 +421,28 @@ public class Token implements Serializable {
 
     public void setAndroid() {
         notes = "android";
+    }
+
+    public boolean isMCP() {
+        return getMCPClientId() != null;
+    }
+
+    public String getMCPClientId() {
+        if (StringUtils.isBlank(notes)) {
+            return null;
+        }
+        for (String line : notes.split("\n")) {
+            String trimmed = line.trim();
+            if (trimmed.startsWith(NOTES_MCP_PREFIX)) {
+                String clientId = trimmed.substring(NOTES_MCP_PREFIX.length()).trim();
+                return StringUtils.isBlank(clientId) ? null : clientId;
+            }
+        }
+        return null;
+    }
+
+    public boolean isMCPRefreshToken() {
+        return isMCP() && notes.contains(NOTES_REFRESH_TOKEN);
     }
 
     // Static helper **********************************************************
