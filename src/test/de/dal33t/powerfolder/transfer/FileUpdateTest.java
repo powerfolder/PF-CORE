@@ -513,11 +513,13 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "Known files at lisa: " + getFolderAtLisa().getKnownFiles().size();
+                return "File at lisa: " + getFolderAtLisa().getFile(fileInfo)
+                    + ". Known files at lisa: "
+                    + getFolderAtLisa().getKnownFiles();
             }
 
             public boolean reached() {
-                return getFolderAtLisa().getKnownFiles().size() > 0;
+                return getFolderAtLisa().getFile(fileInfo) != null;
             }
         });
         for (int i = 0; i < 10; i++) {
