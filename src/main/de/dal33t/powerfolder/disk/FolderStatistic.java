@@ -75,7 +75,7 @@ public class FolderStatistic extends PFComponent {
     // Used to calculate ETA
     private TransferCounter downloadCounter;
     private volatile MyCalculatorTask calculatorTask;
-    private volatile boolean recalculationRequested;
+    private boolean recalculationRequested;
     private NodeManagerListener nodeManagerListener;
 
     FolderStatistic(Folder folder) {
@@ -117,12 +117,16 @@ public class FolderStatistic extends PFComponent {
             return -1L;
         }
 
-        MyCalculatorTask task = calculatorTask;
-        if (task != null) {
-            if (task.running) {
-                recalculationRequested = true;
+        synchronized (calculatorInit) {
+            if (calculatorTask != null) {
+                if (calculatorTask.started) {
+                    recalculationRequested = true;
+                }
+                return -1L;
             }
-            return -1L;
+            if (calculating != null) {
+                return -1L;
+            }
         }
         long delay = current.getAnalyzedFiles() / 1000;
         delay = Math.max(100, delay);
@@ -715,16 +719,22 @@ public class FolderStatistic extends PFComponent {
     // Inner classes *********************************************************
 
     private class MyCalculatorTask extends TimerTask {
-        private volatile boolean running;
+        private boolean started;
 
         public void run() {
-            running = true;
+            synchronized (calculatorInit) {
+                started = true;
+            }
             try {
                 calculate0();
             } finally {
-                calculatorTask = null;
-                if (recalculationRequested) {
+                boolean again;
+                synchronized (calculatorInit) {
+                    calculatorTask = null;
+                    again = recalculationRequested;
                     recalculationRequested = false;
+                }
+                if (again) {
                     scheduleCalculate();
                 }
             }

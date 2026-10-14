@@ -52,9 +52,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
 
         waitForLastSyncDate(getFolderAtBart());
         waitForLastSyncDate(getFolderAtLisa());
-        waitForSyncWarningDue(getFolderAtLisa());
-        getFolderAtLisa().checkSync();
-        assertEquals(1, getFolderAtLisa().getProblems().size());
+        waitForUnsyncedProblem(getFolderAtLisa());
     }
 
     @Test
@@ -68,9 +66,24 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        waitForSyncWarningDue(getFolderAtLisa());
-        getFolderAtLisa().checkSync();
-        assertEquals(1, getFolderAtLisa().getProblems().size());
+        waitForUnsyncedProblem(getFolderAtLisa());
+    }
+
+    private static void waitForUnsyncedProblem(final Folder folder) {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            public boolean reached() {
+                folder.checkSync();
+                return folder.getProblems().size() == 1;
+            }
+
+            public String message() {
+                return folder + " reported no unsynced problem. Last sync: "
+                    + folder.getLastSyncDate() + ", warn after "
+                    + folder.getSyncWarnSeconds() + "s, problems: "
+                    + folder.getProblems();
+            }
+        });
+        assertEquals(1, folder.getProblems().size());
     }
 
     private static void waitForLastSyncDate(final Folder folder) {

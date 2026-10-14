@@ -68,8 +68,9 @@ public class SendFileListTest extends TwoControllerTestCase {
             .getFolderRepository().getMetaFolder(folderInfo).getInfo();
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
+                FileList metaList = lisasListener.fileListFor(metaFolderInfo);
                 return lisasListener.fileListFor(folderInfo) != null
-                    && lisasListener.fileListFor(metaFolderInfo) != null;
+                    && metaList != null && metaList.files.length == 1;
             }
 
             public String message() {
@@ -79,6 +80,8 @@ public class SendFileListTest extends TwoControllerTestCase {
         });
         assertEquals(2, lisasListener.fileLists().size(),
             "Received: " + lisasListener.messages);
+        assertTrue(lisasListener.deltas().isEmpty(),
+            "No delta may precede the file lists. Received: " + lisasListener.messages);
         FileList list = lisasListener.fileListFor(folderInfo);
         assertEquals(0, list.nFollowingDeltas);
         assertEquals(0, list.files.length);
@@ -128,6 +131,16 @@ public class SendFileListTest extends TwoControllerTestCase {
     private static final class MyMessageListener implements MessageListener {
         public List<FolderRelatedMessage> messages = new CopyOnWriteArrayList<FolderRelatedMessage>();
         public boolean ignoreMetaFolder;
+
+        public List<FolderFilesChanged> deltas() {
+            List<FolderFilesChanged> deltas = new ArrayList<FolderFilesChanged>();
+            for (FolderRelatedMessage m : messages) {
+                if (m instanceof FolderFilesChanged) {
+                    deltas.add((FolderFilesChanged) m);
+                }
+            }
+            return deltas;
+        }
 
         public List<FileList> fileLists() {
             List<FileList> fileLists = new ArrayList<FileList>();

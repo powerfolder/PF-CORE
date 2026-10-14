@@ -152,13 +152,19 @@ public final class ControllerTest extends ControllerTestCase {
                     .resolve(foInfo.getName()),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
-        StatisticCalculationCounter calculated = new StatisticCalculationCounter(
-            getController().getFolderRepository().getFolders(true));
+        Collection<Folder> testFolders = new ArrayList<>();
+        for (Folder folder : getController().getFolderRepository().getFolders(false)) {
+            if (folder.getName().startsWith("Test-Folder")) {
+                testFolders.add(folder);
+            }
+        }
+        assertEquals(nFolders, testFolders.size());
+        StatisticCalculationCounter calculated = new StatisticCalculationCounter(testFolders);
 
         List<Long> delays = new ArrayList<>();
         for (int round = 0; round < 3; round++) {
             Map<Folder, Integer> before = calculated.snapshot();
-            Map<Folder, Long> scheduled = scheduleStatisticCalculationOfAllFolders();
+            Map<Folder, Long> scheduled = scheduleStatisticCalculationOf(testFolders);
             delays.addAll(scheduled.values());
             calculated.waitForCalculationsSince(before, scheduled.keySet());
         }
@@ -171,14 +177,14 @@ public final class ControllerTest extends ControllerTestCase {
             dueInSlot.merge(delay / slotMillis, 1, Integer::sum);
         }
         int peak = Collections.max(dueInSlot.values());
-        assertTrue(peak <= delays.size() / 4,
+        assertTrue(peak <= delays.size() / 6,
             "Statistic calculations are not spread: " + peak + " of " + delays.size()
                 + " are due within the same " + slotMillis + "ms slot: " + dueInSlot);
     }
 
-    private Map<Folder, Long> scheduleStatisticCalculationOfAllFolders() {
+    private Map<Folder, Long> scheduleStatisticCalculationOf(Collection<Folder> folders) {
         Map<Folder, Long> scheduled = new HashMap<>();
-        for (Folder folder : getController().getFolderRepository().getFolders(true)) {
+        for (Folder folder : folders) {
             if (!folder.isStarted()) {
                 continue;
             }

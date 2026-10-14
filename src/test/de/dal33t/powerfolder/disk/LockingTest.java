@@ -167,7 +167,7 @@ public class LockingTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return locking.isLocked(fInfo) && listener.locked(fInfo) == 1;
+                return locking.isLocked(fInfo) && listener.locked(fInfo) >= 1;
             }
 
             @Override

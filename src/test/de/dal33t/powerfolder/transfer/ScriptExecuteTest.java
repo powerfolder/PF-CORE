@@ -254,7 +254,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >>\"" + outputFile.toAbsolutePath().toString() + "\"\npause")
+            content = ("echo %1 %2 %3 %4 %5 >>\"" + outputFile.toAbsolutePath().toString() + "\"\nexit 1")
                 .getBytes();
             cmdLine = "cmd /C " + testScript.toAbsolutePath().toString() + ' '
                 + params;
