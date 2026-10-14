@@ -83,7 +83,7 @@ test-macOS:
         done
       ) &
       WATCHDOG_PID=$!
-    - ant run-tests -Dtest.threads=2
+    - ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
     - kill $WATCHDOG_PID 2>/dev/null || true
   artifacts:
     reports:
@@ -102,9 +102,10 @@ test-Windows:
   tags:
     - Windows
   script:
+    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -lt (Get-Date).AddHours(-2) } | Stop-Process -Force; exit 0"
     - echo CPUs=%NUMBER_OF_PROCESSORS%
     - powershell -Command "(Get-CimInstance Win32_OperatingSystem) | Select-Object TotalVisibleMemorySize,FreePhysicalMemory | Format-List"
-    - call ant run-tests -Dtest.threads=2
+    - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
