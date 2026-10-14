@@ -29,6 +29,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -103,10 +105,12 @@ public class UDTTest {
         tmp.value = false;
         final UDTSocket serv = new UDTSocket();
         int prt = bindSocket(serv);
+        assertFalse(serv.isConnected());
+        assertFalse(serv.isClosed());
+        serv.listen(10);
         Thread t = new Thread(new Runnable() {
             public void run() {
                 try {
-                    serv.listen(10);
                     UDTSocket cl = serv.accept();
                     PrintWriter w = new PrintWriter(cl.getOutputStream());
                     w.println("Hello World!");
@@ -120,8 +124,6 @@ public class UDTTest {
                 }
             }
         });
-        assertFalse(serv.isConnected());
-        assertFalse(serv.isClosed());
         t.start();
         UDTSocket other = new UDTSocket();
         assertFalse(other.isConnected());
@@ -141,7 +143,7 @@ public class UDTTest {
         assertFalse(other.isConnected());
         assertTrue(other.isClosed());
 
-        t.join(1000);
+        t.join();
         assertTrue(tmp.value);
         assertFalse(serv.isConnected());
         assertTrue(serv.isClosed());
@@ -325,15 +327,21 @@ public class UDTTest {
         assertTrue(b.getSoRendezvous());
 
         final ThreadHelper<Error> rethrower = new ThreadHelper<Error>();
+        final CyclicBarrier atConnect = new CyclicBarrier(2);
         Thread tA, tB;
         tA = new Thread(new Runnable() {
             public void run() {
                 try {
+                    atConnect.await();
                     a.connect(new InetSocketAddress("localhost", pb));
                     workerA.run();
                 } catch (Error t) {
                     rethrower.value = t;
                 } catch (IOException e) {
+                    rethrower.value = new Error(e);
+                } catch (InterruptedException e) {
+                    rethrower.value = new Error(e);
+                } catch (BrokenBarrierException e) {
                     rethrower.value = new Error(e);
                 }
             }
@@ -341,22 +349,21 @@ public class UDTTest {
         tB = new Thread(new Runnable() {
             public void run() {
                 try {
+                    atConnect.await();
                     b.connect(new InetSocketAddress("localhost", pa));
                     workerB.run();
                 } catch (Error t) {
                     rethrower.value = t;
                 } catch (IOException e) {
                     rethrower.value = new Error(e);
+                } catch (InterruptedException e) {
+                    rethrower.value = new Error(e);
+                } catch (BrokenBarrierException e) {
+                    rethrower.value = new Error(e);
                 }
             }
         }, "Worker B");
         tB.start();
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
         tA.start();
         try {
             tA.join();

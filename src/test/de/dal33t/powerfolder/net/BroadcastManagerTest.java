@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -56,58 +58,56 @@ public class BroadcastManagerTest extends FiveControllerTestCase {
     }
     @Test
     public void testConnectViaBroadcast() {
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public String message() {
-                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerBart().getNodeManager().countConnectedNodes();
-            }
-            @Override
-            public boolean reached() {
-                return getContollerBart().getNodeManager().countConnectedNodes() == 1;
-            }
-        });
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public String message() {
-                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerLisa().getNodeManager().countConnectedNodes();
-            }
-            @Override
-            public boolean reached() {
-                return getContollerLisa().getNodeManager().countConnectedNodes() == 1;
-            }
-        });
-        assertEquals(0, getContollerMaggie().getNodeManager().countConnectedNodes());
+        waitForMutualConnection(getContollerBart(), getContollerLisa());
+        assertTrue(isDisconnected(getContollerMaggie(), getContollerBart()),
+            connectedNodesDump());
+        assertTrue(isDisconnected(getContollerMaggie(), getContollerLisa()),
+            connectedNodesDump());
 
         getContollerMaggie().openBroadcastManager();
+        waitForMutualConnection(getContollerMaggie(), getContollerBart());
+        waitForMutualConnection(getContollerMaggie(), getContollerLisa());
+        waitForMutualConnection(getContollerBart(), getContollerLisa());
+    }
+
+    private void waitForMutualConnection(final Controller a, final Controller b)
+    {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
-            public String message() {
-                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerBart().getNodeManager().countConnectedNodes();
-            }
-            @Override
             public boolean reached() {
-                return getContollerBart().getNodeManager().countConnectedNodes() == 2;
+                return isConnected(a, b);
             }
-        });
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+
             @Override
             public String message() {
-                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerLisa().getNodeManager().countConnectedNodes();
-            }
-            @Override
-            public boolean reached() {
-                return getContollerLisa().getNodeManager().countConnectedNodes() == 2;
-            }
-        });
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
-            @Override
-            public String message() {
-                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerMaggie().getNodeManager().countConnectedNodes();
-            }
-            @Override
-            public boolean reached() {
-                return getContollerMaggie().getNodeManager().countConnectedNodes() == 2;
+                return a.getMySelf().getNick() + " and "
+                    + b.getMySelf().getNick()
+                    + " did not connect via broadcast. "
+                    + connectedNodesDump();
             }
         });
+    }
+
+    private static boolean isConnectedAt(Controller from, Controller to) {
+        Member node = from.getNodeManager().getNode(to.getMySelf().getId());
+        return node != null && node.isCompletelyConnected()
+            && from.getNodeManager().getConnectedNodes().contains(node);
+    }
+
+    private static boolean isConnected(Controller a, Controller b) {
+        return isConnectedAt(a, b) && isConnectedAt(b, a);
+    }
+
+    private static boolean isDisconnected(Controller a, Controller b) {
+        return !isConnectedAt(a, b) && !isConnectedAt(b, a);
+    }
+
+    private String connectedNodesDump() {
+        return "Connected nodes @Bart: "
+            + getContollerBart().getNodeManager().getConnectedNodes()
+            + ", @Lisa: "
+            + getContollerLisa().getNodeManager().getConnectedNodes()
+            + ", @Maggie: "
+            + getContollerMaggie().getNodeManager().getConnectedNodes();
     }
 }

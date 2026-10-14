@@ -43,12 +43,40 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ConnectNodesTest extends FiveControllerTestCase {
 
+    private static boolean isConnectedAt(Controller from, Controller to) {
+        Member node = from.getNodeManager().getNode(to.getMySelf().getId());
+        return node != null && node.isCompletelyConnected()
+            && from.getNodeManager().getConnectedNodes().contains(node);
+    }
+
+    private static boolean isConnected(Controller a, Controller b) {
+        return isConnectedAt(a, b) && isConnectedAt(b, a);
+    }
+
+    private static boolean isDisconnected(Controller a, Controller b) {
+        return !isConnectedAt(a, b) && !isConnectedAt(b, a);
+    }
+
+    private String connectedNodesDump() {
+        return "Connected nodes @Homer: "
+            + getContollerHomer().getNodeManager().getConnectedNodes()
+            + ", @Bart: "
+            + getContollerBart().getNodeManager().getConnectedNodes()
+            + ", @Marge: "
+            + getContollerMarge().getNodeManager().getConnectedNodes()
+            + ", @Lisa: "
+            + getContollerLisa().getNodeManager().getConnectedNodes()
+            + ", @Maggie: "
+            + getContollerMaggie().getNodeManager().getConnectedNodes();
+    }
+
     @Test
     public void testConnectedNodes() {
         int nTries = 10;
         for (int i = 0; i < nTries; i++) {
             boolean connectOk = tryToConnectSimpsons();
 
+            assertTrue( connectOk,"Connection of Simpsons failed");
             assertEquals( 4,
                 getContollerHomer().getNodeManager().getConnectedNodes().size(),"Connected nodes @Homer: "
                 + getContollerHomer().getNodeManager().getConnectedNodes());
@@ -65,70 +93,26 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 getContollerMaggie().getNodeManager().getConnectedNodes()
                     .size(),"Connected nodes @Maggie: "
                 + getContollerMaggie().getNodeManager().getConnectedNodes());
-            assertTrue( connectOk,"Connection of Simpsons failed");
 
             getContollerBart().getNodeManager().shutdown();
             getContollerLisa().getNodeManager().shutdown();
 
-            // Wait for disconnects
             TestHelper.waitForCondition(10, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getContollerHomer().getNodeManager()
-                        .getConnectedNodes().size() == 2;
+                    return isDisconnected(getContollerBart(), getContollerHomer())
+                        && isDisconnected(getContollerBart(), getContollerMarge())
+                        && isDisconnected(getContollerBart(), getContollerMaggie())
+                        && isDisconnected(getContollerBart(), getContollerLisa())
+                        && isDisconnected(getContollerLisa(), getContollerHomer())
+                        && isDisconnected(getContollerLisa(), getContollerMarge())
+                        && isDisconnected(getContollerLisa(), getContollerMaggie())
+                        && isConnected(getContollerHomer(), getContollerMarge())
+                        && isConnected(getContollerHomer(), getContollerMaggie())
+                        && isConnected(getContollerMarge(), getContollerMaggie());
                 }
 
                 public String message() {
-                    return "Connected nodes @Homer: "
-                        + getContollerHomer().getNodeManager()
-                            .getConnectedNodes();
-                }
-            });
-            TestHelper.waitForCondition(10, new ConditionWithMessage() {
-                public boolean reached() {
-                    return getContollerBart().getNodeManager()
-                        .getConnectedNodes().size() == 0;
-                }
-
-                public String message() {
-                    return "Connected nodes @Bart: "
-                        + getContollerBart().getNodeManager()
-                            .getConnectedNodes();
-                }
-            });
-            TestHelper.waitForCondition(10, new ConditionWithMessage() {
-                public boolean reached() {
-                    return getContollerMarge().getNodeManager()
-                        .getConnectedNodes().size() == 2;
-                }
-
-                public String message() {
-                    return "Connected nodes @Marge: "
-                        + getContollerMarge().getNodeManager()
-                            .getConnectedNodes();
-                }
-            });
-            TestHelper.waitForCondition(10, new ConditionWithMessage() {
-                public boolean reached() {
-                    return getContollerLisa().getNodeManager()
-                        .getConnectedNodes().size() == 0;
-                }
-
-                public String message() {
-                    return "Connected nodes @Lisa: "
-                        + getContollerLisa().getNodeManager()
-                            .getConnectedNodes();
-                }
-            });
-            TestHelper.waitForCondition(10, new ConditionWithMessage() {
-                public boolean reached() {
-                    return getContollerMaggie().getNodeManager()
-                        .getConnectedNodes().size() == 2;
-                }
-
-                public String message() {
-                    return "Connected nodes @Maggie: "
-                        + getContollerMaggie().getNodeManager()
-                            .getConnectedNodes();
+                    return connectedNodesDump();
                 }
             });
 

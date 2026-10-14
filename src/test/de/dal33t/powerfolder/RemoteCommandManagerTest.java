@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.RemoteCommandManager;
 import de.dal33t.powerfolder.disk.Folder;
@@ -55,15 +56,21 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Bart did not leave the folder. members at lisa: "
-                    + getFolderAtLisa().getMembersCount();
+                    + getFolderAtLisa().getMembersAsCollection();
             }
 
             public boolean reached() {
-                return getFolderAtLisa().getMembersCount() == 1;
+                return !getFolderAtLisa().hasMember(bartAtLisa());
             }
         });
         assertTrue(RemoteCommandManager.hasRunningInstance(rconPort()),
             "PowerFolder not running on port " + rconPort());
+    }
+
+
+    private Member bartAtLisa() {
+        return getContollerLisa().getNodeManager().getNode(
+            getContollerBart().getMySelf().getId());
     }
 
     /** The rcon port of Bart, a free one per run - see TestHelper.copyConfigWithFreePort. */
@@ -89,11 +96,14 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Bart did not join the folder. members at lisa: "
-                    + getFolderAtLisa().getMembersCount();
+                    + getFolderAtLisa().getMembersAsCollection()
+                    + ", folder at bart: "
+                    + findFolderByName(getContollerBart(), "testFolder");
             }
 
             public boolean reached() {
-                return getFolderAtLisa().getMembersCount() == 2;
+                return getFolderAtLisa().hasMember(bartAtLisa())
+                    && findFolderByName(getContollerBart(), "testFolder") != null;
             }
         });
         Folder folderAtBart = findFolderByName(getContollerBart(), "testFolder");
@@ -144,7 +154,22 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 + ";name=XXX"
                 + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
         assertTrue(sent);
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                Folder folder = findFolderByName(getContollerBart(), "XXX");
+                return folder != null
+                    && "true,true,true,true,5,false,22,0,m,Auto-sync,false"
+                        .equals(folder.getSyncProfile().getFieldList());
+            }
+
+            public String message() {
+                Folder folder = findFolderByName(getContollerBart(), "XXX");
+                return "Sync profile of XXX at bart not updated: "
+                    + (folder != null
+                        ? folder.getSyncProfile().getFieldList()
+                        : "no folder XXX");
+            }
+        });
         folderAtBart = findFolderByName(getContollerBart(), "XXX");
         assertNotNull(folderAtBart);
         assertEquals("true,true,true,true,5,false,22,0,m,Auto-sync,false",

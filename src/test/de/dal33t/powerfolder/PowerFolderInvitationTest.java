@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Level;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -137,21 +138,35 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             @Override
             public boolean reached() {
                 Folder bf = findFolderByName(getContollerBart(), folderAtLisa.getName());
-                return bf != null && bf.getMembersCount() == 2
-                    && folderAtLisa.getMembersCount() == 2;
+                return bf != null && bf.hasMember(lisaAtBart())
+                    && bf.hasMember(getContollerBart().getMySelf())
+                    && folderAtLisa.hasMember(bartAtLisa())
+                    && folderAtLisa.hasMember(getContollerLisa().getMySelf());
             }
 
             @Override
             public String message() {
                 Folder bf = findFolderByName(getContollerBart(), folderAtLisa.getName());
-                return "Bart members: " + (bf != null ? bf.getMembersCount() : 0)
-                    + ", Lisa: " + folderAtLisa.getMembersCount();
+                return "Members at bart: "
+                    + (bf != null ? bf.getMembersAsCollection() : "no folder")
+                    + ", at lisa: " + folderAtLisa.getMembersAsCollection();
             }
         });
 
         bartFolder = findFolderByName(getContollerBart(), folderAtLisa.getName());
         assertEquals(2, bartFolder.getMembersCount());
         assertEquals(2, folderAtLisa.getMembersCount());
+    }
+
+
+    private Member bartAtLisa() {
+        return getContollerLisa().getNodeManager().getNode(
+            getContollerBart().getMySelf().getId());
+    }
+
+    private Member lisaAtBart() {
+        return getContollerBart().getNodeManager().getNode(
+            getContollerLisa().getMySelf().getId());
     }
 
     @SuppressWarnings("unchecked")

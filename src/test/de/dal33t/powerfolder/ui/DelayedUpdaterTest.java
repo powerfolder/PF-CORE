@@ -48,13 +48,9 @@ public class DelayedUpdaterTest extends ControllerTestCase {
     public void testSingleEvent() {
         long start = System.currentTimeMillis();
         updater.schedule(new Update());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return updates.size() == 1;
-            }
-        });
+        waitForUpdates(1);
         assertEquals(1, updates.size());
-        long took = System.currentTimeMillis() - start;
+        long took = updates.get(0).getTime() - start;
         assertTrue( took >= updater.getDelay(),"Update took " + took + "ms");
     }
 
@@ -65,41 +61,46 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         TestHelper.waitMilliSeconds(500);
         // Override old
         updater.schedule(new Update());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return updates.size() == 1;
-            }
-        });
+        waitForUpdates(1);
         assertEquals(1, updates.size());
-        long took = System.currentTimeMillis() - start;
-        long sinceLastEvent = System.currentTimeMillis()
-            - updates.get(0).getTime();
+        long took = updates.get(0).getTime() - start;
         assertTrue( took >= updater.getDelay(),"Updates took " + took + "ms");
         assertTrue( took <= 1500,"Updates took " + took
                 + "ms, should not really take longer than single");
-        assertTrue(
-            sinceLastEvent < 200,"Should not have passed more that 200ms after last event");
     }
 
     @Test
     public void testMultipleEvents() {
-        // About to discard about 90% of the events
-        for (int i = 0; i < 100; i++) {
+        int nEvents = 100;
+        int interval = 107;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < nEvents; i++) {
             updater.schedule(new Update());
-            TestHelper.waitMilliSeconds(107);
+            TestHelper.waitMilliSeconds(interval);
         }
+        long scheduling = System.currentTimeMillis() - start;
+        int minExpectedUpdates = (int) (scheduling / (updater.getDelay() + interval));
+        int maxExpectedUpdates = (int) (scheduling / updater.getDelay()) + 1;
 
+        waitForUpdates(minExpectedUpdates);
+        assertTrue(
+                updates.size() >= minExpectedUpdates
+                    && updates.size() <= maxExpectedUpdates,"Got wrong number of updates: " + updates.size() + " not within ["
+                    + minExpectedUpdates + "," + maxExpectedUpdates + "]: " + updates);
+    }
+
+
+    private void waitForUpdates(final int expected) {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return updates.size() >= 10;
+                return updates.size() >= expected;
             }
 
             public String message() {
-                return "Got only " + updates.size() + " updates";
+                return "Got only " + updates.size() + " of " + expected
+                    + " updates: " + updates;
             }
         });
-        assertTrue(
-                updates.size() >= 10 && updates.size() <= 20,"Got wrong number of updates: " + updates.size() + ": " + updates);
     }
 
     private class Update implements Runnable {

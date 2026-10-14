@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -51,6 +55,31 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version $Revision: 1.5 $
  */
 public class NodeSearcherTest extends TwoControllerTestCase {
+
+    private void waitForSearchResultNicks(final List<Member> searchResultModel,
+        final String... expectedNicks)
+    {
+        final Set<String> expected = new TreeSet<String>(
+            Arrays.asList(expectedNicks));
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return nicksOf(searchResultModel).equals(expected);
+            }
+
+            public String message() {
+                return "Expected search results " + expected + ", found "
+                    + nicksOf(searchResultModel) + ": " + searchResultModel;
+            }
+        });
+    }
+
+    private static Set<String> nicksOf(List<Member> members) {
+        Set<String> nicks = new TreeSet<String>();
+        for (Member member : members) {
+            nicks.add(member.getNick());
+        }
+        return nicks;
+    }
 
     @BeforeEach
     protected void setUp() throws Exception {
@@ -113,14 +142,9 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher = new NodeSearcher(getContollerLisa(), "art",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        waitForSearchResultNicks(searchResultModel, getContollerBart()
+            .getMySelf().getNick());
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
-        System.out.println("members found: ");
-        for (Member member : searchResultModel) {
-            System.out.println(member);
-        }
-
         assertEquals(1, searchResultModel.size());
         assertEquals(getContollerBart().getMySelf(), searchResultModel.get(0));
 
@@ -128,10 +152,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher = new NodeSearcher(getContollerLisa(), "MAGGI",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        waitForSearchResultNicks(searchResultModel, "Maggi");
         searcher.cancelSearch();
-        // assertFalse(
-        // searchResultModel.isEmpty(),searchResultModel.toString());
         assertEquals( 1, searchResultModel.size(),searchResultModel.toString());
         assertEquals("Maggi", searchResultModel.get(0).getNick());
 
@@ -139,9 +161,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher = new NodeSearcher(getContollerLisa(), "marge",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        waitForSearchResultNicks(searchResultModel, "Marge");
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
         assertEquals(1, searchResultModel.size());
         assertEquals("Marge", searchResultModel.get(0).getNick());
     }
@@ -158,9 +179,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "homer",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        waitForSearchResultNicks(searchResultModel, "Homer");
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
         assertEquals(1, searchResultModel.size());
         assertEquals("Homer", searchResultModel.get(0).getNick());
 
@@ -192,15 +212,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "ar",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return searchResultModel.size() == 2;
-            }
-
-            public String message() {
-                return "Expected: 2. Found: " + searchResultModel.size() + ": " + searchResultModel.toString();
-            }
-        });
+        waitForSearchResultNicks(searchResultModel, getContollerBart()
+            .getMySelf().getNick(), "Marge");
         searcher.cancelSearch();
         assertFalse(
             searchResultModel.isEmpty(),"Expected searach results, but nothing was found 1");
@@ -213,12 +226,9 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        waitForSearchResultNicks(searchResultModel, getContollerBart()
+            .getMySelf().getNick(), "Homer", "Ned Flenders");
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
-        // Bart, Homer, Ned Flenders
-        
-        //System.err.println(Debug.dumpCurrentStacktraces(true));
         assertEquals( 3, searchResultModel.size(),Debug.dumpCurrentStacktraces(true));
 
         // Search for hostname (NO LONGER SUPPORTED)

@@ -28,6 +28,12 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -40,6 +46,48 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version $Revision: 1.5 $
  */
 public class UDTConnectionTest extends FiveControllerTestCase {
+
+    private void waitForCompleteFileAtLisa(final Path sourceFile, int seconds) {
+        final String filename = sourceFile.getFileName().toString();
+        final long expectedSize = sizeOf(sourceFile);
+        TestHelper.waitForCondition(seconds, new ConditionWithMessage() {
+            public String message() {
+                return "File " + filename + " (" + expectedSize
+                    + " bytes) not completely synced to lisa. Known files at lisa: "
+                    + getFolderAtLisa().getKnownFiles();
+            }
+
+            public boolean reached() {
+                FileInfo info = findKnownFile(getFolderAtLisa(), filename);
+                if (info == null || info.isDeleted()
+                    || info.getSize() != expectedSize)
+                {
+                    return false;
+                }
+                Path diskFile = info.getDiskFile(getContollerLisa()
+                    .getFolderRepository());
+                return diskFile != null && Files.exists(diskFile)
+                    && sizeOf(diskFile) == expectedSize;
+            }
+        });
+    }
+
+    private static FileInfo findKnownFile(Folder folder, String filename) {
+        for (FileInfo info : folder.getKnownFiles()) {
+            if (filename.equals(info.getFilenameOnly())) {
+                return info;
+            }
+        }
+        return null;
+    }
+
+    private static long sizeOf(Path file) {
+        try {
+            return Files.size(file);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to read size of " + file, e);
+        }
+    }
     // static {
     // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
     // }
@@ -86,22 +134,13 @@ public class UDTConnectionTest extends FiveControllerTestCase {
         assertTrue(conHan.getMember().isCompletelyConnected());
 
         joinTestFolder(SyncProfile.HOST_FILES, false);
-        TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
-            10 * 1024 * 1024);
+        Path fileAtMarge = TestHelper.createRandomFile(getFolderAtMarge()
+            .getLocalBase(), 10 * 1024 * 1024);
         scanFolder(getFolderAtMarge());
 
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(40, new ConditionWithMessage() {
-            public String message() {
-                return "Files at lisa: "
-                    + getFolderAtLisa().getKnownFiles().size();
-            }
-
-            public boolean reached() {
-                return getFolderAtLisa().getKnownFiles().size() == 1;
-            }
-        });
+        waitForCompleteFileAtLisa(fileAtMarge, 40);
     }
     /**
      * The following tests will always fail unless your relay is within the same
