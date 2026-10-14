@@ -90,7 +90,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
     private void waitForUpdates(final int expected) {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return updates.size() >= expected;
+                return updates.size() >= expected && updaterIsIdle();
             }
 
             public String message() {
@@ -98,6 +98,14 @@ public class DelayedUpdaterTest extends ControllerTestCase {
                     + " updates: " + updates;
             }
         });
+    }
+
+    private boolean updaterIsIdle() {
+        if (updates.isEmpty()) {
+            return false;
+        }
+        long lastUpdate = updates.get(updates.size() - 1).getTime();
+        return System.currentTimeMillis() - lastUpdate > updater.getDelay();
     }
 
     private class Update implements Runnable {
