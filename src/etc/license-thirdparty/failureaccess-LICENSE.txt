@@ -1,7 +1,7 @@
-Apache Commons Compress 1.3
-https://commons.apache.org/proper/commons-compress/
+Guava InternalFutureFailureAccess and InternalFutures (failureaccess) 1.0.3
+https://github.com/google/guava
 
-Copyright 2002-2025 The Apache Software Foundation
+Copyright (c) 2010-2025 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -462,9 +462,22 @@ public class UIController extends PFComponent {
             getController().addPausedModeListener(new MyPausedModeListener());
         }
 
-        // Preferences.
-        sniTray.addItem(Translation.get("action_open_preferences.name"),
+        // Preferences - gated by ChangePreferencesPermission, like the AWT tray
+        // (PFC-3096 review): keep the entry enabled state consistent across
+        // desktop environments.
+        final int sniPrefId = sniTray.addItem(
+            Translation.get("action_open_preferences.name"),
             () -> preferencesDialog.open());
+        changePrefsPermission = new BoundPermission(getController(),
+            ChangePreferencesPermission.INSTANCE)
+        {
+            @Override
+            public void hasPermission(boolean hasPermission) {
+                if (sniTray != null) {
+                    sniTray.setItemEnabled(sniPrefId, hasPermission);
+                }
+            }
+        };
 
         sniTray.addSeparator();
 
@@ -483,23 +496,26 @@ public class UIController extends PFComponent {
             }
         });
 
-        // Keep the Show/Hide label in sync with the window state.
-        mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-                sniTray.updateItemLabel(sniShowHideId,
-                    Translation.get("systray.hide"));
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-                sniTray.updateItemLabel(sniShowHideId,
-                    Translation.get("systray.show"));
-            }
-        });
-
         try {
             sniTray.show();
+
+            // Keep the Show/Hide label in sync with the window state. Registered
+            // only after show() succeeds so the listener never dereferences a
+            // nulled sniTray on the fallback path (PFC-3096 review).
+            mainFrame.getUIComponent()
+                .addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentShown(ComponentEvent e) {
+                        sniTray.updateItemLabel(sniShowHideId,
+                            Translation.get("systray.hide"));
+                    }
+
+                    @Override
+                    public void componentHidden(ComponentEvent e) {
+                        sniTray.updateItemLabel(sniShowHideId,
+                            Translation.get("systray.show"));
+                    }
+                });
         } catch (Exception e) {
             logSevere("Failed to initialize SNI tray; falling back to no tray",
                 e);
@@ -1147,9 +1163,11 @@ public class UIController extends PFComponent {
 
             // Close systray
             if (sniTray != null) {
-                // PFC-3096: SNI (D-Bus) tray teardown.
+                // PFC-3096: SNI (D-Bus) tray teardown. Clear the backend flag so
+                // isSystraySupported() no longer reports a tray that is gone.
                 sniTray.dispose();
                 sniTray = null;
+                OSUtil.setSNITrayAvailable(false);
             } else if (OSUtil.isSystraySupported() && trayIconManager != null) {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
