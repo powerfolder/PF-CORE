@@ -23,6 +23,7 @@ package de.dal33t.powerfolder.transfer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -107,13 +108,14 @@ public class PriorityTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getFolderAtBart().getIncomingFiles(false).size() == fInfos.length;
+                return getFolderAtBart().getIncomingFiles(false).containsAll(
+                    Arrays.asList(fInfos));
             }
 
             @Override
             public String message() {
                 return "Bart knows " + getFolderAtBart().getIncomingFiles(false)
-                    + " of Lisa's files, expected " + fInfos.length;
+                    + " of Lisa's files, expected " + Arrays.asList(fInfos);
             }
         });
 
