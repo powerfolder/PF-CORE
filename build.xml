@@ -591,9 +591,6 @@ For creation of the installer:
 		<property name="shard.listonly" value="false" />
 		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" jvm="${java.bin}"
 		      failonerror="true" dir="${basedir}">
-			<!-- PFS-5561: without -Xmx this JVM defaults to 1/4 of physical RAM. With
-			     PF-CORE and PF-PRO CI jobs sharing a runner, two of these plus the 2g
-			     test forks exhausted the machine and the OOM killer took out javac. -->
 			<jvmarg value="-Xmx1g" />
 			<classpath><pathelement location="${ant.launcher}" /></classpath>
 			<arg value="-f" />
@@ -647,7 +644,7 @@ For creation of the installer:
 					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 					<sysproperty key="wrapper.disable_shutdown_hook" value="TRUE"/>
 					<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
-					<jvmarg value="-Xmx${test.fork.heap}"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
+					<jvmarg value="-Xmx${test.fork.heap}"/>
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
@@ -770,7 +767,6 @@ For creation of the installer:
 			    <property name="tests.crashed" value="@{testclass}"/>
 			  </catch>
 			  <finally>
-			    <!-- -Dtest.work.keep=true leaves the working directories (controller logs, databases) for a look -->
 			    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
 			      <delete dir="${workdir}" quiet="true"/>
 			    </then></if>

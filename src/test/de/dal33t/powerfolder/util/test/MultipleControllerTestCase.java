@@ -162,9 +162,6 @@ public abstract class MultipleControllerTestCase {
         r.close();
         conf.put("nodeid", "randomstringController" + id);
         conf.put("nick", "Controller" + id);
-        // Free ephemeral port instead of a fixed range: the template's
-        // net.port entry would win over the legacy "port" key anyway, and
-        // fixed ports collide with concurrently running test suites.
         conf.put("net.port", "" + TestHelper.findFreePort());
         Path f = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
         Files.createDirectories(f.getParent());

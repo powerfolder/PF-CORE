@@ -238,7 +238,6 @@ public class TestHelper {
             } else if (line.startsWith("net.broadcast.port=")) {
                 lines.add("net.broadcast.port=" + broadcastPort());
             } else if (line.startsWith("net.port.rcon=")) {
-                // a fixed rcon port makes a parallel test JVM look like an already running instance
                 lines.add("net.port.rcon=" + findFreePort());
             } else if (line.startsWith("plugin.webinterface.port=")) {
                 lines.add("plugin.webinterface.port=" + webPort(Integer.parseInt(line.substring(line.indexOf('=') + 1).trim())));
@@ -247,7 +246,6 @@ public class TestHelper {
             } else if (line.startsWith("database.port=")) {
                 lines.add("database.port=" + h2TcpPort());
             } else if (line.startsWith("database.url=") && line.contains("tcp://localhost:")) {
-                // the H2 server of one controller is the database of the others in this JVM: same port for all
                 lines.add(line.replaceAll("tcp://localhost:\\d+", "tcp://localhost:" + h2TcpPort()));
             } else {
                 lines.add(line);
@@ -269,26 +267,14 @@ public class TestHelper {
         Files.write(target, lines);
     }
 
-    /**
-     * @return a currently free TCP port on 127.0.0.1. The port is closed
-     *         again before returning, so a tiny race with other processes
-     *         remains - acceptable for tests, unlike the guaranteed
-     *         collisions of fixed ports.
-     */
     private static final java.util.Map<Integer, Integer> WEB_PORTS = new java.util.HashMap<>();
 
-    /**
-     * @param templatePort the web interface port a checked-in test config names, e.g. 6070 for ControllerBart
-     * @return the free port that stands in for it in this JVM - the same one for every copy of that config, so a
-     *         test reaches the server at "http://localhost:" + TestHelper.webPort(6070) + "/..."
-     */
     public static synchronized int webPort(int templatePort) {
         return WEB_PORTS.computeIfAbsent(templatePort, port -> findFreePort());
     }
 
     private static int h2TcpPort;
 
-    /** The port of the H2 TCP server started by a test controller of this JVM, chosen once per JVM. */
     private static synchronized int h2TcpPort() {
         if (h2TcpPort == 0) {
             h2TcpPort = findFreePort();

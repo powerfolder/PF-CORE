@@ -73,7 +73,6 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             getContollerBart().getMySelf().getId());
     }
 
-    /** The rcon port of Bart, a free one per run - see TestHelper.copyConfigWithFreePort. */
     private int rconPort() {
         return ConfigurationEntry.NET_PORT_RCON.getValueInt(getContollerBart());
     }
