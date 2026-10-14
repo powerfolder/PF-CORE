@@ -216,8 +216,10 @@ public abstract class FolderPermission
             return false;
         }
 
-        FolderInfo thisFolder = getFolder();
-        FolderInfo otherFolder = otherPermission.getFolder();
+        // PFS-5926: a permission carries a snapshot of its folder - the location and the inheritance flag count as
+        // they are now, which is what the barriers below are compared against.
+        FolderInfo thisFolder = getFolder().latest();
+        FolderInfo otherFolder = otherPermission.getFolder().latest();
 
         // Respect explicit opt-out on target subfolders: a non-inheriting subfolder must not receive
         // permissions by INHERITANCE from an ancestor. This must NOT block a permission granted
