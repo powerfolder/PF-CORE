@@ -86,6 +86,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testDeleteAndRestore() throws IOException {
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
 
@@ -171,6 +172,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Barts version is 2 (del) and Lisa has 1, so it shouldn't revert back
 
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
@@ -209,6 +211,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testSingleFileDeleteSync() throws IOException {
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         Path testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -338,6 +341,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testMassiveFileDeleteSync() throws IOException {
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         final int nFiles = 1000;
         for (int i = 0; i < nFiles; i++) {
@@ -393,6 +397,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // file "host" and "client"
         getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         Path file1 = TestHelper.createTestFile(
             getFolderAtBart().getLocalBase(), "TestFile.txt",
@@ -485,6 +490,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // switch profiles
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         // PFS-5561: drive the restore with the explicit scanFolder below only.
         // The background folder watcher would otherwise re-scan the restored
@@ -537,6 +543,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         });
 
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
         getContollerBart().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
 
@@ -581,6 +588,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         getFolderAtBart().setSyncProfile(
             SyncProfile.getSyncProfileByFieldList("false,false,true,true,60"));
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
 
@@ -678,6 +686,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
 
         // 2) Delete and sync deletion
         Files.delete(testFile);
@@ -780,6 +789,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         String subdir = "subdir";
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(), getFolderAtLisa());
         // 1) Create a subdir
         Path subdirLisa = getFolderAtLisa().getLocalBase().resolve(subdir);
         Path subdirBart = getFolderAtBart().getLocalBase().resolve(subdir);
