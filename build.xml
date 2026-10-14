@@ -642,6 +642,7 @@ For creation of the installer:
 					<sysproperty key="powerfolder.config.url.skip" value="true"/>
 					<sysproperty key="powerfolder.argon2.iterations" value="1"/>
 					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
+					<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
 					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
@@ -745,6 +746,7 @@ For creation of the installer:
 						<sysproperty key="powerfolder.config.url.skip" value="true"/>
 						<sysproperty key="powerfolder.argon2.iterations" value="1"/>
 						<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
+						<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
 						<jvmarg value="-Xmx2g"/>
 						<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 						<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
