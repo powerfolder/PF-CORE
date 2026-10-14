@@ -40,7 +40,9 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -49,6 +51,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -1586,7 +1589,12 @@ public class LuceneIndexManager extends PFComponent {
                     if (!pfx.isEmpty() && !value.startsWith(pfx)) {
                         break;
                     }
-                    counts.merge(value, termsEnum.docFreq(), Integer::sum);
+                    int liveFreq = liveDocFreq(leaf.reader(), termsEnum);
+                    if (liveFreq == 0) {
+                        term = termsEnum.next();
+                        continue;
+                    }
+                    counts.merge(value, liveFreq, Integer::sum);
                     if (counts.size() >= SUGGEST_MAX_TERMS) {
                         if (isFine()) {
                             logFine(folder + ": Term suggest for field '" + field + "' capped at "
@@ -1609,6 +1617,25 @@ public class LuceneIndexManager extends PFComponent {
             }
         }
         return counts;
+    }
+
+    private static int liveDocFreq(LeafReader reader, TermsEnum termsEnum)
+        throws IOException
+    {
+        Bits liveDocs = reader.getLiveDocs();
+        if (liveDocs == null) {
+            return termsEnum.docFreq();
+        }
+        PostingsEnum postings = termsEnum.postings(null, PostingsEnum.NONE);
+        int live = 0;
+        for (int doc = postings.nextDoc(); doc != PostingsEnum.NO_MORE_DOCS; doc = postings
+            .nextDoc())
+        {
+            if (liveDocs.get(doc)) {
+                live++;
+            }
+        }
+        return live;
     }
 
     /**

@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -38,8 +38,12 @@ import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class LuceneIndexManagerTest extends ControllerTestCase {
+
+    private static final int MAX_INDEXED_FILES = 1000;
 
     @BeforeEach
     @Override
@@ -58,15 +62,32 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     }
 
     private void indexAndWait() {
-        int expectedCount = getFolder().getKnownFiles().size();
-        LuceneIndexManager im = getIndexManager();
-        im.indexFiles(getFolder().getKnownFiles());
-        TestHelper.waitForCondition(30, new Condition() {
+        final LuceneIndexManager index = getIndexManager();
+        final Set<String> expected = new TreeSet<>();
+        for (FileInfo fileInfo : getFolder().getKnownFiles()) {
+            expected.add(fileInfo.getRelativeName());
+        }
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return im.getIndexEntryCount() >= expectedCount;
+                return index.getPendingCount() == 0 && !index.isRebuilding()
+                    && indexedNames(index).containsAll(expected);
+            }
+
+            @Override
+            public String message() {
+                return "Indexed: " + indexedNames(index) + ". Expected: "
+                    + expected;
             }
         });
+    }
+
+    private static Set<String> indexedNames(LuceneIndexManager index) {
+        Set<String> names = new TreeSet<>();
+        for (FileInfo fileInfo : index.searchFiles("", MAX_INDEXED_FILES)) {
+            names.add(fileInfo.getRelativeName());
+        }
+        return names;
     }
 
     // -----------------------------------------------------------------------
@@ -107,10 +128,18 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         LuceneIndexManager index = getIndexManager();
         index.indexFiles(java.util.Collections.singletonList(
                 FileInfoFactory.withTags(fileInfo, immense.toString())));
-        TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return !index.searchFiles("Zoonosemonitoring", 10).isEmpty();
+                return index.getPendingCount() == 0
+                    && !index.searchFiles("Zoonosemonitoring", 10).isEmpty()
+                    && !index.suggestTerms("tagsExact", "xxx").isEmpty();
+            }
+
+            @Override
+            public String message() {
+                return "Hits: " + index.searchFiles("Zoonosemonitoring", 10)
+                    + ". Tag terms: " + index.suggestTerms("tagsExact", "xxx").keySet().size();
             }
         });
 
@@ -345,8 +374,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, getIndexManager().searchFiles("beforerebuild", 10).size());
 
         getIndexManager().rebuildIndex();
-        TestHelper.waitForCondition(10, () -> !getIndexManager().isRebuilding());
-        TestHelper.waitMilliSeconds(500);
+        indexAndWait();
 
         assertEquals(1, getIndexManager().searchFiles("beforerebuild", 10).size());
     }
@@ -702,7 +730,19 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         scanFolder(folder);
         FileInfo file = getFolder().getKnownFiles().iterator().next();
         getFolder().updateTags(file, "[\"Project North\"]");
-        indexAndWait();
+        final LuceneIndexManager index = getIndexManager();
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return index.getPendingCount() == 0 && index
+                    .suggestTerms("tagsExact", "pro").containsKey("project north");
+            }
+
+            @Override
+            public String message() {
+                return "Tag terms: " + index.suggestTerms("tagsExact", "pro");
+            }
+        });
 
         Map<String, Integer> exact = getIndexManager().suggestTerms("tagsExact", "pro");
         assertEquals(1, exact.size(), "the whole tag is one suggestion");
