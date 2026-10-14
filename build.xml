@@ -585,6 +585,7 @@ For creation of the installer:
 		<property name="test" value="" />
 		<property name="test.threads" value="auto" />
 		<property name="test.work.keep" value="false" />
+		<property name="test.fork.heap" value="2g" />
 		<property name="shard.index" value="0" />
 		<property name="shard.total" value="1" />
 		<property name="shard.listonly" value="false" />
@@ -600,6 +601,7 @@ For creation of the installer:
 			<arg value="-Dtest=${test}" />
 			<arg value="-Dtest.threads=${test.threads}" />
 			<arg value="-Dtest.work.keep=${test.work.keep}" />
+			<arg value="-Dtest.fork.heap=${test.fork.heap}" />
 			<arg value="-Dshard.index=${shard.index}" />
 			<arg value="-Dshard.total=${shard.total}" />
 			<arg value="-Dshard.listonly=${shard.listonly}" />
@@ -615,6 +617,7 @@ For creation of the installer:
 	</target>
 
 	<target name="run-single-test-pinned" depends="debug, verify-toolchain, compile">
+		<property name="test.fork.heap" value="2g"/>
 		<fail message="Specify the test class with -Dtest=ClassName (simple name, no package, no .java)">
 			<condition><equals arg1="${test}" arg2="" /></condition>
 		</fail>
@@ -643,7 +646,7 @@ For creation of the installer:
 					<sysproperty key="powerfolder.argon2.iterations" value="1"/>
 					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 					<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
-					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
+					<jvmarg value="-Xmx${test.fork.heap}"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
@@ -680,6 +683,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
+		<property name="test.fork.heap" value="2g"/>
 		<property name="test.threads" value="auto"/>
 		<property name="test.work.keep" value="false"/>
 		<property name="test.work.dir" location="${basedir}/build/test-work"/>
@@ -747,7 +751,7 @@ For creation of the installer:
 						<sysproperty key="powerfolder.argon2.iterations" value="1"/>
 						<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 						<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
-						<jvmarg value="-Xmx2g"/>
+						<jvmarg value="-Xmx${test.fork.heap}"/>
 						<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
 						<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 						<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
