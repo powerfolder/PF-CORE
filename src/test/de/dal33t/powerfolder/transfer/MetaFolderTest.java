@@ -63,25 +63,18 @@ public class MetaFolderTest extends TwoControllerTestCase {
         assertEquals(2, bartMeta.getMembersCount());
         assertEquals(2, lisaMeta.getMembersCount());
 
-        final int nCount = lisaMeta.getKnownItemCount();
         final Path bartFile = TestHelper.createRandomFile(bartMeta
             .getLocalBase());
         scanFolder(bartMeta);
         final FileInfo fInfo = FileInfoFactory.lookupInstance(bartMeta,
             bartFile);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return lisaMeta.getKnownItemCount() == nCount + 1
-                    && getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection().size() == 0
-                    && lisaMeta.hasFile(fInfo);
-            }
-
-            public String message() {
-                return "Lisa did not download meta data file: " + bartFile;
-            }
-        });
+        waitForDownloadedFile(10, lisaMeta, fInfo);
+        assertEquals( 0, getContollerBart().getTransferManager()
+            .getCompletedUploadsCollection()
+            .size(),"Meta folder upload was tracked as completed upload: "
+            + getContollerBart().getTransferManager()
+                .getCompletedUploadsCollection());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
@@ -155,35 +148,44 @@ public class MetaFolderTest extends TwoControllerTestCase {
             .getMetaFolder(bartFolder.getInfo());
         assertNotNull( bartMetaFolder,"No bart meta folder");
 
-        Folder lisaMetaFolder = contollerBart.getFolderRepository()
+        Controller contollerLisa = getContollerLisa();
+        Folder lisaMetaFolder = contollerLisa.getFolderRepository()
             .getMetaFolder(lisaFolder.getInfo());
         assertNotNull( lisaMetaFolder,"No lisa meta folder");
 
         // Check sync between bart and lisa still works.
         int lisaOriginalCount = lisaFolder.getKnownFiles().size();
-        TestHelper.createRandomFile(bartFolder.getLocalBase(), "TestFile.txt");
+        Path bartTestFile = TestHelper.createRandomFile(
+            bartFolder.getLocalBase(), "TestFile.txt");
         scanFolder(bartFolder);
-        TestHelper.waitMilliSeconds(1000);
+        waitForDownloadedFile(10, lisaFolder,
+            FileInfoFactory.lookupInstance(bartFolder, bartTestFile));
         assertEquals(
             lisaOriginalCount + 1, lisaFolder.getKnownFiles().size(),"lisa file count wrong: " + lisaFolder.getKnownFiles());
-        Controller contollerLisa = getContollerLisa();
-        assertTrue( lisaFolder.getKnownFiles()
-            .iterator().next().diskFileExists(contollerLisa),"lisa file does not exist");
 
         // Check sync between bart and lisa metafolders works.
-        int lisaOriginalMetaCount = lisaMetaFolder.getKnownFiles().size();
-        TestHelper.createRandomFile(bartMetaFolder.getLocalBase(),
-            "MetaTestFile.txt");
+        Path bartMetaFile = TestHelper.createRandomFile(
+            bartMetaFolder.getLocalBase(), "MetaTestFile.txt");
         scanFolder(bartMetaFolder);
-        TestHelper.waitForCondition(10, () -> lisaOriginalMetaCount + 1 == lisaMetaFolder.getKnownFiles().size());
-        assertEquals( lisaOriginalMetaCount + 1,
-            lisaMetaFolder.getKnownFiles().size(),
-            "lisa metafolder file count wrong: "
-                + lisaMetaFolder.getKnownFiles());
-        TestHelper.waitForCondition(10, () -> lisaMetaFolder
-                .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
-        assertTrue( lisaMetaFolder
-                .getKnownFiles().iterator().next().diskFileExists(contollerLisa),"lisa metafolder file does not exist");
+        waitForDownloadedFile(10, lisaMetaFolder,
+            FileInfoFactory.lookupInstance(bartMetaFolder, bartMetaFile));
+    }
+
+    private void waitForDownloadedFile(int seconds, final Folder target,
+        final FileInfo fInfo)
+    {
+        TestHelper.waitForCondition(seconds, new ConditionWithMessage() {
+            public boolean reached() {
+                FileInfo atTarget = target.getFile(fInfo);
+                return atTarget != null && !atTarget.isDeleted()
+                    && atTarget.diskFileExists(target.getController());
+            }
+
+            public String message() {
+                return "File " + fInfo + " was not downloaded to " + target
+                    + ". In database: " + target.getFile(fInfo);
+            }
+        });
     }
 
     /**

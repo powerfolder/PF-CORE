@@ -23,10 +23,12 @@ package de.dal33t.powerfolder.folder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -34,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -189,6 +192,35 @@ public class FolderJoinTest extends TwoControllerTestCase {
         }
     }
 
+    private void waitForFilesSyncedFrom(int seconds, final Folder source,
+        final Folder target)
+    {
+        TestHelper.waitForCondition(seconds, new ConditionWithMessage() {
+            public boolean reached() {
+                return notSynced().isEmpty();
+            }
+
+            public String message() {
+                return "Not synced from " + source + " to " + target + ": "
+                    + notSynced();
+            }
+
+            private List<String> notSynced() {
+                List<String> pending = new ArrayList<String>();
+                for (FileInfo atSource : source.getKnownFiles()) {
+                    FileInfo atTarget = target.getFile(atSource);
+                    if (atTarget == null
+                        || !atTarget.isVersionDateAndSizeIdentical(atSource)
+                        || !atTarget.diskFileExists(target.getController()))
+                    {
+                        pending.add(atSource.toDetailString());
+                    }
+                }
+                return pending;
+            }
+        });
+    }
+
     private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
         // return new FolderInfo(folderName, folderName + IdGenerator.makeFolderId());
@@ -217,11 +249,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         final Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return folderBart.getKnownFiles().size() >= 3;
-            }
-        });
+        TestHelper.waitForQuietMaintenance(folderBart);
+        assertEquals(3, folderBart.getKnownFiles().size());
 
         // Now let lisa join with auto-download
         FolderSettings folderSettingsLisa = new FolderSettings(
@@ -229,11 +258,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return folderLisa.getKnownFiles().size() >= 3;
-            }
-        });
+        waitForFilesSyncedFrom(20, folderBart, folderLisa);
 
         assertEquals(3, folderLisa.getKnownItemCount());
         assertEquals(4, PathUtils.getNumberOfSiblings(folderLisa.getLocalBase()));
@@ -255,9 +280,10 @@ public class FolderJoinTest extends TwoControllerTestCase {
         // Prepare folder on "host" Bart.
         FolderSettings folderSettingsBart = new FolderSettings(
             TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, 0);
-        Folder folderBart = getContollerBart().getFolderRepository()
+        final Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
+        TestHelper.waitForQuietMaintenance(folderBart);
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
@@ -273,11 +299,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .createFolder(testFolder, folderSettingsLisa);
 
         getContollerLisa().setPaused(false);
-        TestHelper.waitForCondition(5, new Condition() {
-            public boolean reached() {
-                return folderLisa.getKnownFiles().size() >= 3;
-            }
-        });
+        waitForFilesSyncedFrom(5, folderBart, folderLisa);
 
         assertEquals(3, folderLisa.getKnownItemCount());
         assertEquals(4, PathUtils.getNumberOfSiblings(folderLisa.getLocalBase()));

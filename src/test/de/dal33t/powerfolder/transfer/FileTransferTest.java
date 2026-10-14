@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.transfer;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -100,23 +101,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
         LoggingManager.setConsoleLogging(Level.FINE);
-        // Give them time to copy
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-
-            @Override
-            public boolean reached() {
-                return 1 == getContollerLisa().getTransferManager()
-                        .countCompletedDownloads();
-            }
-
-            @Override
-            public String message() {
-                return "Number of actually completed downloads for Lisa: "
-                        + getContollerLisa().getTransferManager()
-                        .countCompletedDownloads() + " incoming on Lisa: "
-                        + getFolderAtLisa().getIncomingFiles().size();
-            }
-        });
+        waitForSyncedFile(20, getFolderAtLisa(), fInfo);
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
                 .next();
         assertEquals(filename, fInfoLisa.getRelativeName());
@@ -131,21 +116,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test update
         TestHelper.changeFile(fLisa);
         scanFolder(getFolderAtLisa());
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-
-            @Override
-            public boolean reached() {
-                return 1 == getContollerBart().getTransferManager()
-                        .countCompletedDownloads();
-            }
-
-            @Override
-            public String message() {
-                return "Number of actually completed downloads for Bart: "
-                        + getContollerBart().getTransferManager()
-                        .countCompletedDownloads();
-            }
-        });
+        waitForSyncedFile(20, getFolderAtBart(), getFolderAtLisa()
+                .getKnownFiles().iterator().next());
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
@@ -174,23 +146,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
-        // Give them time to copy
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-
-            @Override
-            public boolean reached() {
-                return 1 == getContollerLisa().getTransferManager()
-                    .countCompletedDownloads();
-            }
-
-            @Override
-            public String message() {
-                return "Number of actually completed downloads for Lisa: "
-                    + getContollerLisa().getTransferManager()
-                        .countCompletedDownloads() + " incoming on Lisa: "
-                    + getFolderAtLisa().getIncomingFiles().size();
-            }
-        });
+        waitForSyncedFile(20, getFolderAtLisa(), fInfo);
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
         assertEquals(filename, fInfoLisa.getRelativeName());
@@ -205,21 +161,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test update
         TestHelper.changeFile(fLisa);
         scanFolder(getFolderAtLisa());
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-
-            @Override
-            public boolean reached() {
-                return 1 == getContollerBart().getTransferManager()
-                    .countCompletedDownloads();
-            }
-
-            @Override
-            public String message() {
-                return "Number of actually completed downloads for Bart: "
-                    + getContollerBart().getTransferManager()
-                        .countCompletedDownloads();
-            }
-        });
+        waitForSyncedFile(20, getFolderAtBart(), getFolderAtLisa()
+            .getKnownFiles().iterator().next());
         assertEquals(1, getFolderAtBart().getKnownFiles().size(), getFolderAtBart().getKnownFiles().toString());
         fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertEquals(filename, fInfo.getRelativeName());
@@ -1231,18 +1174,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         Files.setLastModifiedTime(testFile,
             FileTime.fromMillis(System.currentTimeMillis() - 6000));
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "getFolderAtLisa().getKnownItemCount(): "
-                    + getFolderAtLisa().getKnownItemCount();
-            }
-        });
+        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(),
+            getFolderAtBart().getKnownFiles().iterator().next());
 
         TestHelper.changeFile(testFile, 10 * 1024 * 1024);
         // Let him scan the new content
@@ -1342,38 +1275,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        getContollerLisa().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
-            private boolean recoveredFileLandedAtLisa() {
-                if (getFolderAtLisa().getKnownItemCount() != 1) {
-                    return false;
-                }
-                FileInfo fileAtLisa = getFolderAtLisa().getKnownFiles()
-                    .iterator().next();
-                return fileAtLisa.getVersion() >= 1
-                    && fileAtLisa.inSyncWithDisk(fileAtLisa
-                        .getDiskFile(getContollerLisa().getFolderRepository()));
-            }
-
-            @Override
-            public boolean reached() {
-                getContollerLisa().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
-                return recoveredFileLandedAtLisa();
-            }
-
-            @Override
-            public String message() {
-                return "Recovered file at lisa: "
-                    + getFolderAtLisa().getKnownFiles()
-                    + ", completed downloads: "
-                    + getContollerLisa().getTransferManager()
-                        .countCompletedDownloads();
-            }
-        });
-
         FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
+        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(), fBart);
+
         Path fileBart = fBart.getDiskFile(getContollerBart()
             .getFolderRepository());
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
@@ -1913,15 +1817,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(20, new Condition() {
-            @Override
-            public boolean reached() {
-                return lisaListener.downloadRequested >= 1
-                    && lisaListener.downloadCompleted >= 1
-                    && bartListener.uploadCompleted >= 1
-                    && getFolderAtLisa().getKnownFiles().size() >= 1;
-            }
-        });
+        waitForSyncedFile(20, getFolderAtLisa(), getFolderAtBart()
+            .getKnownFiles().iterator().next());
+        waitForTransfersIdle(20);
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
         Path flisa = linfo
             .getDiskFile(getContollerLisa().getFolderRepository());
@@ -1955,26 +1853,35 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(binfo.inSyncWithDisk(fbart));
         connectBartAndLisa();
 
+        final FileInfo updatedAtBart = binfo;
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
                     && lisaListener.downloadStarted >= 2
-                    && lisaListener.downloadAborted == 0
-                    && lisaListener.downloadBroken == 0
                     && bartListener.uploadRequested >= 2
                     && bartListener.uploadStarted >= 2
-                    && bartListener.uploadAborted == 0
-                    && bartListener.uploadBroken == 0
-                    && bartListener.uploadCompleted >= 2;
+                    && bartListener.uploadCompleted >= 2
+                    && syncedFileInfo(getFolderAtLisa(), updatedAtBart) != null;
             }
 
             @Override
             public String message() {
-                return "lisa: " + lisaListener + " bart: " + bartListener;
+                return "Expected " + updatedAtBart.toDetailString()
+                    + " at lisa, got: " + getFolderAtLisa().getKnownFiles()
+                    + ". lisa: " + lisaListener + " bart: " + bartListener;
             }
         });
+        waitForTransfersIdle(20);
+        assertEquals(0, lisaListener.downloadAborted,
+            "Aborted downloads at lisa: " + lisaListener);
+        assertEquals(0, lisaListener.downloadBroken,
+            "Broken downloads at lisa: " + lisaListener);
+        assertEquals(0, bartListener.uploadAborted,
+            "Aborted uploads at bart: " + bartListener);
+        assertEquals(0, bartListener.uploadBroken,
+            "Broken uploads at bart: " + bartListener);
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
         assertTrue(getFolderAtLisa().getStatistic().getDownloadCounter()
@@ -2021,15 +1928,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(20, new Condition() {
-            @Override
-            public boolean reached() {
-                return lisaListener.downloadCompleted >= 1
-                    && lisaListener.downloadRequested >= 1
-                    && bartListener.uploadCompleted >= 1
-                    && getFolderAtLisa().getKnownFiles().size() == 1;
-            }
-        });
+        waitForSyncedFile(20, getFolderAtLisa(), getFolderAtBart()
+            .getKnownFiles().iterator().next());
+        waitForTransfersIdle(20);
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
         Path flisa = linfo
             .getDiskFile(getContollerLisa().getFolderRepository());
@@ -2084,20 +1985,17 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
         connectBartAndLisa();
 
+        final FileInfo updatedAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                if (getFolderAtBart().getKnownItemCount() == 0 || getFolderAtLisa().getKnownItemCount() == 0) {
-                    return false;
-                }
-                FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
-                FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
                     && bartListener.uploadRequested >= 2
                     && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2
-                    && linfo.getVersion() == binfo.getVersion();
+                    && syncedFileInfo(getFolderAtLisa(), updatedAtBart) != null;
             }
 
             @Override
@@ -2111,11 +2009,13 @@ public class FileTransferTest extends TwoControllerTestCase {
                     + ", srtd ul= " + bartListener.uploadStarted
                     + ", cmpld ul= " + bartListener.uploadCompleted
                     + ", brkn ul= " + bartListener.uploadBroken + ", abrt ul="
-                    + bartListener.uploadAborted;
+                    + bartListener.uploadAborted + "; expected at lisa: "
+                    + updatedAtBart.toDetailString() + ", got: "
+                    + getFolderAtLisa().getKnownFiles();
             }
         });
+        waitForTransfersIdle(20);
 
-        // TestHelper.waitMilliSeconds(500);
         assertTrue(TestHelper.compareFiles(fbart, flisa));
         assertEquals(2, lisaListener.downloadCompleted, "Expected 2 completed downloads at lisa. Got: " +
                 getContollerLisa().getTransferManager().getCompletedDownloadsCollection());
@@ -2247,6 +2147,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
+        final FileInfo fileAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
 
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
@@ -2309,23 +2211,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Switch back, dls should continue
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                // #2557
-                getContollerLisa().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
-                return getContollerLisa().getTransferManager()
-                    .countCompletedDownloads() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "Completed downloads at lisa: "
-                    + getContollerLisa().getTransferManager()
-                        .countCompletedDownloads();
-            }
-        });
+        waitForSyncedFile(LONG_WAIT_TIME_SECONDS, getFolderAtLisa(),
+            fileAtBart);
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
 
             @Override
@@ -2377,6 +2264,78 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
         assertTrue(countDeletedItems(getFolderAtBart()) == 0, "Deleted items after scan at bart be 0");
         assertTrue(countDeletedItems(getFolderAtLisa()) == 0, "Deleted items after scan at lisa be 0");
+    }
+
+    private static FileInfo syncedFileInfo(Folder folder, FileInfo expected) {
+        FileInfo local = folder.getFile(expected);
+        if (local == null || local.isDeleted()
+            || !local.isVersionDateAndSizeIdentical(expected))
+        {
+            return null;
+        }
+        return local.inSyncWithDisk(local.getDiskFile(folder.getController()
+            .getFolderRepository())) ? local : null;
+    }
+
+    private void waitForSyncedFile(int secondsTimeout, final Folder folder,
+        final FileInfo expected)
+    {
+        TestHelper.waitForCondition(secondsTimeout, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                folder.getController().getFolderRepository()
+                    .getFileRequestor()
+                    .triggerFileRequesting(folder.getInfo());
+                return syncedFileInfo(folder, expected) != null;
+            }
+
+            @Override
+            public String message() {
+                return "Expected " + expected.toDetailString() + " at "
+                    + folder.getController().getMySelf().getNick()
+                    + ". Known files: " + folder.getKnownFiles()
+                    + ". Incoming: " + folder.getIncomingFiles();
+            }
+        });
+    }
+
+    private static boolean transfersIdle(Controller controller) {
+        TransferManager tm = controller.getTransferManager();
+        return tm.countActiveDownloads() == 0 && tm.countActiveUploads() == 0
+            && tm.countQueuedUploads() == 0
+            && tm.getPendingDownloads().isEmpty();
+    }
+
+    private void waitForTransfersIdle(int secondsTimeout) {
+        TestHelper.waitForCondition(secondsTimeout, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return transfersIdle(getContollerBart())
+                    && transfersIdle(getContollerLisa());
+            }
+
+            @Override
+            public String message() {
+                return "Transfers still in flight. Bart: active uploads "
+                    + getContollerBart().getTransferManager()
+                        .getActiveUploads()
+                    + ", queued uploads "
+                    + getContollerBart().getTransferManager()
+                        .getQueuedUploads()
+                    + ", active downloads "
+                    + getContollerBart().getTransferManager()
+                        .getActiveDownloads()
+                    + ". Lisa: active uploads "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveUploads()
+                    + ", queued uploads "
+                    + getContollerLisa().getTransferManager()
+                        .getQueuedUploads()
+                    + ", active downloads "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownloads();
+            }
+        });
     }
 
     private int countDeletedItems(Folder folder) {

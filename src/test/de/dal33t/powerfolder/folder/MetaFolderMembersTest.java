@@ -22,10 +22,18 @@ package de.dal33t.powerfolder.folder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -33,7 +41,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,10 +89,21 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
             e.printStackTrace();
         }
 
-        TestHelper.waitForCondition(20, new Condition() {
+        final String bartId = controllerBart.getMySelf().getId();
+        final String homerId = controllerHomer.getMySelf().getId();
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return folderBart.getMembersCount() == 2
-                    && folderHomer.getMembersCount() == 2;
+                return knowsMembers(folderBart, bartId, homerId)
+                    && knowsMembers(folderHomer, bartId, homerId)
+                    && membersFileIds(folderBart).contains(homerId);
+            }
+
+            public String message() {
+                return "Homer did not reach Bart's members. Members at Bart: "
+                    + folderBart.getMembersAsCollection()
+                    + ", members at Homer: "
+                    + folderHomer.getMembersAsCollection()
+                    + ", members file at Bart: " + membersFileIds(folderBart);
             }
         });
 
@@ -107,10 +126,18 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         }
 
         // Result: Marge should know about Bart and Homer.
-        TestHelper.waitForCondition(20, new Condition() {
+        final String margeId = controllerMarge.getMySelf().getId();
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return folderBart.getMembersCount() == 3
-                    && folderMarge.getMembersCount() == 3;
+                return knowsMembers(folderBart, bartId, homerId, margeId)
+                    && knowsMembers(folderMarge, bartId, homerId, margeId);
+            }
+
+            public String message() {
+                return "Members at Bart: "
+                    + folderBart.getMembersAsCollection()
+                    + ", members at Marge: "
+                    + folderMarge.getMembersAsCollection();
             }
         });
 
@@ -119,5 +146,39 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         assertEquals( 3,
             folderMarge.getMembersCount(),"Marge has the wrong number of members");
 
+    }
+
+    private static boolean knowsMembers(Folder folder, String... memberIds) {
+        Set<String> known = new HashSet<String>();
+        for (Member member : folder.getMembersAsCollection()) {
+            known.add(member.getId());
+        }
+        for (String memberId : memberIds) {
+            if (!known.contains(memberId)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static Set<Object> membersFileIds(Folder folder) {
+        Folder metaFolder = folder.getController().getFolderRepository()
+            .getMetaFolder(folder.getInfo());
+        if (metaFolder == null) {
+            return Collections.emptySet();
+        }
+        Path membersFile = metaFolder.getLocalBase().resolve(
+            Folder.METAFOLDER_MEMBERS);
+        if (Files.notExists(membersFile)) {
+            return Collections.emptySet();
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+            new BufferedInputStream(Files.newInputStream(membersFile))))
+        {
+            Map<?, ?> members = (Map<?, ?>) in.readObject();
+            return new HashSet<Object>(members.keySet());
+        } catch (IOException | ClassNotFoundException | RuntimeException e) {
+            return Collections.emptySet();
+        }
     }
 }

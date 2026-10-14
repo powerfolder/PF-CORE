@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -67,6 +68,18 @@ public class RedownloadTest extends TwoControllerTestCase {
         });
     }
 
+    private static FileInfo syncedFileInfo(Folder folder, FileInfo expected) {
+        FileInfo local = folder.getFile(expected);
+        if (local == null || local.isDeleted()
+            || !local.isVersionDateAndSizeIdentical(expected))
+        {
+            return null;
+        }
+        Path diskFile = local.getDiskFile(folder.getController()
+            .getFolderRepository());
+        return local.inSyncWithDisk(diskFile) ? local : null;
+    }
+
     @Test
     public void testRedownload() throws IOException {
 
@@ -75,31 +88,41 @@ public class RedownloadTest extends TwoControllerTestCase {
         final Folder folderLisa = getFolderAtLisa();
 
         // Set up Bart & Lisa with a file in the folder.
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        final Path createdAtBart = TestHelper
+            .createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(folderBart);
+        final FileInfo scannedAtBart = FileInfoFactory
+            .lookupInstance(folderBart, createdAtBart);
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "Bart known files: " + folderBart.getKnownFiles().size();
+                return "Bart did not scan " + createdAtBart
+                    + " in sync with disk. Known files: "
+                    + folderBart.getKnownFiles();
             }
 
             public boolean reached() {
-                return folderBart.getKnownFiles().size() == 1;
+                FileInfo local = folderBart.getFile(scannedAtBart);
+                return local != null && !local.isDeleted()
+                    && local.inSyncWithDisk(createdAtBart);
             }
         });
+        final FileInfo fileAtBart = folderBart.getFile(scannedAtBart);
         scanFolder(folderLisa);
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "Lisa known files: " + folderLisa.getKnownFiles().size();
+                return "Lisa did not receive " + fileAtBart.toDetailString()
+                    + ". Known files at lisa: " + folderLisa.getKnownFiles();
             }
 
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
-                return folderLisa.getKnownFiles().size() == 1;
+                return syncedFileInfo(folderLisa, fileAtBart) != null;
             }
         });
         waitForUploadsFinished(getContollerBart());
+        TestHelper.waitForQuietMaintenance(folderBart, folderLisa);
 
         // Delete the file at Bart.
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();
@@ -134,23 +157,31 @@ public class RedownloadTest extends TwoControllerTestCase {
                 .triggerFileRequesting(folderBart.getInfo());
 
         // Wait for copy.
+        final FileInfo sourceAtLisa = folderLisa.getKnownFiles().iterator()
+            .next();
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "Bart file exists: " + Files.exists(testFileBart) + ", Bart known files: " + folderBart.getKnownItemCount();
+                return "Bart did not redownload "
+                    + sourceAtLisa.toDetailString() + ". Bart file exists: "
+                    + Files.exists(testFileBart) + ", known files at bart: "
+                    + folderBart.getKnownFiles();
             }
 
             public boolean reached() {
                 getContollerBart().getFolderRepository().getFileRequestor()
                         .triggerFileRequesting(folderBart.getInfo());
-                return Files.exists(testFileBart)
-                    && folderBart.getKnownItemCount() == 1;
+                return syncedFileInfo(folderBart, sourceAtLisa) != null;
             }
         });
 
         assertEquals( 1, folderBart.getKnownItemCount(),"Bart file count bad");
         fileInfoBart = folderBart.getKnownFiles().iterator().next();
         assertFileMatch(testFileBart, fileInfoBart, getContollerBart());
+        assertEquals( sourceAtLisa.getVersion(), fileInfoBart.getVersion(),
+            "Bart did not take over Lisas version. Bart: "
+                + fileInfoBart.toDetailString() + ". Lisa: "
+                + sourceAtLisa.toDetailString());
         assertEquals( 0, fileInfoBart.getVersion(),"Bart file bad version");
     }
 }

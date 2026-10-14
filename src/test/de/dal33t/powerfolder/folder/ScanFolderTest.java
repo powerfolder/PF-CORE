@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -600,11 +599,7 @@ public class ScanFolderTest extends ControllerTestCase {
         Path testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
             "TESTFILE.TXT");
         scanFolder(getFolder());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolder().getKnownItemCount() == 1;
-            }
-        });
+        waitForSoleScannedItem(testFile, false);
 
         assertEquals(testFile.getFileName().toString(), getFolder()
             .getKnownFiles().iterator().next().getFilenameOnly());
@@ -623,11 +618,7 @@ public class ScanFolderTest extends ControllerTestCase {
         Path testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
             "TESTFILE");
         scanFolder(getFolder());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolder().getKnownFiles().size() == 1;
-            }
-        });
+        waitForSoleScannedItem(testFile, false);
         assertEquals(0, getFolder().getKnownDirectories().size());
         TestHelper.waitMilliSeconds(4000);
 
@@ -638,11 +629,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFalse(Files.isRegularFile(testFile));
         scanFolder(getFolder());
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolder().getKnownDirectories().size() == 1;
-            }
-        });
+        waitForSoleScannedItem(testFile, true);
         assertEquals( 1,
             getFolder().getKnownDirectories().size(),"Known DIRS: " + getFolder().getKnownDirectories());
         assertEquals( 0,
@@ -657,11 +644,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertTrue(Files.isRegularFile(testFile));
         scanFolder(getFolder());
 
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getFolder().getKnownFiles().size() == 1;
-            }
-        });
+        waitForSoleScannedItem(testFile, false);
         assertEquals(0, getFolder().getKnownDirectories().size());
     }
 
@@ -723,60 +706,102 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // Subdir with 2 files
         Path subdir1 = getFolder().getLocalBase().resolve("subdir1");
-        TestHelper.createRandomFile(subdir1);
-        TestHelper.createRandomFile(subdir1);
+        Path fileInSubdir1 = TestHelper.createRandomFile(subdir1);
+        Path otherFileInSubdir1 = TestHelper.createRandomFile(subdir1);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return getFolder().getKnownDirectories().size() == 1
-                    && getFolder().getKnownFiles().size() == 2;
-            }
-
-            public String message() {
-                return "Found disk items: " + getFolder().getKnownItemCount();
-            }
-        });
+        waitForScannedInSync(subdir1, fileInSubdir1, otherFileInSubdir1);
 
         // Now move
         Path subdir2 = getFolder().getLocalBase().resolve("SUBDIR2");
         PathUtils.recursiveMove(subdir1, subdir2);
 
+        waitForScannedAsDeleted(fileInSubdir1, otherFileInSubdir1);
+        waitForScannedInSync(subdir2,
+            subdir2.resolve(fileInSubdir1.getFileName()),
+            subdir2.resolve(otherFileInSubdir1.getFileName()));
 
+        Path newFileInSubdir1 = TestHelper.createRandomFile(subdir1);
+        Path otherNewFileInSubdir1 = TestHelper.createRandomFile(subdir1);
+
+        waitForScannedInSync(newFileInSubdir1, otherNewFileInSubdir1);
+    }
+
+
+    private void waitForSoleScannedItem(final Path item,
+        final boolean directory)
+    {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolder().getKnownDirectories().size() == 2
-                    && getFolder().getKnownFiles().size() == 4;
+                FileInfo scanned = retrieveFileInfo(item);
+                if (scanned == null || scanned.isDeleted()
+                    || scanned.isDiretory() != directory
+                    || !scanned.inSyncWithDisk(item))
+                {
+                    return false;
+                }
+                return getFolder().getKnownItemCount() == 1;
             }
 
             public String message() {
-                return "Found files (" + getFolder().getKnownFiles().size()
-                    + "): " + getFolder().getKnownFiles() + ". dirs ("
-                    + getFolder().getKnownDirectories().size() + "): "
-                    + getFolder().getKnownDirectories();
-            }
-        });
-
-        // Make subdir1 reappear!
-        subdir1 = getFolder().getLocalBase().resolve("subdir1");
-        TestHelper.createRandomFile(subdir1);
-        TestHelper.createRandomFile(subdir1);
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return getFolder().getKnownDirectories().size() == 2
-                    && getFolder().getKnownFiles().size() == 4;
-            }
-
-            public String message() {
-                return "Found files (" + getFolder().getKnownFiles().size()
-                    + "): " + getFolder().getKnownFiles() + ". dirs ("
-                    + getFolder().getKnownDirectories().size() + "): "
+                return "Expected " + item + " as the only scanned "
+                    + (directory ? "directory" : "file") + ". Known files: "
+                    + getFolder().getKnownFiles() + ". Known directories: "
                     + getFolder().getKnownDirectories();
             }
         });
     }
 
-    // Helper *****************************************************************
+    private void waitForScannedInSync(final Path... items) {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return notInSync().isEmpty();
+            }
+
+            public String message() {
+                return "Not scanned or not in sync with disk: " + notInSync()
+                    + ". Known files: " + getFolder().getKnownFiles()
+                    + ". Known directories: "
+                    + getFolder().getKnownDirectories();
+            }
+
+            private List<Path> notInSync() {
+                List<Path> pending = new ArrayList<Path>();
+                for (Path item : items) {
+                    FileInfo scanned = retrieveFileInfo(item);
+                    if (scanned == null || scanned.isDeleted()
+                        || !scanned.inSyncWithDisk(item))
+                    {
+                        pending.add(item);
+                    }
+                }
+                return pending;
+            }
+        });
+    }
+
+    private void waitForScannedAsDeleted(final Path... items) {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return notDeleted().isEmpty();
+            }
+
+            public String message() {
+                return "Not scanned as deleted: " + notDeleted()
+                    + ". Known files: " + getFolder().getKnownFiles();
+            }
+
+            private List<Path> notDeleted() {
+                List<Path> pending = new ArrayList<Path>();
+                for (Path item : items) {
+                    FileInfo scanned = retrieveFileInfo(item);
+                    if (scanned == null || !scanned.isDeleted()) {
+                        pending.add(item);
+                    }
+                }
+                return pending;
+            }
+        });
+    }
 
     /**
      * @param file

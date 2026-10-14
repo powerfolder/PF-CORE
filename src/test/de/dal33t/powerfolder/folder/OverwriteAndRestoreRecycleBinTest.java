@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -64,17 +63,27 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
      */
     @Test
     public void testOverwriteToRecycleAndRestore() throws IOException {
+        TestHelper.waitForQuietMaintenance(getFolderAtBart(),
+            getFolderAtLisa());
         final Path testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
 
         scanFolder(getFolderAtBart());
 
-        FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
+        final FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
             .next();
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() == 1;
+                FileInfo atLisa = getFolderAtLisa().getFile(fInfoBart);
+                return atLisa != null
+                    && atLisa.isVersionDateAndSizeIdentical(fInfoBart)
+                    && atLisa.diskFileExists(getContollerLisa());
+            }
+
+            public String message() {
+                return "At Bart: " + fInfoBart.toDetailString()
+                    + ", at Lisa: " + getFolderAtLisa().getFile(fInfoBart);
             }
         });
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()

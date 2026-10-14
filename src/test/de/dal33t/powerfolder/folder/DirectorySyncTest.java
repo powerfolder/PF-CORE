@@ -326,7 +326,6 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         FileInfo dirInfo = FileInfoFactory.newFile(getFolderAtBart(), dirBart, null, null, null, null, true, null);
         getFolderAtBart().scanDirectory(dirInfo, dirBart);
         assertFilesAndDirs(getFolderAtBart(), 1, 0);
-        TestHelper.waitForCondition(5, () -> getFolderAtLisa().getKnownItemCount() >= 1);
         assertFilesAndDirs(getFolderAtLisa(), 1, 0);
     }
 
@@ -342,15 +341,21 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     {
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public String message() {
-                return folder + " known: " + folder.getKnownItemCount()
-                    + " expected dirs: " + expectedDirs + " expected file: "
-                    + expectedFiles + " total: "
-                    + (expectedDirs + expectedFiles);
+                List<String> mismatching = dirsNotMatchingDisk(folder);
+                return folder + " known dirs: "
+                    + folder.getKnownDirectories().size() + " (expected "
+                    + expectedDirs + "), known files: "
+                    + folder.getKnownFiles().size() + " (expected "
+                    + expectedFiles + "), directories not matching disk: "
+                    + mismatching.size()
+                    + (mismatching.isEmpty() ? "" : ", e.g. "
+                        + mismatching.get(0));
             }
 
             public boolean reached() {
-                return folder.getKnownItemCount() == expectedDirs
-                    + expectedFiles;
+                return folder.getKnownDirectories().size() == expectedDirs
+                    && folder.getKnownFiles().size() == expectedFiles
+                    && dirsNotMatchingDisk(folder).isEmpty();
             }
         });
         int subdirs = countSubDirs(folder.getLocalBase());
@@ -358,6 +363,42 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertEquals(expectedDirs + expectedFiles, folder.getKnownItemCount());
         assertEquals(expectedDirs, folder.getKnownDirectories().size());
         assertEquals(expectedFiles, folder.getKnownFiles().size());
+    }
+
+    private static List<String> dirsNotMatchingDisk(Folder folder) {
+        List<String> mismatching = new ArrayList<String>();
+        for (DirectoryInfo info : folder.getKnownDirectories()) {
+            Path dir = info.getDiskFile(folder.getController()
+                .getFolderRepository());
+            if (info.isDeleted() == Files.isDirectory(dir)) {
+                mismatching.add(info.toDetailString());
+            }
+        }
+        return mismatching;
+    }
+
+    private void waitForSyncedDir(int seconds, final Folder folder,
+        final Path dir, final int version, final boolean deleted)
+    {
+        TestHelper.waitForCondition(seconds, new ConditionWithMessage() {
+            public boolean reached() {
+                FileInfo info = folder.getFile(FileInfoFactory
+                    .lookupInstance(folder, dir));
+                return info != null && info.isDeleted() == deleted
+                    && info.getVersion() == version
+                    && (deleted
+                        ? Files.notExists(dir)
+                        : Files.isDirectory(dir));
+            }
+
+            public String message() {
+                return "Expected " + dir + " at " + folder + " as version "
+                    + version + (deleted ? ", deleted" : ", existing")
+                    + ". On disk: " + Files.exists(dir) + ". In database: "
+                    + folder.getFile(FileInfoFactory.lookupInstance(folder,
+                        dir));
+            }
+        });
     }
 
     private static int countSubDirs(Path baseDir) {
@@ -439,16 +480,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Check remote syncs
         final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
             dirBart.getFileName());
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
-            public String message() {
-                return "Dir at lisa not existing: " + dirLisa;
-            }
-
-            public boolean reached() {
-                return Files.exists(dirLisa) && Files.isDirectory(dirLisa)
-                    && getFolderAtLisa().getKnownItemCount() == 1;
-            }
-        });
+        waitForSyncedDir(5, getFolderAtLisa(), dirLisa, 0, false);
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
@@ -515,16 +547,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Check remote syncs
         final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
             dirBart.getFileName());
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            public String message() {
-                return "Dir at lisa not existing: " + dirLisa;
-            }
-
-            public boolean reached() {
-                return Files.exists(dirLisa) && Files.isDirectory(dirLisa)
-                    && getFolderAtLisa().getKnownItemCount() == 1;
-            }
-        });
+        waitForSyncedDir(20, getFolderAtLisa(), dirLisa, 0, false);
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
@@ -550,18 +573,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Restore at Homer
         final Path dirHomer = getFolderAtHomer().getLocalBase().resolve(
             "testDir");
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            public String message() {
-                return "Dir at homer existing: " + dirLisa;
-            }
-
-            public boolean reached() {
-                return Files.notExists(dirHomer)
-                    && getFolderAtHomer().getKnownItemCount() == 1
-                    && getFolderAtHomer().getKnownDirectories().iterator()
-                        .next().isDeleted();
-            }
-        });
+        waitForSyncedDir(20, getFolderAtHomer(), dirHomer, 1, true);
         assertFalse(Files.exists(dirHomer));
         DirectoryInfo infoHomer = getFolderAtHomer().getKnownDirectories()
             .iterator().next();

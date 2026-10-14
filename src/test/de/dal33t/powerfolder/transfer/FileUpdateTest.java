@@ -22,10 +22,15 @@ package de.dal33t.powerfolder.transfer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -37,6 +42,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,6 +67,110 @@ public class FileUpdateTest extends TwoControllerTestCase {
         connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.HOST_FILES);
+    }
+
+
+    private static FileInfo syncedFileInfo(Folder folder, FileInfo expected) {
+        FileInfo local = folder.getFile(expected);
+        if (local == null || local.isDeleted()
+            || !local.isVersionDateAndSizeIdentical(expected))
+        {
+            return null;
+        }
+        return local.inSyncWithDisk(local.getDiskFile(folder.getController()
+            .getFolderRepository())) ? local : null;
+    }
+
+    private static boolean knowsAllFilesOf(Folder source, Folder target,
+        int expectedItems)
+    {
+        Collection<FileInfo> files = source.getKnownFiles();
+        if (files.size() != expectedItems) {
+            return false;
+        }
+        for (FileInfo fileInfo : files) {
+            if (syncedFileInfo(target, fileInfo) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void triggerFileRequestingOnBothSides() {
+        getContollerBart().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(getFolderAtBart().getInfo());
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(getFolderAtLisa().getInfo());
+    }
+
+    private void waitForFoldersInSync(int secondsTimeout,
+        final int expectedItems)
+    {
+        TestHelper.waitForCondition(secondsTimeout, new ConditionWithMessage() {
+            public boolean reached() {
+                triggerFileRequestingOnBothSides();
+                return knowsAllFilesOf(getFolderAtBart(), getFolderAtLisa(),
+                    expectedItems)
+                    && knowsAllFilesOf(getFolderAtLisa(), getFolderAtBart(),
+                        expectedItems);
+            }
+
+            public String message() {
+                return "Expected " + expectedItems
+                    + " identical items at both sides. Bart: "
+                    + getFolderAtBart().getKnownFiles() + ". Lisa: "
+                    + getFolderAtLisa().getKnownFiles();
+            }
+        });
+    }
+
+    private void waitForFileListOf(final Folder folder,
+        final Controller remote, final FileInfo fileInfo)
+    {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            private Member remoteMember() {
+                for (Member member : folder.getMembersAsCollection()) {
+                    if (!member.isMySelf()
+                        && member.getId().equals(remote.getMySelf().getId()))
+                    {
+                        return member;
+                    }
+                }
+                return null;
+            }
+
+            public boolean reached() {
+                Member member = remoteMember();
+                return member != null
+                    && member.hasCompleteFileListFor(folder.getInfo())
+                    && member.getFile(fileInfo) != null;
+            }
+
+            public String message() {
+                return "No complete file list of "
+                    + remote.getMySelf().getNick() + " containing " + fileInfo
+                    + " at " + folder.getController().getMySelf().getNick();
+            }
+        });
+    }
+
+    private static final class DownloadRequestCounter
+        extends TransferManagerAdapter
+    {
+        private final AtomicInteger requested = new AtomicInteger();
+
+        @Override
+        public void downloadRequested(TransferManagerEvent event) {
+            requested.incrementAndGet();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        int requested() {
+            return requested.get();
+        }
     }
 
     /**
@@ -92,14 +203,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // Let them scan the new content
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == 1
-                    && getFolderAtLisa().getKnownItemCount() == 1;
-            }
-        });
-        // W8 4 filelist
-        TestHelper.waitMilliSeconds(2000);
+        final FileInfo scannedAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
+        final FileInfo scannedAtLisa = getFolderAtLisa().getKnownFiles()
+            .iterator().next();
+        waitForFileListOf(getFolderAtLisa(), getContollerBart(),
+            scannedAtBart);
+        waitForFileListOf(getFolderAtBart(), getContollerLisa(),
+            scannedAtLisa);
         getFolderAtBart().maintainFolderDB(0);
         getFolderAtLisa().maintainFolderDB(0);
 
@@ -113,10 +224,17 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Let the copy
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countCompletedDownloads() == 1;
+                triggerFileRequestingOnBothSides();
+                FileInfo atBart = getFolderAtBart().getFile(scannedAtBart);
+                return atBart != null && atBart.getVersion() >= 1
+                    && syncedFileInfo(getFolderAtLisa(), atBart) != null;
+            }
+
+            public String message() {
+                return "File at bart: " + getFolderAtBart().getKnownFiles()
+                    + ". File at lisa: " + getFolderAtLisa().getKnownFiles();
             }
         });
 
@@ -170,14 +288,28 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertNotSame(Files.size(fileAtBart), getFolderAtBart().getKnownFiles()
             .iterator().next().getSize());
 
+        final DownloadRequestCounter downloadsAtLisa = new DownloadRequestCounter();
+        getContollerLisa().getTransferManager().addListener(downloadsAtLisa);
+
         // Change sync profile = auto download.
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Abort of upload should have been sent to lisa = NO download.
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countNumberOfDownloads(getFolderAtLisa()) == 0;
+                getContollerLisa().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(getFolderAtLisa().getInfo());
+                return downloadsAtLisa.requested() > 0
+                    && getContollerLisa().getTransferManager()
+                        .countNumberOfDownloads(getFolderAtLisa()) == 0;
+            }
+
+            public String message() {
+                return "Downloads requested at lisa: "
+                    + downloadsAtLisa.requested() + ", still pending: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownloads() + ", incoming at lisa: "
+                    + getFolderAtLisa().getIncomingFiles();
             }
         });
         assertEquals( 0, getContollerLisa()
@@ -206,15 +338,21 @@ public class FileUpdateTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         assertEquals(1, getFolderAtBart().getKnownItemCount());
 
-        final Path fileAtLisa = getFolderAtBart().getKnownFiles().iterator()
-            .next().getDiskFile(getContollerLisa().getFolderRepository());
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        final FileInfo initialAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
+        final Path fileAtLisa = initialAtBart
+            .getDiskFile(getContollerLisa().getFolderRepository());
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return Files.exists(fileAtLisa) && getContollerBart().getTransferManager().getActiveUploads().isEmpty();
+                triggerFileRequestingOnBothSides();
+                return syncedFileInfo(getFolderAtLisa(), initialAtBart) != null
+                    && getContollerBart().getTransferManager()
+                        .getActiveUploads().isEmpty();
             }
 
             public String message() {
-                return "File at lisa does not exists: " + fileAtLisa;
+                return "Lisa did not receive " + initialAtBart.toDetailString()
+                    + ". Known at lisa: " + getFolderAtLisa().getKnownFiles();
             }
         });
 
@@ -257,24 +395,21 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // Let them sync.
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        final FileInfo conflictWinner = fInfoAtLisa;
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                try {
-                    return Files.size(fileAtLisa) == Files.size(fileAtBart)
-                            && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
-                            && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
-                } catch (IOException ioe) {
-                    return true;
-                }
+                triggerFileRequestingOnBothSides();
+                return syncedFileInfo(getFolderAtBart(), conflictWinner) != null
+                    && getContollerBart().getTransferManager()
+                        .getActiveDownloads().isEmpty()
+                    && getContollerLisa().getTransferManager()
+                        .getActiveDownloads().isEmpty();
             }
 
             public String message() {
-                try {
-                    return "Lisa file.length: " + Files.size(fileAtLisa)
-                        + ". Bart file.length: " + Files.size(fileAtBart);
-                } catch (IOException ioe) {
-                    return "Could not retreive the file sizes";
-                }
+                return "Bart did not take over Lisas conflict winner "
+                    + conflictWinner.toDetailString() + ". Known at bart: "
+                    + getFolderAtBart().getKnownFiles();
             }
         });
         // Bart should not longer raise problems
@@ -300,21 +435,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             fInfoArchivedAtBart.getModifiedDate());
 
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == 2
-                    && getFolderAtLisa().getKnownItemCount() == 2
-                        && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
-                        && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
-            }
-
-            public String message() {
-                return "Bart.getKnownItemCount: "
-                    + getFolderAtBart().getKnownItemCount()
-                    + ". Lisa.Bart.getKnownItemCount: "
-                    + getFolderAtLisa().getKnownItemCount();
-            }
-        });
+        waitForFoldersInSync(20, 2);
 
         // Second case: version is lower, but last modification date if newer
         disconnectBartAndLisa();
@@ -353,27 +474,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // The old copy should have been distributed.
+        waitForFoldersInSync(20, 3);
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
-
             public boolean reached() {
-                // Hack: #2557
-                getContollerBart().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
-                getContollerLisa().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
-                return getFolderAtBart().getKnownItemCount() == 3
-                    && getFolderAtLisa().getKnownItemCount() == 3
-                    && getFolderAtLisa().getProblems().isEmpty()
-                        && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
-                        && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
+                return getFolderAtLisa().getProblems().isEmpty();
             }
 
             public String message() {
-                return "Bart.getKnownItemCount: "
-                    + getFolderAtBart().getKnownItemCount()
-                    + ". Lisa.Bart.getKnownItemCount: "
-                    + getFolderAtLisa().getKnownItemCount()
-                    + " Problems at lisa: " + getFolderAtLisa().getProblems();
+                return "Problems at lisa: " + getFolderAtLisa().getProblems();
             }
         });
         assertEquals(

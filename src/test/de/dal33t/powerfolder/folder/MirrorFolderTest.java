@@ -42,8 +42,12 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MirrorFolderTest extends FiveControllerTestCase {
@@ -78,21 +82,12 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public String message() {
-                return "Delete sync not completed. Files in folder: Homer "
-                    + getFolderAtHomer().getLocalBase().toFile().list().length
-                    + ", Marge "
-                    + getFolderAtMarge().getLocalBase().toFile().list().length
-                    + ", Lisa "
-                    + getFolderAtLisa().getLocalBase().toFile().list().length
-                    + ", Maggie "
-                    + getFolderAtMaggie().getLocalBase().toFile().list().length;
+                return "Delete sync not completed. Folders still differing"
+                    + " from Bart: " + foldersDifferingFromBart();
             }
 
             public boolean reached() {
-                return getFolderAtHomer().getLocalBase().toFile().list().length == 71
-                    && getFolderAtMarge().getLocalBase().toFile().list().length == 71
-                    && getFolderAtLisa().getLocalBase().toFile().list().length == 71
-                    && getFolderAtMaggie().getLocalBase().toFile().list().length == 71;
+                return foldersDifferingFromBart().isEmpty();
             }
         });
 
@@ -141,7 +136,15 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
 
             public boolean reached() {
-                return getFolderAtLisa().getKnownDirectories().size() == 1;
+                Collection<DirectoryInfo> dirsAtLisa = getFolderAtLisa()
+                    .getKnownDirectories();
+                if (dirsAtLisa.size() != 1) {
+                    return false;
+                }
+                DirectoryInfo dirAtLisa = dirsAtLisa.iterator().next();
+                return "testdir".equals(dirAtLisa.getRelativeName())
+                    && !dirAtLisa.isDeleted()
+                    && dirAtLisa.inSyncWithDisk(testDirLisa);
             }
 
             public String message() {
@@ -293,6 +296,42 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(0, fLisa.getVersion());
         assertFalse(fLisa.isDeleted());
         assertFileMatch(fileAtLisa, fLisa, getContollerLisa());
+    }
+
+    private List<String> foldersDifferingFromBart() {
+        Map<String, Long> atBart = regularFiles(getFolderAtBart()
+            .getLocalBase());
+        List<String> differing = new ArrayList<String>();
+        for (Folder folder : Arrays.asList(getFolderAtHomer(),
+            getFolderAtMarge(), getFolderAtLisa(), getFolderAtMaggie()))
+        {
+            Map<String, Long> atPeer = regularFiles(folder.getLocalBase());
+            if (!atBart.equals(atPeer)) {
+                differing.add(folder.getController().getMySelf().getNick()
+                    + " has " + atPeer.size() + " of " + atBart.size()
+                    + " files");
+            }
+        }
+        return differing;
+    }
+
+    private static Map<String, Long> regularFiles(Path dir) {
+        Map<String, Long> files = new TreeMap<String, Long>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path path : stream) {
+                if (!Files.isRegularFile(path)) {
+                    continue;
+                }
+                try {
+                    files.put(path.getFileName().toString(), Files.size(path));
+                } catch (IOException ioe) {
+                    files.put(path.getFileName().toString(), -1L);
+                }
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+        return files;
     }
 
     private void assertIdenticalTestFolder() {
