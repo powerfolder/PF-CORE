@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicReference;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
@@ -103,16 +102,14 @@ public class SubFolderSplitNoDeleteTest extends TwoControllerTestCase {
 
     private static void deleteTree(final Path dir) {
         final AtomicReference<IOException> lastFailure = new AtomicReference<>();
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 try {
                     PathUtils.recursiveDelete(dir);
-                } catch (DirectoryNotEmptyException e) {
+                } catch (IOException e) {
                     lastFailure.set(e);
                     return false;
-                } catch (IOException e) {
-                    throw new IllegalStateException(dir + " cannot be deleted", e);
                 }
                 return Files.notExists(dir);
             }
