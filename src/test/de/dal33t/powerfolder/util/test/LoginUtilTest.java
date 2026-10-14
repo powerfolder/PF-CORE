@@ -54,9 +54,7 @@ public class LoginUtilTest {
     @AfterEach
     public void shutdownStartedControllers() {
         for (Controller controller : startedControllers) {
-            if (controller.isStarted()) {
-                controller.shutdown();
-            }
+            controller.shutdown();
         }
         startedControllers.clear();
     }
