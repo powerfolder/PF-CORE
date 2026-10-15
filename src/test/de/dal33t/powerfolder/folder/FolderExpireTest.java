@@ -25,10 +25,13 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -82,13 +85,10 @@ public class FolderExpireTest extends ControllerTestCase {
         Path localBase = getFolder().getLocalBase();
 
         Path deletedFile = localBase.resolve("deleted.txt");
+        Date lastDBMaintenance = getFolder().getLastDBMaintenanceDate();
         Files.delete(deletedFile);
 
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        waitForDBMaintenanceAfter(lastDBMaintenance);
 
         scanFolder(getFolder());
 
@@ -99,11 +99,18 @@ public class FolderExpireTest extends ControllerTestCase {
         ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS.setValue(
             getController(), 5);
 
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        TestHelper.waitForCondition(15, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolder().getKnownItemCount() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "File info of deleted.txt did not expire. Known items: "
+                    + getFolder().getKnownItemCount();
+            }
+        });
 
         scanFolder(getFolder());
 
@@ -114,6 +121,24 @@ public class FolderExpireTest extends ControllerTestCase {
         // 'Successfully wrote folder database file (1 files)'
         // at end of output.
 
+    }
+
+    private void waitForDBMaintenanceAfter(final Date previousRun) {
+        TestHelper.waitForCondition(15, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                Date lastRun = getFolder().getLastDBMaintenanceDate();
+                return lastRun != null
+                    && (previousRun == null || lastRun.after(previousRun));
+            }
+
+            @Override
+            public String message() {
+                return "Folder database maintenance did not run. Last run: "
+                    + getFolder().getLastDBMaintenanceDate()
+                    + ", previous run: " + previousRun;
+            }
+        });
     }
 
 }
