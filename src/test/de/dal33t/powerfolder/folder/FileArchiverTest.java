@@ -300,12 +300,19 @@ public class FileArchiverTest extends TwoControllerTestCase {
             FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getFileArchiver()
-                    .getArchivedFilesInfos(fInfo).size() == 1;
+                FileInfo atLisa = getFolderAtLisa().getFile(fInfo);
+                return atLisa != null
+                    && atLisa.isVersionDateAndSizeIdentical(fInfo)
+                    && atLisa.inSyncWithDisk(atLisa.getDiskFile(
+                        getContollerLisa().getFolderRepository()))
+                    && isArchived(getFolderAtLisa(), fInfo,
+                        fInfo.getVersion() - 1);
             }
 
             public String message() {
-                return "Archived files at lisa: " + getFolderAtLisa()
+                return "Expected at lisa: " + fInfo.toDetailString()
+                    + ", got: " + getFolderAtLisa().getFile(fInfo)
+                    + ", archived files at lisa: " + getFolderAtLisa()
                     .getFileArchiver().getArchivedFilesInfos(fInfo);
             }
         });
@@ -327,14 +334,22 @@ public class FileArchiverTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2500);
         assertEquals(2, getFolderAtLisa().getFile(fInfo).getVersion());
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        final FileInfo restoredAtLisa = getFolderAtLisa().getFile(fInfo);
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getFileArchiver()
-                    .getArchivedFilesInfos(fInfo).size() == 1;
+                FileInfo atBart = getFolderAtBart().getFile(fInfo);
+                return atBart != null
+                    && atBart.isVersionDateAndSizeIdentical(restoredAtLisa)
+                    && atBart.inSyncWithDisk(atBart.getDiskFile(
+                        getContollerBart().getFolderRepository()))
+                    && isArchived(getFolderAtBart(), fInfo,
+                        restoredAtLisa.getVersion() - 1);
             }
 
             public String message() {
-                return "Archived files at bart: " + getFolderAtBart()
+                return "Expected at bart: " + restoredAtLisa.toDetailString()
+                    + ", got: " + getFolderAtBart().getFile(fInfo)
+                    + ", archived files at bart: " + getFolderAtBart()
                     .getFileArchiver().getArchivedFilesInfos(fInfo);
             }
         });
@@ -579,6 +594,19 @@ public class FileArchiverTest extends TwoControllerTestCase {
         // No additional version should have been archived
         assertEquals(1, archiver.getArchivedFilesInfos(fib).size(),
             "No additional version should be archived");
+    }
+
+    private static boolean isArchived(Folder folder, FileInfo fInfo,
+        int version)
+    {
+        for (FileInfo archived : folder.getFileArchiver()
+            .getArchivedFilesInfos(fInfo))
+        {
+            if (archived.getVersion() == version) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private FileInfo waitForDownloadedAtBart(Folder atLisa, Path file) {
