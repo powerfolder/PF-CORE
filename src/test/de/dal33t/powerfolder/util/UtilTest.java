@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Constants;
@@ -29,6 +30,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +47,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,6 +58,8 @@ import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class UtilTest {
+    private final List<Controller> startedControllers = new ArrayList<>();
+
 
     @Test
     public void testNormalization() {
@@ -359,7 +364,7 @@ public class UtilTest {
         FileWriter writer = new FileWriter(file);
         writer.write(
                 "random-port=true\n" +
-                "net.port=7345\n" +
+                "net.port=" + TestHelper.findFreePort() + "\n" +
                 "net.broadcast=false\n" +
                 "disableui=true");
 
@@ -368,16 +373,17 @@ public class UtilTest {
         File newFile = new File("build/test/second.config");
         newFile.createNewFile();
         FileWriter newWriter = new FileWriter(newFile);
-        newWriter.write("net.bindaddress=127.0.0.1\ndisableui=true");
+        newWriter.write("net.bindaddress=127.0.0.1\nnet.broadcast=false\nnet.port="
+            + TestHelper.findFreePort() + "\ndisableui=true");
 
         newWriter.close();
 
         Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();
 
         System.out.println("testUseSwarming2");
-        Controller firstController = new Controller();
+        Controller firstController = newController();
         System.out.println("testUseSwarming2-1");
-        Controller secondController = new Controller();
+        Controller secondController = newController();
         System.out.println("testUseSwarming2-2");
         firstController.startConfig("build/test/first.config");
         System.out.println("testUseSwarming3");
@@ -906,12 +912,12 @@ public class UtilTest {
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
         writer.write("random-port=false\n" +
-                "net.port=3457\n" +
+                "net.port=" + TestHelper.findFreePort() + "\n" +
                 "net.broadcast=false\n" +
                 "disableui=true");
 
         writer.close();
-        Controller controllerLisa = Controller.createController();
+        Controller controllerLisa = newController();
         controllerLisa.startConfig("build/test/first.config");
         int statusCode = Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com")).getStatusLine().getStatusCode();
         assertEquals(200, statusCode);
@@ -1024,5 +1030,21 @@ public class UtilTest {
         assertTrue(Util.isMySQLDeadlock(new RuntimeException("Problem while comitting to database. org.hibernate.TransactionException: JDBC commit failed com.mysql.jdbc.exceptions.jdbc4.MySQLTransactionRollbackException: WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
         assertTrue(Util.isMySQLDeadlock(new RuntimeException("JDBC commit failed com.mysql.jdbc.exceptions.jdbc4.MySQLTransactionRollbackException: WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
         assertTrue(Util.isMySQLDeadlock(new RuntimeException("WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
+    }
+
+    private Controller newController() {
+        System.setProperty("user.home", Paths.get("build/test/home").toAbsolutePath().toString());
+        Feature.setupForTests();
+        Controller controller = Controller.createController();
+        startedControllers.add(controller);
+        return controller;
+    }
+
+    @AfterEach
+    public void shutdownStartedControllers() {
+        for (Controller controller : startedControllers) {
+            controller.shutdown();
+        }
+        startedControllers.clear();
     }
 }
