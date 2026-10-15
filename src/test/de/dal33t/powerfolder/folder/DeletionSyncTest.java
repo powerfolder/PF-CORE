@@ -23,10 +23,12 @@ package de.dal33t.powerfolder.folder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -112,20 +114,25 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
+        final FileInfo changedFileAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() >= 1
-                    && getFolderAtBart().getFilesAsCollection(lisaAtBart)
-                        .size() >= 1;
+                return isInSyncWith(getFolderAtLisa(), getContollerLisa(),
+                    changedFileAtBart)
+                    && contains(
+                        getFolderAtBart().getFilesAsCollection(lisaAtBart),
+                        changedFileAtBart);
             }
 
             @Override
             public String message() {
-                return "Know files at lisa: "
-                    + getFolderAtLisa().getKnownItemCount()
+                return "Expected at lisa: "
+                    + changedFileAtBart.toDetailString() + ", files at lisa: "
+                    + getFolderAtLisa().getKnownFiles()
                     + ", Lisas filelist at Bart: "
-                    + getFolderAtBart().getFilesAsCollection(lisaAtBart).size();
+                    + getFolderAtBart().getFilesAsCollection(lisaAtBart);
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
@@ -420,18 +427,31 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() >= 5
-                    && getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection().size() >= 3;
+                for (FileInfo fileAtBart : getFolderAtBart().getKnownFiles()) {
+                    if (!isInSyncWith(getFolderAtLisa(), getContollerLisa(),
+                        fileAtBart))
+                    {
+                        return false;
+                    }
+                }
+                for (DirectoryInfo dirAtBart : getFolderAtBart()
+                    .getKnownDirectories())
+                {
+                    if (!isPresentOnDisk(getFolderAtLisa(),
+                        getContollerLisa(), dirAtBart))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             @Override
             public String message() {
-                return "Lisa known files: "
-                    + getFolderAtLisa().getKnownItemCount()
-                    + ". Bart completed uploads: "
-                    + getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection().size();
+                return "Items at bart: " + getFolderAtBart().getKnownFiles()
+                    + " " + getFolderAtBart().getKnownDirectories()
+                    + ". Items at lisa: " + getFolderAtLisa().getKnownFiles()
+                    + " " + getFolderAtLisa().getKnownDirectories();
             }
         });
 
@@ -538,8 +558,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
             @Override
             public boolean reached() {
-                // Only files should be incoming
-                return getFolderAtBart().getIncomingFiles().size() == 3;
+                for (FileInfo fileAtLisa : getFolderAtLisa().getKnownFiles()) {
+                    if (!contains(getFolderAtBart().getIncomingFiles(),
+                        fileAtLisa))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         });
 
@@ -619,18 +645,23 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
+        final FileInfo changedFileAtBart = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() >= 1
-                    && getFolderAtBart().getFilesAsCollection(lisaAtBart)
-                        .size() >= 1;
+                return isInSyncWith(getFolderAtLisa(), getContollerLisa(),
+                    changedFileAtBart)
+                    && contains(
+                        getFolderAtBart().getFilesAsCollection(lisaAtBart),
+                        changedFileAtBart);
             }
 
             @Override
             public String message() {
-                return "Files at lisa: " + getFolderAtLisa().getKnownFiles()
-                    + " Bart thinks: "
+                return "Expected at lisa: "
+                    + changedFileAtBart.toDetailString() + ", files at lisa: "
+                    + getFolderAtLisa().getKnownFiles() + " Bart thinks: "
                     + getFolderAtBart().getFilesAsCollection(lisaAtBart);
             }
         });
@@ -871,5 +902,33 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 return "Subdir at bart not deleted: " + subdirBart;
             }
         });
+    }
+
+    private static boolean isInSyncWith(Folder folder, Controller controller,
+        FileInfo expected)
+    {
+        FileInfo local = folder.getFile(expected);
+        return local != null && local.isVersionDateAndSizeIdentical(expected)
+            && local.inSyncWithDisk(
+                local.getDiskFile(controller.getFolderRepository()));
+    }
+
+    private static boolean isPresentOnDisk(Folder folder,
+        Controller controller, FileInfo expected)
+    {
+        FileInfo local = folder.getFile(expected);
+        return local != null && local.inSyncWithDisk(
+            local.getDiskFile(controller.getFolderRepository()));
+    }
+
+    private static boolean contains(Collection<FileInfo> files,
+        FileInfo expected)
+    {
+        for (FileInfo file : files) {
+            if (file.isVersionDateAndSizeIdentical(expected)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
