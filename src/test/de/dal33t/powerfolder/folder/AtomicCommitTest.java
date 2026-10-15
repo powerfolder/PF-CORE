@@ -23,7 +23,11 @@ package de.dal33t.powerfolder.folder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -34,6 +38,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import static org.junit.jupiter.api.Assertions.*;
 
+@org.junit.jupiter.api.Disabled("The product no longer commits anything: AtomicCommitProcessor was deleted in ee5ff3e26 and the FOLDER_ATOMIC_COMMIT feature flag in e97bb6ca6, and the commit directory is now only stored, read back and shown in the UI. This test passed only because its own garbage files satisfied a count; with a condition that checks the committed files it can never pass. Restore the feature or retire the test.")
 public class AtomicCommitTest extends TwoControllerTestCase {
 
     @BeforeEach
@@ -73,13 +78,13 @@ public class AtomicCommitTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
+                return isCommittedAtLisa();
             }
 
             public String message() {
-                return "Files mismatch at lisas commit dir. Got: "
-                    + getFolderAtLisa().getCommitDir().toFile().list().length
-                    + ". Expected: " + (nFiles + 1);
+                return "Lisas commit dir holds " + commitDirNames()
+                    + ". Expected " + expectedCommitDirNames()
+                    + " for bart's files " + getFolderAtBart().getKnownFiles();
             }
         });
 
@@ -100,16 +105,59 @@ public class AtomicCommitTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
+                return isCommittedAtLisa();
             }
 
             public String message() {
-                return "Files mismatch at lisas commit dir. Got: "
-                    + getFolderAtLisa().getCommitDir().toFile().list().length
-                    + ". Expected: " + (nFiles + 1);
+                return "Lisas commit dir holds " + commitDirNames()
+                    + ". Expected " + expectedCommitDirNames()
+                    + " for bart's files " + getFolderAtBart().getKnownFiles();
             }
         });
 
+    }
+
+    private boolean isCommittedAtLisa() {
+        for (FileInfo fInfo : getFolderAtBart().getKnownFiles()) {
+            Path committed = getFolderAtLisa().getCommitDir()
+                .resolve(fInfo.getRelativeName());
+            if (fInfo.isDeleted()) {
+                if (Files.exists(committed)) {
+                    return false;
+                }
+                continue;
+            }
+            try {
+                if (!Files.exists(committed)
+                    || Files.size(committed) != fInfo.getSize())
+                {
+                    return false;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return commitDirNames().equals(expectedCommitDirNames());
+    }
+
+    private Set<String> expectedCommitDirNames() {
+        Set<String> expected = new TreeSet<String>();
+        expected.add(getFolderAtLisa().getLocalBase().getFileName().toString());
+        for (FileInfo fInfo : getFolderAtBart().getKnownFiles()) {
+            if (!fInfo.isDeleted()) {
+                expected.add(fInfo.getRelativeName());
+            }
+        }
+        return expected;
+    }
+
+    private Set<String> commitDirNames() {
+        Set<String> names = new TreeSet<String>();
+        String[] list = getFolderAtLisa().getCommitDir().toFile().list();
+        if (list != null) {
+            names.addAll(Arrays.asList(list));
+        }
+        return names;
     }
 
     private static class MyVistor implements Visitor<FileInfo> {
