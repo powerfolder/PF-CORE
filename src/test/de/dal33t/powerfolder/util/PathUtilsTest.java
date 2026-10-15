@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -30,6 +31,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import org.apache.commons.io.FileUtils;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +43,8 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -51,6 +55,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 public class PathUtilsTest {
 
     private Path baseDir = Paths.get("build/test").toAbsolutePath();
+
+    private final List<Controller> startedControllers = new ArrayList<>();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -1961,13 +1967,7 @@ public class PathUtilsTest {
         if (!isWindows()) {
             return;
         }
-        Controller controller = new Controller();
-        File configFile = new File("build/test/basic.config");
-        configFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(configFile);
-        fileWriter.write("disableui=true");
-        fileWriter.close();
-        controller.startConfig("build/test/basic.config");
+        Controller controller = startedController("disableui=true");
 
         File directory = new File("build/test/myDirectory");
         directory.mkdir();
@@ -1986,13 +1986,7 @@ public class PathUtilsTest {
         if (!isWindows()) {
             return;
         }
-        Controller controller = new Controller();
-        File configFile = new File("build/test/basic.config");
-        configFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(configFile);
-        fileWriter.write("disableui=true \n use.pf.icon=false");
-        fileWriter.close();
-        controller.startConfig("build/test/basic.config");
+        Controller controller = startedController("disableui=true \n use.pf.icon=false");
         File directory = new File("build/test/myDirectory");
         directory.mkdir();
         File desktopIniFile = new File("build/test/myDirectory/" + PathUtils.DESKTOP_INI_FILENAME);
@@ -2009,15 +2003,7 @@ public class PathUtilsTest {
         if (!isWindows()) {
             return;
         }
-        Controller controller = new Controller();
-        File configFile = new File("build/test/basic.config");
-        configFile.createNewFile();
-
-        FileWriter fileWriter = new FileWriter(configFile);
-        fileWriter.write("disableui=true \n use.pf.icon=true");
-        fileWriter.close();
-
-        controller.startConfig("build/test/basic.config");
+        Controller controller = startedController("disableui=true \n use.pf.icon=true");
 
         File directory = new File("build/test/myDirectory");
         directory.mkdir();
@@ -2136,13 +2122,7 @@ public class PathUtilsTest {
 
     @Test
     public void testIsScannable() throws IOException {
-        Controller controller = new Controller();
-        File configFile = new File("build/test/basic.config");
-        configFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(configFile);
-        fileWriter.write("disableui=true");
-        fileWriter.close();
-        controller.startConfig("build/test/basic.config");
+        Controller controller = startedController("disableui=true");
 
         FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         FolderSettings folderSettings = new FolderSettings(Paths.get("build/test"),
@@ -2159,13 +2139,7 @@ public class PathUtilsTest {
 
     @Test
     public void testIsScannableMetaFolder() throws IOException {
-        Controller controller = new Controller();
-        File configFile = new File("build/test/basic.config");
-        configFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(configFile);
-        fileWriter.write("disableui=true");
-        fileWriter.close();
-        controller.startConfig("build/test/basic.config");
+        Controller controller = startedController("disableui=true");
 
         FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFoldermeta", "meta|folder");
         FolderSettings folderSettings = new FolderSettings(Paths.get("build/test"),
@@ -2521,5 +2495,25 @@ public class PathUtilsTest {
             // MUST be thrown
         }
 
+    }
+
+    private Controller startedController(String configContents) throws IOException {
+        System.setProperty("user.home", baseDir.resolve("home").toString());
+        Feature.setupForTests();
+        Path configFile = baseDir.resolve("basic.config");
+        Files.createDirectories(configFile.getParent());
+        Files.write(configFile, configContents.getBytes("UTF-8"));
+        Controller controller = new Controller();
+        controller.startConfig(configFile.toString());
+        startedControllers.add(controller);
+        return controller;
+    }
+
+    @AfterEach
+    public void shutdownStartedControllers() {
+        for (Controller controller : startedControllers) {
+            controller.shutdown();
+        }
+        startedControllers.clear();
     }
 }
