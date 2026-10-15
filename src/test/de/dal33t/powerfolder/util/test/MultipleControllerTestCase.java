@@ -155,16 +155,15 @@ public abstract class MultipleControllerTestCase {
     {
         Reject.ifTrue(controllers.containsKey(id),
             "Already got controller with id '" + id + "'");
+        Path f = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
+        TestHelper.copyConfigWithFreePort(
+            Paths.get("src/test-resources/ControllerBart.config"), f);
         Properties conf = new Properties();
-        FileReader r = new FileReader(
-            "src/test-resources/ControllerBart.config");
-        conf.load(r);
-        r.close();
+        try (FileReader r = new FileReader(f.toFile())) {
+            conf.load(r);
+        }
         conf.put("nodeid", "randomstringController" + id);
         conf.put("nick", "Controller" + id);
-        conf.put("net.port", "" + TestHelper.findFreePort());
-        Path f = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
-        Files.createDirectories(f.getParent());
         PropertiesUtil.saveConfig(f, conf, "PF Test config");
 
         return startController(id, "build/test/Controller" + id
