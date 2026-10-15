@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.TestHelper;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -128,11 +131,18 @@ public class BandwidthLimitTest {
         bl.setAvailable(0);
         provider.start();
         provider.setLimitBPS(bl, 1000);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            fail(e.toString());
-        }
+        TestHelper.waitForCondition(2, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return bl.getAvailable() == 1000;
+            }
+
+            @Override
+            public String message() {
+                return "Provider did not grant the limit. Available: "
+                    + bl.getAvailable();
+            }
+        });
         provider.removeLimiter(bl);
         provider.shutdown();
         assertEquals(1000, bl.getAvailable());
@@ -177,12 +187,18 @@ public class BandwidthLimitTest {
         for (int i = 0; i < pool.length; i++)
             pool[i].start();
 
-        try {
-            Thread.sleep(6000);
-            pool[0].join(1);
-        } catch (InterruptedException e) {
-            fail(e.toString());
-        }
+        TestHelper.waitForCondition(6, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return countAlive(pool) == 0;
+            }
+
+            @Override
+            public String message() {
+                return countAlive(pool) + " of " + pool.length
+                    + " reader threads did not terminate";
+            }
+        });
 
         provider.shutdown();
         assertEquals(Thread.State.TERMINATED, pool[0].getState());
@@ -194,6 +210,16 @@ public class BandwidthLimitTest {
             }
             assertEquals(Thread.State.TERMINATED, pool[i].getState());
         }
+    }
+
+    private static int countAlive(Thread[] threads) {
+        int alive = 0;
+        for (Thread thread : threads) {
+            if (thread.getState() != Thread.State.TERMINATED) {
+                alive++;
+            }
+        }
+        return alive;
     }
 
     @Test
@@ -213,11 +239,17 @@ public class BandwidthLimitTest {
             }
         };
         provider.addBandwidthStatListener(listener);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            fail(e.toString());
-        }
+        TestHelper.waitForCondition(2, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return gotStat.get();
+            }
+
+            @Override
+            public String message() {
+                return "No bandwidth stat received";
+            }
+        });
         provider.removeLimiter(bl);
         provider.shutdown();
         assertTrue( gotStat.get(),"Failed to get any stats?");
