@@ -234,15 +234,17 @@ public class TestHelper {
         List<String> lines = new ArrayList<String>();
         for (String line : Files.readAllLines(source)) {
             if (line.startsWith("net.port=")) {
-                lines.add("net.port=" + findFreePort());
+                lines.add("net.port=" + portFor(templatePortOf(line)));
             } else if (line.startsWith("net.broadcast.port=")) {
                 lines.add("net.broadcast.port=" + broadcastPort());
             } else if (line.startsWith("net.port.rcon=")) {
-                lines.add("net.port.rcon=" + findFreePort());
+                lines.add("net.port.rcon=" + portFor(templatePortOf(line)));
             } else if (line.startsWith("plugin.webinterface.port=")) {
-                lines.add("plugin.webinterface.port=" + webPort(Integer.parseInt(line.substring(line.indexOf('=') + 1).trim())));
+                lines.add("plugin.webinterface.port=" + webPort(templatePortOf(line)));
+            } else if (line.startsWith("server.host=") && line.contains(":")) {
+                lines.add(rewriteHostPort(line));
             } else if (line.startsWith("server.port.d2d=")) {
-                lines.add("server.port.d2d=" + findFreePort());
+                lines.add("server.port.d2d=" + portFor(templatePortOf(line)));
             } else if (line.startsWith("database.port=")) {
                 lines.add("database.port=" + h2TcpPort());
             } else if (line.startsWith("database.url=") && line.contains("tcp://localhost:")) {
@@ -267,10 +269,30 @@ public class TestHelper {
         Files.write(target, lines);
     }
 
-    private static final java.util.Map<Integer, Integer> WEB_PORTS = new java.util.HashMap<>();
+    private static final java.util.Map<Integer, Integer> MAPPED_PORTS = new java.util.HashMap<>();
 
     public static synchronized int webPort(int templatePort) {
-        return WEB_PORTS.computeIfAbsent(templatePort, port -> findFreePort());
+        return portFor(templatePort);
+    }
+
+    public static synchronized int portFor(int templatePort) {
+        return MAPPED_PORTS.computeIfAbsent(templatePort, port -> findFreePort());
+    }
+
+    private static int templatePortOf(String configLine) {
+        return Integer.parseInt(configLine.substring(configLine.indexOf('=') + 1).trim());
+    }
+
+    private static String rewriteHostPort(String configLine) {
+        int colon = configLine.lastIndexOf(':');
+        if (colon < 0) {
+            return configLine;
+        }
+        String port = configLine.substring(colon + 1).trim();
+        if (port.isEmpty() || !port.chars().allMatch(Character::isDigit)) {
+            return configLine;
+        }
+        return configLine.substring(0, colon + 1) + portFor(Integer.parseInt(port));
     }
 
     private static int h2TcpPort;
