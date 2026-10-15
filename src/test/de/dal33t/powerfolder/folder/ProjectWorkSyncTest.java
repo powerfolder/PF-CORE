@@ -28,9 +28,11 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import static org.junit.jupiter.api.Assertions.*;
@@ -108,9 +110,15 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtLisa().getKnownItemCount());
 
         // Wait for filelist from bart
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles().size() >= expectedFilesAtBart;
+                return allIncoming(getFolderAtLisa(), getFolderAtBart());
+            }
+
+            public String message() {
+                return "Files at bart: " + getFolderAtBart().getKnownFiles()
+                    + ", incoming at lisa: "
+                    + getFolderAtLisa().getIncomingFiles();
             }
         });
 
@@ -160,14 +168,26 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Wait for filelists
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles().size() >= 3;
+                return allIncoming(getFolderAtLisa(), getFolderAtBart());
+            }
+
+            public String message() {
+                return "Files at bart: " + getFolderAtBart().getKnownFiles()
+                    + ", incoming at lisa: "
+                    + getFolderAtLisa().getIncomingFiles();
             }
         });
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getIncomingFiles().size() >= 2;
+                return allIncoming(getFolderAtBart(), getFolderAtLisa());
+            }
+
+            public String message() {
+                return "Files at lisa: " + getFolderAtLisa().getKnownFiles()
+                    + ", incoming at bart: "
+                    + getFolderAtBart().getIncomingFiles();
             }
         });
 
@@ -249,5 +269,21 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
             }
         }
         return existing;
+    }
+
+    private static boolean allIncoming(Folder local, Folder remote) {
+        for (FileInfo expected : remote.getKnownFiles()) {
+            boolean incoming = false;
+            for (FileInfo candidate : local.getIncomingFiles()) {
+                if (candidate.isVersionDateAndSizeIdentical(expected)) {
+                    incoming = true;
+                    break;
+                }
+            }
+            if (!incoming) {
+                return false;
+            }
+        }
+        return true;
     }
 }
