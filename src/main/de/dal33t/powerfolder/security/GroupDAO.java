@@ -109,6 +109,20 @@ public interface GroupDAO extends GenericDAO<Group> {
     Collection<Group> findChildrenOf(Group parent, int maxResults);
 
     /**
+     * Nested Groups: {@code parent} together with all of its subgroups,
+     * transitively (children, grandchildren, ...). Resolves the whole subtree in
+     * batched queries and is cycle-safe. Use this instead of walking
+     * {@link #findChildrenOf(Group)} by hand when the full descendant set is
+     * needed (e.g. to reach every account that administers a folder through a
+     * nested group).
+     *
+     * @param parent the root group
+     * @return {@code parent} together with every nested subgroup; for a persisted
+     *         {@code parent} this contains at least {@code parent} itself
+     */
+    Collection<Group> findWithDescendants(Group parent);
+
+    /**
      * Nested Groups: count of direct subgroups of {@code parent}. Cheap
      * alternative to {@link #findChildrenOf(Group)} when only the size is
      * needed (e.g. the {@code nChildGroups} field on {@code getAll}).
