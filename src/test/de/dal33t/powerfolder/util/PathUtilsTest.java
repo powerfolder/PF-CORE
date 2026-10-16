@@ -34,6 +34,7 @@ import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -52,9 +53,13 @@ import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Timeout(value = 300, unit = java.util.concurrent.TimeUnit.SECONDS,
+    threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
 public class PathUtilsTest {
 
     private Path baseDir = Paths.get("build/test").toAbsolutePath();
+
+    private static final int SHUTDOWN_SECONDS = 60;
 
     private final List<Controller> startedControllers = new ArrayList<>();
 
@@ -2498,7 +2503,9 @@ public class PathUtilsTest {
     }
 
     private Controller startedController(String configContents) throws IOException {
-        System.setProperty("user.home", baseDir.resolve("home").toString());
+        Path home = baseDir.resolve("home");
+        Files.createDirectories(home);
+        System.setProperty("user.home", home.toString());
         Feature.setupForTests();
         Path configFile = baseDir.resolve("basic.config");
         Files.createDirectories(configFile.getParent());
@@ -2512,8 +2519,29 @@ public class PathUtilsTest {
     @AfterEach
     public void shutdownStartedControllers() {
         for (Controller controller : startedControllers) {
-            controller.shutdown();
+            shutdownWithin(controller, SHUTDOWN_SECONDS);
         }
         startedControllers.clear();
+    }
+
+    private static void shutdownWithin(Controller controller, int seconds) {
+        Thread shutdown = new Thread(controller::shutdown,
+            "PathUtilsTest controller shutdown");
+        shutdown.setDaemon(true);
+        shutdown.start();
+        try {
+            shutdown.join(seconds * 1000L);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        if (shutdown.isAlive()) {
+            System.err.println("Controller.shutdown has not returned within "
+                + seconds + " seconds, leaving it to the fork exit watchdog."
+                + " Its stack follows.");
+            for (StackTraceElement frame : shutdown.getStackTrace()) {
+                System.err.println("\tat " + frame);
+            }
+            System.err.flush();
+        }
     }
 }
