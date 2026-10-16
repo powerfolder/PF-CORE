@@ -1285,21 +1285,26 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Reconnect /Resume transfer
         connectBartAndLisa();
 
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        final FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+            .next();
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return Files.notExists(tempFile);
+                getContollerLisa().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(fBart.getFolderInfo());
+                return Files.notExists(tempFile)
+                    && hasCompletedDownloadOf(getContollerLisa(), fBart);
             }
 
             @Override
             public String message() {
-                return "Tempfile does exist although MD5_ERROR has been observed:"
-                    + tempFile;
+                return "MD5_ERROR was not recovered from. Tempfile " + tempFile
+                    + " exists: " + Files.exists(tempFile)
+                    + ". Completed download at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownload(fBart);
             }
         });
-
-        FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
-        waitForCompletedDownload(LONG_WAIT_TIME_SECONDS, getContollerLisa(), fBart);
 
         Path fileBart = fBart.getDiskFile(getContollerBart()
             .getFolderRepository());
