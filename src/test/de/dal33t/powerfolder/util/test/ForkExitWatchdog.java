@@ -60,13 +60,20 @@ public class ForkExitWatchdog implements TestExecutionListener {
     }
 
     private static String registeredHooks() {
-        StringBuilder hooks = new StringBuilder("Shutdown hooks still registered: ");
+        StringBuilder hooks = new StringBuilder();
         try {
             java.lang.reflect.Field field = Class.forName("java.lang.ApplicationShutdownHooks")
                 .getDeclaredField("hooks");
             field.setAccessible(true);
             Map<?, ?> registered = (Map<?, ?>) field.get(null);
-            hooks.append(registered.size());
+            if (registered == null) {
+                return "Shutdown is already running: the JVM nulls"
+                    + " ApplicationShutdownHooks.hooks before it runs them, so exit was"
+                    + " requested and one of the hooks above has not returned. Look for a"
+                    + " hook thread in the dump, not for a leaked thread.";
+            }
+            hooks.append("Exit has not been requested yet. Shutdown hooks registered: ")
+                .append(registered.size());
             for (Object hook : registered.keySet()) {
                 Thread thread = (Thread) hook;
                 hooks.append(System.lineSeparator()).append("\t\"").append(thread.getName())
@@ -74,7 +81,7 @@ public class ForkExitWatchdog implements TestExecutionListener {
                     .append(' ').append(thread.getState());
             }
         } catch (Throwable t) {
-            hooks.append("unreadable, ").append(t);
+            hooks.append("Shutdown hooks unreadable, ").append(t);
         }
         return hooks.toString();
     }
