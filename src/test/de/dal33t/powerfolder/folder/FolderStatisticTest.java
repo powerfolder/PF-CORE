@@ -195,7 +195,27 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
         waitForFileListOnTestFolder();
-        forceStatsCals();
+
+        final long newestVersionSize = Files.size(testFile);
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            public boolean reached() {
+                forceStatsCals();
+                return getFolderAtBart().getStatistic().getTotalSize() == newestVersionSize
+                    && getFolderAtLisa().getStatistic().getTotalSize() == newestVersionSize;
+            }
+
+            public String message() {
+                return "Barts version is the newest at " + newestVersionSize
+                    + " bytes, so both totals must report it. At bart: "
+                    + getFolderAtBart().getStatistic().getTotalSize()
+                    + ", at lisa: "
+                    + getFolderAtLisa().getStatistic().getTotalSize()
+                    + ". A total of " + lisaTestFileSize
+                    + " means the member holding the newest version was not"
+                    + " counted. Members completely connected at lisa: "
+                    + getFolderAtLisa().getCompletelyConnectedMembersCount();
+            }
+        });
 
         assertEquals(Files.size(testFile), getFolderAtBart().getStatistic()
             .getTotalSize());
