@@ -328,6 +328,14 @@ public class TestHelper {
     }
 
     public static synchronized int findFreePort() {
+        return findFreePortOfProtocol(false);
+    }
+
+    public static synchronized int findFreeUdpPort() {
+        return findFreePortOfProtocol(true);
+    }
+
+    private static int findFreePortOfProtocol(boolean udp) {
         int start = sliceStart();
         if (nextPort < start || nextPort >= start + PORTS_PER_JVM) {
             nextPort = start;
@@ -337,15 +345,27 @@ public class TestHelper {
             if (nextPort >= start + PORTS_PER_JVM) {
                 nextPort = start;
             }
-            try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
-                socket.setReuseAddress(false);
-                socket.bind(new InetSocketAddress(port));
-                return socket.getLocalPort();
-            } catch (IOException e) {
+            if (udp) {
+                try (java.net.DatagramSocket socket = new java.net.DatagramSocket(
+                    null))
+                {
+                    socket.setReuseAddress(false);
+                    socket.bind(new InetSocketAddress(port));
+                    return socket.getLocalPort();
+                } catch (IOException e) {
+                }
+            } else {
+                try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
+                    socket.setReuseAddress(false);
+                    socket.bind(new InetSocketAddress(port));
+                    return socket.getLocalPort();
+                } catch (IOException e) {
+                }
             }
         }
-        throw new RuntimeException("Unable to find a free TCP port between "
-            + start + " and " + (start + PORTS_PER_JVM - 1));
+        throw new RuntimeException("Unable to find a free "
+            + (udp ? "UDP" : "TCP") + " port between " + start + " and "
+            + (start + PORTS_PER_JVM - 1));
     }
 
     public static Path getTestDir() {

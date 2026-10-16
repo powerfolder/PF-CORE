@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
 public class UDTTest {
@@ -299,15 +300,14 @@ public class UDTTest {
     }
 
     private int bindSocket(UDTSocket a) {
-        for (int i = 10000; i < 10000 + 2000; i++) {
+        for (int attempt = 0; attempt < 100; attempt++) {
+            int port = TestHelper.findFreeUdpPort();
             try {
-                a.bind(new InetSocketAddress(i));
+                a.bind(new InetSocketAddress(port));
             } catch (IOException e) {
-                // e.printStackTrace();
-                // System.err.println("Trying next port...");
                 continue;
             }
-            return i;
+            return port;
         }
         return -1;
     }
