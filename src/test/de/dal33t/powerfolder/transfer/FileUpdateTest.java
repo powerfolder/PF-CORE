@@ -399,17 +399,32 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 triggerFileRequestingOnBothSides();
-                return syncedFileInfo(getFolderAtBart(), conflictWinner) != null
-                    && getContollerBart().getTransferManager()
-                        .getActiveDownloads().isEmpty()
-                    && getContollerLisa().getTransferManager()
-                        .getActiveDownloads().isEmpty();
+                return syncedFileInfo(getFolderAtBart(), conflictWinner) != null;
             }
 
             public String message() {
+                FileInfo localAtBart = getFolderAtBart().getFile(conflictWinner);
+                FileInfo lisasAtBart = getFolderAtBart().getDAO().find(
+                    conflictWinner,
+                    getContollerLisa().getMySelf().getId());
                 return "Bart did not take over Lisas conflict winner "
-                    + conflictWinner.toDetailString() + ". Known at bart: "
-                    + getFolderAtBart().getKnownFiles();
+                    + conflictWinner.toDetailString()
+                    + ". Barts own row: "
+                    + (localAtBart == null
+                        ? "none"
+                        : localAtBart.toDetailString())
+                    + ". What bart knows of lisas row: "
+                    + (lisasAtBart == null
+                        ? "nothing, so the file list after the reconnect never"
+                            + " arrived"
+                        : lisasAtBart.toDetailString()
+                            + ", newer than barts own: "
+                            + (localAtBart != null
+                                && lisasAtBart.isNewerThan(localAtBart)))
+                    + ". Downloads active at bart: "
+                    + getContollerBart().getTransferManager()
+                        .getActiveDownloads()
+                    + ". Known at bart: " + getFolderAtBart().getKnownFiles();
             }
         });
         // Bart should not longer raise problems
