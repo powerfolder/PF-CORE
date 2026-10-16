@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
+import com.sun.net.httpserver.HttpServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -919,11 +920,20 @@ public class UtilTest {
         writer.close();
         Controller controllerLisa = newController();
         controllerLisa.startConfig("build/test/first.config");
-        int statusCode = Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com")).getStatusLine().getStatusCode();
+        HttpServer server = HttpServer.create(
+            new InetSocketAddress("127.0.0.1", TestHelper.findFreePort()), 0);
+        server.createContext("/", exchange -> {
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+        });
+        server.start();
+        String reachableUrl = "http://127.0.0.1:"
+            + server.getAddress().getPort() + "/";
+        int statusCode = Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet(reachableUrl)).getStatusLine().getStatusCode();
         assertEquals(200, statusCode);
 
         controllerLisa.getConfig().put("security.ssl.trust_any","true");
-        int statusCodeTrust = Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com"))
+        int statusCodeTrust = Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet(reachableUrl))
                 .getStatusLine().getStatusCode();
 
         assertEquals(200, statusCodeTrust);
@@ -931,7 +941,7 @@ public class UtilTest {
         System.setProperty("http.proxyHost", "testProxy");
         System.setProperty("http.proxyPort", "1234");
         try {
-            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com"));
+            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet(reachableUrl));
             fail("Proxy was bad but it did not fail");
         } catch (ConnectException | UnknownHostException exception) {
             //OK Since proxy is bad
@@ -940,7 +950,7 @@ public class UtilTest {
         System.setProperty("http.proxyHost", "testProxy");
         System.setProperty("http.proxyPort", "1234");
         try {
-            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com"));
+            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet(reachableUrl));
             fail("Proxy was bad but it did not fail");
         } catch (ConnectException | UnknownHostException exception) {
             //OK Since proxy is bad
@@ -949,7 +959,7 @@ public class UtilTest {
         controllerLisa.getConfig().put("http.proxy.username","test");
         controllerLisa.getConfig().put("http.proxy.password","testpass");
         try {
-            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet("http://powerfolder.com"));
+            Util.createHttpClientBuilder(controllerLisa).build().execute(new HttpGet(reachableUrl));
             fail("Proxy was bad but it did not fail");
         } catch (ConnectException | UnknownHostException exception) {
             //OK Since proxy is bad
@@ -959,6 +969,7 @@ public class UtilTest {
         System.clearProperty("http.proxyHost");
         System.clearProperty("http.proxyPort");
 
+        server.stop(0);
         controllerLisa.shutdown();
     }
 
