@@ -89,6 +89,7 @@ public abstract class TwoControllerTestCase {
 
     @BeforeEach
     protected void setUp() throws Exception {
+        TestHelper.releaseMappedPorts();
         SyncProfile.META_FOLDER_SYNC = SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT;
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());

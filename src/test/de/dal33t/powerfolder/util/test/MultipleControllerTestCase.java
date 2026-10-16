@@ -70,6 +70,7 @@ public abstract class MultipleControllerTestCase {
 
     @BeforeEach
     protected void setUp() throws Exception {
+        TestHelper.releaseMappedPorts();
         System.setProperty("user.home",
             Paths.get("build/test/home").toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);

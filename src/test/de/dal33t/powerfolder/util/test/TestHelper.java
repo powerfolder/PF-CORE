@@ -213,21 +213,6 @@ public class TestHelper {
             testCase.getFolderAtLisa());
     }
 
-    /**
-     * PFS-5561: Copies a controller test config to its target location and
-     * rewrites net.port, net.port.rcon and plugin.webinterface.port to free
-     * ephemeral ports. The fixed ports of the
-     * checked-in test configs collide when the PF-CORE and the PF-PRO test
-     * suite run concurrently on the same CI runner (GitLab resource_groups
-     * only serialize within one project), which made connect() reach the
-     * foreign suite's node and fail the handshake ("Unable to connect Bart
-     * and Lisa"). Tests resolve the actual listener address at runtime via
-     * getConnectionListener().getAddress(), so the concrete port is
-     * irrelevant to them.
-     *
-     * @param source the checked-in config under src/test-resources
-     * @param target the config location the controller is started from
-     */
     public static void copyConfigWithFreePort(Path source, Path target)
         throws IOException
     {
@@ -271,8 +256,14 @@ public class TestHelper {
 
     private static final java.util.Map<Integer, Integer> MAPPED_PORTS = new java.util.HashMap<>();
 
+    private static final java.util.Map<Integer, Integer> MAPPED_WEB_PORTS = new java.util.HashMap<>();
+
     public static synchronized int webPort(int templatePort) {
-        return portFor(templatePort);
+        return MAPPED_WEB_PORTS.computeIfAbsent(templatePort, port -> findFreePort());
+    }
+
+    public static synchronized void releaseMappedPorts() {
+        MAPPED_PORTS.clear();
     }
 
     public static synchronized int portFor(int templatePort) {

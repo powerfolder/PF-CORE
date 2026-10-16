@@ -71,6 +71,7 @@ public abstract class ControllerTestCase {
 
     @BeforeEach
     protected void setUp() throws Exception {
+        TestHelper.releaseMappedPorts();
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());
         LoggingManager.setConsoleLogging(Level.WARNING);
