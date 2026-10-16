@@ -368,7 +368,10 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(0, lockingListenerBart.forbidden.size());
         assertEquals(0, lockingListenerLisa.unlocked.size());
         assertEquals(1, lockingListenerLisa.locked.size());
-        assertEquals(1, lockingListenerLisa.forbidden.size());
+        assertEquals(lockingListenerLisa.forbidden.size(),
+            lockingListenerLisa.forbidden(testFInfo),
+            "Lisa must only forbid the locked file " + testFInfo
+                + ", but forbade: " + lockingListenerLisa.forbidden);
     }
 
     @Test
