@@ -173,7 +173,6 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * so a top-folder permission must not imply anything inside the barrier, however deep the addressed subfolder
      * inherits from it. A permission ON the barrier still reaches down.
      */
-    @Test
     public void testTopPermissionDoesNotImplyInheritingSubFolderBelowBarrier() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();

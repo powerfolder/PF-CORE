@@ -30,9 +30,6 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3646: A share dissolved after its directory was moved leaves its .PowerFolder behind at the new place. Nobody
@@ -43,7 +40,6 @@ public class DeleteLeftoverSystemDirTest extends ControllerTestCase {
 
     private Path base;
 
-    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -56,25 +52,23 @@ public class DeleteLeftoverSystemDirTest extends ControllerTestCase {
         scanFolder(getFolder());
     }
 
-    @Test
     public void testDirectoryWithALeftoverSystemDirIsDeleted() {
         getFolder().removeFilesLocal((AccountInfo) null, directory("Inspektionsreisen"));
 
-        assertFalse(Files.exists(base.resolve("Inspektionsreisen")), "Gone on disk, the leftover .PowerFolder with it");
+        assertFalse("Gone on disk, the leftover .PowerFolder with it", Files.exists(base.resolve("Inspektionsreisen")));
         assertTrue(getFolder().getFileInfo("Inspektionsreisen").isDeleted());
         assertTrue(getFolder().getFileInfo("Inspektionsreisen/01 Vortraege").isDeleted());
     }
 
-    @Test
     public void testOwnSystemDirStays() {
         getFolder().removeFilesLocal((AccountInfo) null, directory("Inspektionsreisen"));
 
-        assertTrue(Files.isDirectory(base.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR)), "The folder's own stays");
+        assertTrue("The folder's own stays", Files.isDirectory(base.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR)));
     }
 
     private DirectoryInfo directory(String relativeName) {
         FileInfo fInfo = getFolder().getFileInfo(relativeName);
-        assertNotNull(fInfo, "No entry for " + relativeName);
+        assertNotNull("No entry for " + relativeName, fInfo);
         return (DirectoryInfo) fInfo;
     }
 }
