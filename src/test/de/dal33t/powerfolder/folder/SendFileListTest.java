@@ -24,7 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.dal33t.powerfolder.Member;
@@ -82,7 +84,7 @@ public class SendFileListTest extends TwoControllerTestCase {
         });
         assertEquals(2, lisasListener.fileLists().size(),
             "Received: " + lisasListener.messages);
-        assertTrue(lisasListener.deltas().isEmpty(),
+        assertFalse(lisasListener.deltaPrecededFileList(),
             "No delta may precede the file lists. Received: " + lisasListener.messages);
         FileList list = lisasListener.fileListFor(folderInfo);
         assertEquals(0, list.nFollowingDeltas);
@@ -151,6 +153,20 @@ public class SendFileListTest extends TwoControllerTestCase {
                 }
             }
             return deltas;
+        }
+
+        public boolean deltaPrecededFileList() {
+            Set<FolderInfo> listed = new HashSet<FolderInfo>();
+            for (FolderRelatedMessage m : messages) {
+                if (m instanceof FileList) {
+                    listed.add(m.folder);
+                } else if (m instanceof FolderFilesChanged
+                    && !listed.contains(m.folder))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public List<FileList> fileLists() {
