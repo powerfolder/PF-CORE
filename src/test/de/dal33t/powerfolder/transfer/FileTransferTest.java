@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
@@ -1204,23 +1205,32 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
+        final FileInfo transferred = getFolderAtBart().getKnownFiles()
+            .iterator().next();
+        final AtomicReference<Path> incoming = new AtomicReference<>();
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() > 0;
+                DownloadManager download = getContollerLisa()
+                    .getTransferManager().getActiveDownload(transferred);
+                if (download == null || download.getTempFile() == null) {
+                    return false;
+                }
+                incoming.set(download.getTempFile());
+                return true;
             }
 
             @Override
             public String message() {
-                return "getContollerLisa.countActiveDownloads(): "
-                    + getContollerLisa().getTransferManager()
-                        .countActiveDownloads();
+                return "Lisa has no running download of "
+                    + transferred.toDetailString()
+                    + " whose partial file the test can watch. Her active"
+                    + " downloads: " + getContollerLisa()
+                        .getTransferManager().getActiveDownloads();
             }
         });
 
-        final Path tempFile = getContollerLisa().getTransferManager()
-            .getActiveDownloads().iterator().next().getTempFile();
+        final Path tempFile = incoming.get();
         // Let them copy some ~1 megs
         final long mbUntilBreak = 1;
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
