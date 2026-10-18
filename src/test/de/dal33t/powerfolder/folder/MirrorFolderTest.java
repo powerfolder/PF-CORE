@@ -122,6 +122,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
         scanFolder(getFolderAtBart());
 
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
         Path testDirLisa = getFolderAtLisa().getLocalBase().resolve("TESTDIR");
         try {
             Files.createDirectory(testDirLisa);
@@ -148,8 +149,13 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             }
 
             public String message() {
-                return "Items at lisa: "
-                    + getFolderAtLisa().getKnownDirectories();
+                return "Lisa did not take over the directory bart scanned as"
+                    + " testdir. Directories at lisa: "
+                    + getFolderAtLisa().getKnownDirectories()
+                    + ", at bart: "
+                    + getFolderAtBart().getKnownDirectories()
+                    + ", incoming at lisa: "
+                    + getFolderAtLisa().getIncomingFiles();
             }
         });
         DirectoryInfo testDirInfoLisa = getFolderAtLisa().getKnownDirectories()
