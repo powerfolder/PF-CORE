@@ -587,6 +587,7 @@ For creation of the installer:
 		<property name="test.work.keep" value="false" />
 		<property name="test.fork.heap" value="2g" />
 		<property name="test.fork.exit.grace" value="120"/>
+		<property name="test.awt.headless" value="true"/>
 		<property name="shard.index" value="0" />
 		<property name="shard.total" value="1" />
 		<property name="shard.listonly" value="false" />
@@ -601,6 +602,7 @@ For creation of the installer:
 			<arg value="-Dtest.work.keep=${test.work.keep}" />
 			<arg value="-Dtest.fork.heap=${test.fork.heap}" />
 			<arg value="-Dtest.fork.exit.grace=${test.fork.exit.grace}" />
+			<arg value="-Dtest.awt.headless=${test.awt.headless}" />
 			<arg value="-Dshard.index=${shard.index}" />
 			<arg value="-Dshard.total=${shard.total}" />
 			<arg value="-Dshard.listonly=${shard.listonly}" />
@@ -618,6 +620,7 @@ For creation of the installer:
 	<target name="run-single-test-pinned" depends="debug, verify-toolchain, compile">
 		<property name="test.fork.heap" value="2g"/>
 		<property name="test.fork.exit.grace" value="120"/>
+		<property name="test.awt.headless" value="true"/>
 		<fail message="Specify the test class with -Dtest=ClassName (simple name, no package, no .java)">
 			<condition><equals arg1="${test}" arg2="" /></condition>
 		</fail>
@@ -647,6 +650,7 @@ For creation of the installer:
 					<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 					<sysproperty key="wrapper.disable_shutdown_hook" value="TRUE"/>
 					<sysproperty key="powerfolder.test.fork.exit.grace.seconds" value="${test.fork.exit.grace}"/>
+					<sysproperty key="java.awt.headless" value="${test.awt.headless}"/>
 					<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
 					<jvmarg value="-Xmx${test.fork.heap}"/>
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
@@ -688,6 +692,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<property name="test.fork.heap" value="2g"/>
 		<property name="test.fork.exit.grace" value="120"/>
+		<property name="test.awt.headless" value="true"/>
 		<property name="test.threads" value="auto"/>
 		<property name="test.work.keep" value="false"/>
 		<property name="test.work.dir" location="${basedir}/build/test-work"/>
@@ -756,6 +761,7 @@ For creation of the installer:
 						<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
 						<sysproperty key="wrapper.disable_shutdown_hook" value="TRUE"/>
 						<sysproperty key="powerfolder.test.fork.exit.grace.seconds" value="${test.fork.exit.grace}"/>
+						<sysproperty key="java.awt.headless" value="${test.awt.headless}"/>
 						<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
 						<jvmarg value="-Xmx${test.fork.heap}"/>
 						<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
