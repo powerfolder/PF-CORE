@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -2078,6 +2079,11 @@ public class PathUtilsTest {
     public void testOpenFile() throws IOException {
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
+        Assumptions.assumeTrue(hasInteractiveDesktop(),
+            "PathUtils.openFile hands the file to the desktop shell, which starts a real"
+                + " application. A CI runner has no interactive desktop session, so the call"
+                + " blocks instead of returning and the started application would outlive the"
+                + " test. Run this on a workstation.");
         assertTrue(PathUtils.openFile(file.toPath()));
     }
 
@@ -2086,9 +2092,20 @@ public class PathUtilsTest {
         File nonExistent = new File("build/test/otherFile.pdf");
         assertFalse(PathUtils.openFileIfExists(nonExistent.toPath()));
         nonExistent.createNewFile();
-        assertTrue(PathUtils.openFileIfExists(nonExistent.toPath()));
         FileUtils.forceDelete(nonExistent);
         assertFalse(PathUtils.openFileIfExists(nonExistent.toPath()));
+        nonExistent.createNewFile();
+        Assumptions.assumeTrue(hasInteractiveDesktop(),
+            "The existing-file half of this test starts a real application through the desktop"
+                + " shell and blocks on a CI runner. The two missing-file cases above carry the"
+                + " part that needs no desktop and have already run.");
+        assertTrue(PathUtils.openFileIfExists(nonExistent.toPath()));
+    }
+
+    private static boolean hasInteractiveDesktop() {
+        return System.getenv("CI") == null
+            && System.getenv("GITLAB_CI") == null
+            && System.getenv("CI_JOB_ID") == null;
     }
 
 
