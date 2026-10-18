@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -145,7 +146,25 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
         PathUtils.recursiveDelete(top.getLocalBase().resolve("area/old"));
         scanFolder(top);
 
-        assertNull(repository().getFolder(restricted), "A deleted subfolder is dissolved");
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return repository().getFolder(restricted) == null;
+            }
+
+            @Override
+            public String message() {
+                return "A deleted subfolder is dissolved, but " + restricted
+                    + " is still registered as "
+                    + repository().getFolder(restricted)
+                    + ". Its directory row at the top folder: "
+                    + top.getDAO().find(FileInfoFactory.lookupInstance(
+                        top.getInfo(), "area/old/restricted"), null)
+                    + ". Still on disk: "
+                    + Files.exists(top.getLocalBase().resolve(
+                        "area/old/restricted"));
+            }
+        });
     }
 
     // Helpers ****************************************************************
