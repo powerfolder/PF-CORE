@@ -448,16 +448,34 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
                             finished++;
                         }
                     }
-                    if (finished < entry.getValue()
-                        || tm.countActiveDownloads() > 0)
-                    {
+                    List<String> active = stillDownloading(entry.getKey());
+                    if (finished < entry.getValue() || !active.isEmpty()) {
                         pending.add(entry.getKey().getMySelf().getNick() + ": "
                             + finished + "/" + entry.getValue()
-                            + " finished downloads, "
-                            + tm.countActiveDownloads() + " still active");
+                            + " finished downloads, still downloading "
+                            + active);
                     }
                 }
                 return pending;
+            }
+
+            private List<String> stillDownloading(Controller controller) {
+                List<String> active = new ArrayList<String>();
+                Folder folder = controller.getFolderRepository().getFolder(
+                    testFolder);
+                if (folder == null) {
+                    return active;
+                }
+                for (DownloadManager download : controller
+                    .getTransferManager().getActiveDownloads())
+                {
+                    if (folder.getInfo().equals(
+                        download.getFileInfo().getFolderInfo()))
+                    {
+                        active.add(download.getFileInfo().getRelativeName());
+                    }
+                }
+                return active;
             }
         });
     }
