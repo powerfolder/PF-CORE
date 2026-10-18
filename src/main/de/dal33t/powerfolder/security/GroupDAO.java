@@ -205,12 +205,12 @@ public interface GroupDAO extends GenericDAO<Group> {
     /**
      * PFS-5803: the group OIDs holding a permission on <em>exactly</em> the given folder id - the
      * "Folder" search mode of the Groups table. The folder is matched by id equality only (no name
-     * matching and no subfolder expansion), so the result is the set of groups with access to that
-     * one folder. Implementations open and close their own session, so it can be called from an API
-     * action.
+     * matching and no subfolder expansion). Groups nested below a grantee reach the folder through it
+     * and are included. Implementations open and close their own session, so it can be called from an
+     * API action.
      *
      * @param folderId the exact folder id to look up
-     * @return group OIDs with a permission on that folder; empty if the id is blank or matches nothing
+     * @return group OIDs with access to that folder; empty if the id is blank or matches nothing
      */
     Collection<String> findGroupOIDsByExactFolderId(String folderId);
 
