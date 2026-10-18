@@ -64,7 +64,7 @@ test-macOS:
   tags:
     - macOS
   script:
-    - pkill -f java || true
+    - for pid in $(ps -A -o pid=,etime=,comm= | awk '/java/ && ($2 ~ /-/ || $2 ~ /^[0-9]+:[0-9][0-9]:[0-9][0-9]$/) {print $1}'); do kill -9 "$pid" || true; done
     - mkdir -p test-reports
     # PFC-3573: external thread-dump watchdog. If a test JVM runs longer than ~10 minutes it is considered hung;
     # jstack -F works even when the JVM is frozen (safepoint stall). Dumps land in the test-reports artifact.
