@@ -3611,6 +3611,7 @@ public class Folder extends PFComponent {
         Date removeBeforeDate = new Date(removeBefore);
         int nFilesBefore = getKnownItemCount();
         if (nFilesBefore == 0) {
+            lastDBMaintenance = new Date();
             return;
         }
         if (isFiner()) {
