@@ -27,6 +27,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +54,7 @@ import java.nio.file.Path;
  */
 public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -59,6 +65,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -69,6 +76,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * The core regression: an account with a top-folder permission and NO permission on the
      * interrupted subfolder must lose all access inside it - and keep it everywhere else.
      */
+    @Test
     public void testEffectiveAccessStopsAtInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();
@@ -119,6 +127,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * A permission granted DIRECTLY on the interrupted subfolder - or on a shared subfolder BELOW it -
      * still counts; only the INHERITED permission stops at the barrier.
      */
+    @Test
     public void testEffectiveAccessGrantedAtOrBelowInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();
@@ -168,12 +177,72 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
     }
 
     /**
+     * PFS-5904: an inheriting subfolder BELOW the barrier is decoupled as well - the barrier sits between it and
+     * the top folder. {@code hasPermission(FolderPermission)} is what the share dialog asks before it adds someone,
+     * so a top-folder permission must not imply anything inside the barrier, however deep the addressed subfolder
+     * inherits from it. A permission ON the barrier still reaches down.
+     */
+    @Test
+    public void testTopPermissionDoesNotImplyInheritingSubFolderBelowBarrier() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderInfo topInfo = topFolder.getInfo();
+
+        /*
+         * /top
+         * └── secret               (shared, interrupted -> BARRIER)
+         *     └── deep             (shared subfolder BELOW the barrier, still inheriting - from the barrier)
+         */
+        Path root = topFolder.getPhysicalDir();
+        Files.createDirectories(root.resolve("secret/deep"));
+        TestHelper.scanFolder(topFolder);
+
+        Folder secret = topFolder.share((DirectoryInfo) topFolder.getFileInfo("secret"));
+        Folder deep = topFolder.share((DirectoryInfo) topFolder.getFileInfo("secret/deep"));
+        assertNotNull(secret);
+        assertNotNull(deep);
+        assertTrue(deep.getInfo().inheritsPermissions());
+
+        Account hans = new Account();
+        hans.grant(FolderPermission.readWrite(topInfo));
+
+        // Still inheriting: the top-folder permission applies in the deep subfolder.
+        assertTrue(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(deep.getInfo()));
+
+        secret.setInheritsPermissions(false);
+
+        // Decoupled: nothing of the top folder reaches below the barrier, inheriting subfolder or not.
+        assertFalse(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertFalse(hans.hasPermission(FolderPermission.readWrite(deep.getInfo())));
+        assertEquals(AccessMode.NO_ACCESS, hans.getAllowedAccess(deep.getInfo()));
+        assertEquals(AccessMode.NO_ACCESS, hans.getAllowedAccess(topInfo, "secret/deep/x.txt"));
+        assertFalse(FolderPermission.readWrite(topInfo).implies(FolderPermission.read(deep.getInfo())));
+
+        // A permission ON the barrier is not inherited past it - it is granted there and reaches down.
+        Account direct = new Account();
+        direct.grant(FolderPermission.read(secret.getInfo()));
+        assertTrue(direct.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertEquals(AccessMode.READ, direct.getAllowedAccess(deep.getInfo()));
+        assertFalse(direct.hasPermission(FolderPermission.readWrite(deep.getInfo())));
+
+        // A group holding the top permission resolves through the same primitive.
+        Group topGroup = new Group("Top");
+        topGroup.grant(FolderPermission.readWrite(topInfo));
+        assertFalse(topGroup.hasPermission(FolderPermission.read(deep.getInfo())));
+
+        // Restore: the top permission applies again.
+        secret.setInheritsPermissions(true);
+        assertTrue(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+    }
+
+    /**
      * The barrier lookup must not create anything: {@code getAllowedAccess(folder, path)} sits on the web
      * hot path (every file listing, upload and editor open), so it may cost no more than a volatile read
      * of a pre-merged snapshot. Object IDENTITY across calls is the direct evidence: if anything were
      * built per call - a list, an iterator, an empty stand-in - the returned snapshot could not be the
      * very same instance every time.
      */
+    @Test
     public void testBarrierLookupCreatesNothing() throws IOException {
         Folder topFolder = getFolderAtBart();
 
@@ -203,6 +272,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * {@link de.dal33t.powerfolder.light.FolderInfo#inheritsPermissions()}, which reports "inherits"
      * while the feature is off, so nothing is ever recorded.
      */
+    @Test
     public void testEffectiveAccessIgnoresInterruptionWhenFeatureDisabled() throws IOException {
         // setUp enabled the feature - this test needs it off from the start, like a production server
         // that never got the switch. tearDown disables it anyway, so nothing leaks either way.

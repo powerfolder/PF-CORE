@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.net;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
@@ -26,6 +29,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for relayed connections.
@@ -37,7 +41,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class RelayedConnectionTest extends FiveControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -51,6 +55,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(getContollerLisa(), true);
     }
 
+    @Test
     public void testRelayedConnection() throws ConnectionException {
         connectOrFail(getContollerBart(), getContollerLisa());
         connectOrFail(getContollerBart(), getContollerMarge());
@@ -71,10 +76,10 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         Member lisaAtMarge = getContollerMarge().getNodeManager()
             .acceptConnection(conHan);
 
-        assertTrue("Marge not supernode", getContollerMarge().getMySelf()
-            .isSupernode());
-        assertTrue("Lisa is not interesting at marge", lisaAtMarge
-            .isInteresting());
+        assertTrue( getContollerMarge().getMySelf()
+            .isSupernode(),"Marge not supernode");
+        assertTrue( lisaAtMarge
+            .isInteresting(),"Lisa is not interesting at marge");
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
         assertTrue(conHan.getMember().isCompletelyConnected());

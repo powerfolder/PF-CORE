@@ -83,6 +83,27 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
     // PFS-5652: log searches that exceed this duration, so slow queries can be diagnosed.
     private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
+
+    /**
+     * PFS-5856: How many searches over all folders run at once, across the whole server. The limiter
+     * inside the search caps the folder tasks OF ONE search; with one semaphore per search, N searches
+     * ran N times that many tasks on the shared IO pool, and a single client could fill it by
+     * repeating a search that had already timed out.
+     * <p>
+     * PFS-5863: how many, and how long a search may take, are read from the configuration
+     * ({@code search.concurrentSearches} and its neighbours). They used to be counted off the cores,
+     * which is the wrong measure for work that waits on an index far more than it computes: on a
+     * two-core server two people could search at a time and the third was refused.
+     */
+    private static volatile Semaphore globalSearches;
+
+    /**
+     * PFS-5863: how many folders are searched side by side, counted over the WHOLE server and not per
+     * search. Per search it would multiply: many searches allowed to run at once, each of them free to
+     * occupy the IO pool with as many folder tasks, is the thread explosion PFS-5856 was about. Shared,
+     * a lone search may use all of it and a busy server still never runs more folder tasks than this.
+     */
+    private static volatile Semaphore searchedFolders;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
@@ -98,6 +119,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * {@link SimpleCache} cannot hold as null.
      */
     private final SimpleCache<Path, Optional<Folder>> existingFolderCache = new SimpleCache<>(60, TimeUnit.SECONDS);
+    /**
+     * PFS-5850: the folders being moved right now, by id - see {@link #isMoving(FolderInfo)}. Keyed
+     * by id and not by Folder, because a move unmounts the folder and mounts a new instance at the new
+     * place: the object changes, the identity does not.
+     */
+    private final Set<String> movingFolderIds = ConcurrentHashMap.newKeySet();
 
     // PFC-3543: index of the currently interrupted subfolders. This repository is
     // the authority for structural changes and refreshes it on folder add/remove/
@@ -119,6 +146,24 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
     private final AtomicBoolean configSavePending = new AtomicBoolean(false);
+
+    /**
+     * PFC-3639: whether a bulk operation asked for a membership synchronization while it was
+     * suspended. See {@link #triggerSynchronizeAllFolderMemberships()}.
+     */
+    private final AtomicBoolean membershipSyncPending = new AtomicBoolean(false);
+
+    /**
+     * PFC-3639: The shortest distance between two folder lists sent because of bulk operations.
+     * <p>
+     * The first request goes out at once - a join has to reach the peer now, and the handshake
+     * expects it there. What follows within the window rides along on one list at the end of it.
+     */
+    private static final long MEMBERSHIP_SYNC_MIN_INTERVAL_MS = 10000L;
+
+    /** PFC-3639: The synchronization waiting for the window to end, and when the last one ran. */
+    private ScheduledFuture<?> membershipSyncFuture;
+    private long membershipSyncLastRunAt;
     private Path foldersBasedir;
 
     /**
@@ -179,6 +224,26 @@ public class FolderRepository extends PFComponent implements Runnable {
      * runs beside a change.
      */
     private final ReentrantReadWriteLock basedirScanLock = new ReentrantReadWriteLock();
+
+    /**
+     * PFC-3636: The locks that keep two mounts of the SAME folder apart. One lock per folder would be a
+     * map that grows with every folder ever mounted and has to be cleaned up under the very race it
+     * exists for - these are striped instead, and every folder always finds its own.
+     * <p>
+     * Sized for the maintenance work that mounts a thousand folders at once. 1024 stripes cost 20 KB,
+     * allocated once, and leave some 380 of those thousand mounting without ever meeting another one;
+     * the rest waits at some point for a mount it has nothing to do with, which costs a mount, never
+     * correctness.
+     */
+    private final Object[] mountLocks = newMountLocks(1024);
+
+    private static Object[] newMountLocks(int count) {
+        Object[] locks = new Object[count];
+        for (int i = 0; i < count; i++) {
+            locks[i] = new Object();
+        }
+        return locks;
+    }
     private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
@@ -759,40 +824,55 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Phase 2.2: Subfolder erstellen
             // -------------------------------------------------------------
 
-            List<Future<?>> subFolderTasks = new ArrayList<>();
+            /* PFS-5881: the ones that hold a database first. A subfolder that inherits has none of
+               its own and borrows the one of the interrupted folder above it, which it looks for while
+               it is being built - created side by side, it regularly found nothing and took the top
+               folder's instead, where every reader of that subtree then searched in vain. Each folder
+               refreshes the barrier index as it registers (createFolder0), so the second pass finds
+               what the first one created. */
+            Map<FolderInfo, FolderSettings> holders = new LinkedHashMap<>();
+            Map<FolderInfo, FolderSettings> dependents = new LinkedHashMap<>();
 
             for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
-                FolderInfo foInfo = e.getKey();
-                FolderSettings folderSettings = e.getValue();
-
-                subFolderTasks.add(
-                        executor.submit(() -> {
-                            try {
-                                if (hasJoinedFolder(foInfo)) {
-                                    return;
-                                }
-                                Folder topFolder = foInfo.getTopFolder().getFolder(getController());
-                                if (topFolder == null) {
-                                    logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
-                                    return;
-                                }
-
-                                createFolder(foInfo, folderSettings, true);
-                            } catch (Exception ex) {
-                                logWarning("Problem creating subfolder " + foInfo, ex);
-                            }
-                        })
-                );
+                (e.getKey().inheritsPermissions() ? dependents : holders).put(e.getKey(), e.getValue());
             }
 
-            for (Future<?> f : subFolderTasks) {
-                try {
-                    f.get();
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    return;
-                } catch (Exception e) {
-                    logWarning("Subfolder creation failed", e);
+            for (Map<FolderInfo, FolderSettings> pass : List.of(holders, dependents)) {
+                List<Future<?>> subFolderTasks = new ArrayList<>();
+
+                for (Map.Entry<FolderInfo, FolderSettings> e : pass.entrySet()) {
+                    FolderInfo foInfo = e.getKey();
+                    FolderSettings folderSettings = e.getValue();
+
+                    subFolderTasks.add(
+                            executor.submit(() -> {
+                                try {
+                                    if (hasJoinedFolder(foInfo)) {
+                                        return;
+                                    }
+                                    Folder topFolder = foInfo.getTopFolder().getFolder(getController());
+                                    if (topFolder == null) {
+                                        logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
+                                        return;
+                                    }
+
+                                    createFolder(foInfo, folderSettings, true);
+                                } catch (Exception ex) {
+                                    logWarning("Problem creating subfolder " + foInfo, ex);
+                                }
+                            })
+                    );
+                }
+
+                for (Future<?> f : subFolderTasks) {
+                    try {
+                        f.get();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    } catch (Exception e) {
+                        logWarning("Subfolder creation failed", e);
+                    }
                 }
             }
 
@@ -955,18 +1035,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Stop file requestor
         fileRequestor.shutdown();
 
-        /* Two phases. Every index is told to stop first, then the folders are closed one by one.
-         * A single index shutdown waits up to a second for its worker, and a server holds thousands
-         * of folders - done strictly in sequence, that outlived the patience of the stop script, which
-         * killed the process mid-shutdown four times in one night. Signalled up front, the workers
-         * drain side by side and each wait below finds its worker already gone. Nothing is discarded:
-         * the folders stay, so their indexes are still committed and closed properly underneath. */
-        for (Folder metaFolder : metaFolders.values()) {
-            requestIndexStop(metaFolder);
-        }
-        for (Folder folder : folders.values()) {
-            requestIndexStop(folder);
-        }
+        shutdownIndexes();
 
         // shutdown all folders
         for (Folder metaFolder : metaFolders.values()) {
@@ -1087,13 +1156,89 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
-        // Cap the number of folder searches running at once so a single search never floods the shared
-        // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
-        // so a bit above the core count is fine.
-        int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
-        Semaphore limiter = new Semaphore(maxConcurrent);
+        Semaphore searches = globalSearches(getController());
+        /* A third of the time a search may take: waiting longer than that for a turn leaves too little
+         * of the budget to answer with anything worth reading. */
+        long queueWaitMS = 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController()) / 3;
+        // PFS-5856: one permit per search, counted over the whole server - see globalSearches.
+        try {
+            if (!searches.tryAcquire(queueWaitMS, TimeUnit.MILLISECONDS)) {
+                logWarning("File search refused: none of the " + searches.availablePermits()
+                    + " permits free within " + queueWaitMS + "ms, " + searches.getQueueLength()
+                    + " waiting. keywords=" + criteria.getKeyWords());
+                return Collections.emptyList();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Collections.emptyList();
+        }
+        try {
+            return searchFilesWithinBudget(folders, criteria);
+        } finally {
+            searches.release();
+        }
+    }
+
+    /** How many permits the two limiters were built with, so a changed configuration rebuilds them. */
+    private static volatile int builtFor;
+
+    /** The server-wide limit on searches, rebuilt when the configuration says another number. */
+    private static Semaphore globalSearches(Controller controller) {
+        rebuildLimitsIfChanged(controller);
+        return globalSearches;
+    }
+
+    /** How much searching may run at once, never less than two of anything. */
+    private static int concurrency(Controller controller) {
+        return Math.max(2, ConfigurationEntry.SEARCH_CONCURRENCY.getValueInt(controller));
+    }
+
+    /** The server-wide limit on folder searches, rebuilt when the configuration says another number. */
+    private static Semaphore searchedFolders(Controller controller) {
+        rebuildLimitsIfChanged(controller);
+        return searchedFolders;
+    }
+
+    /**
+     * PFS-5863: both limiters carry the number they were built with, and a configuration that says
+     * another one builds them anew - built once, search.concurrency only ever took effect on a restart,
+     * which is no way to tune a running server. Permits held by a search under way go back into the
+     * semaphore they came from, which is then nobody's: the old limit lets go of the last searches under
+     * it while the new one starts empty.
+     */
+    private static void rebuildLimitsIfChanged(Controller controller) {
+        int permits = concurrency(controller);
+        if (globalSearches != null && searchedFolders != null && builtFor == permits) {
+            return;
+        }
+        synchronized (FolderRepository.class) {
+            if (globalSearches == null || searchedFolders == null || builtFor != permits) {
+                globalSearches = new Semaphore(permits);
+                searchedFolders = new Semaphore(permits);
+                builtFor = permits;
+            }
+        }
+    }
+
+    /** The search itself, with its permit held - see {@link #searchFiles}. */
+    private List<FileInfo> searchFilesWithinBudget(Collection<Folder> folders,
+                                                   FileInfoCriteria criteria) {
+        /* Cap the number of folder searches running at once so the searches never flood the shared IO
+         * pool. Each task holds a permit until it finished. PFS-5863: a folder search waits on its index
+         * far more than it computes, so the count is a configured one and no longer a multiple of the
+         * cores - searching a workspace of 572 subfolders four at a time took 14 seconds. */
+        Semaphore limiter = searchedFolders(getController());
 
         long started = System.currentTimeMillis();
+        long deadline = started
+            + 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController());
+        int skipped = 0;
+
+        /* PFS-5851: the domain of every folder searched goes into criteria of ours, so the ones the
+         * caller passed are left alone - a cluster search hands that very object to the other nodes
+         * while this one runs. One copy does: the domain added is always this node, and nothing
+         * else writes into them any more (see Folder.searchIndexOfTopFolder). */
+        FileInfoCriteria searched = new FileInfoCriteria(criteria);
 
         List<FileInfo> results = new ArrayList<>();
         List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
@@ -1101,16 +1246,25 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folder == null) {
                 continue;
             }
-            criteria.addMySelf(folder);
+            searched.addMySelf(folder);
+            // PFS-5856: past the budget nothing more is started - see SEARCH_BUDGET_MS.
+            long left = deadline - System.currentTimeMillis();
+            if (left <= 0) {
+                skipped++;
+                continue;
+            }
             try {
-                limiter.acquire();
+                if (!limiter.tryAcquire(left, TimeUnit.MILLISECONDS)) {
+                    skipped++;
+                    continue;
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
             FutureTask<List<FileInfo>> task = new FutureTask<>(() -> {
                 try {
-                    return folder.searchFiles(criteria);
+                    return folder.searchFiles(searched);
                 } catch (RuntimeException e) {
                     logWarning("Unable to search folder " + folder + ": " + e, e);
                     return Collections.<FileInfo>emptyList();
@@ -1126,15 +1280,32 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        for (Future<List<FileInfo>> future : futures) {
+        int answered = 0;
+        for (int i = 0; i < futures.size(); i++) {
             try {
-                results.addAll(future.get());
+                long left = Math.max(0, deadline - System.currentTimeMillis());
+                results.addAll(futures.get(i).get(left, TimeUnit.MILLISECONDS));
+                answered++;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                break;
+            } catch (TimeoutException e) {
+                /* PFS-5856: the budget is spent. Everything still outstanding is cancelled - a task
+                 * that has not started never will - and the caller gets what was found so far,
+                 * instead of a request thread waiting for an answer nobody is listening to. */
+                for (int rest = i; rest < futures.size(); rest++) {
+                    futures.get(rest).cancel(true);
+                }
+                skipped += futures.size() - i;
                 break;
             } catch (ExecutionException e) {
                 logWarning("Unable to search folder: " + e.getCause(), e);
             }
+        }
+        if (skipped > 0) {
+            logWarning("File search gave up after " + (System.currentTimeMillis() - started) + "ms: "
+                + answered + " of " + folders.size() + " folder(s) answered, " + skipped
+                + " left out. keywords=" + criteria.getKeyWords());
         }
 
         long took = System.currentTimeMillis() - started;
@@ -1196,20 +1367,48 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3543: Forgets a subfolder that is GONE for good - deleted, not merely unmounted
+     * <p>
+     * A seed is retired when its folder mounts, and that is its only way out: everything else stays
+     * a barrier, because "not mounted yet" is precisely what a seed says. A deleted subfolder never
+     * mounts again, so its barrier outlives it and keeps a path reserved for a folder that no
+     * longer exists - the top folder is then refused every write below it
+     * ("Skipped scan - inside interrupted subfolder") and nothing owns the path instead.
+     * <p>
+     * Not in {@link #removeFolder}: that is the plain unmount as well, and there the barrier has to
+     * survive for the next mount. Only the caller that DELETES a folder may say this.
+     *
+     * @param subFolder the subfolder that no longer exists
+     */
+    public void forgetInterruptedSubFolder(FolderInfo subFolder) {
+        if (interruptedSubFolders.dropSeed(subFolder)) {
+            refreshInterruptedSubFolders();
+        }
+    }
+
+    /**
      * PFC-3543: Seeds the interrupted-subfolder index with a subfolder KNOWN to be interrupted whose
      * {@link Folder} object is not mounted yet - the server knows them from its database before any
      * mount, the client from its configuration. The top folder's (asynchronous) scan must ignore the
      * subtree already in the window before the subfolder mounts; the seed is dropped automatically
      * once it does. Additive and idempotent.
      *
-     * @param subFolder the interrupted subfolder
-     * @param base      its local base, derived as top folder base + location
+     * PFS-5814: Takes the whole workspace at once. A refresh walks all folders of the repository and
+     * rebuilds the barrier snapshot of the process, so it must not happen per subfolder - and not at
+     * all when every seed is already there, which is what a mount of an already known workspace finds.
+     *
+     * @param subFolders the interrupted subfolders with their local bases, derived as top folder base
+     *                   plus location
      */
-    public void seedInterruptedSubFolder(FolderInfo subFolder, Path base) {
-        Reject.ifNull(subFolder, "FolderInfo");
-        Reject.ifNull(base, "Path");
-        interruptedSubFolders.seed(subFolder, base);
-        refreshInterruptedSubFolders();
+    public void seedInterruptedSubFolders(Map<FolderInfo, Path> subFolders) {
+        Reject.ifNull(subFolders, "SubFolders");
+        if (subFolders.isEmpty()) {
+            return;
+        }
+        long version = interruptedSubFolders.seedAll(subFolders);
+        if (version > 0) {
+            interruptedSubFolders.publishSeeds(version, folders.values());
+        }
     }
 
     /**
@@ -1415,6 +1614,35 @@ public class FolderRepository extends PFComponent implements Runnable {
         return null;
     }
 
+    /**
+     * PFS-5850: Whether this folder is being moved at this moment.
+     * <p>
+     * A move unmounts the folder, moves its directory and mounts it again at the new place. In that
+     * window the folder's data and its registration disagree on purpose, and two self-healers would
+     * "repair" exactly that: {@link Folder#correctTopAndSubfolderRelation()} derives the parent from
+     * the filesystem - it runs in the CONSTRUCTOR, so it fires on the very instance the move creates -
+     * and the scan of the folder above sees the old directory gone and dissolves the share. Both ask
+     * here first and leave the move alone.
+     *
+     * @param folderInfo the folder to ask about, may be {@code null}
+     * @return {@code true} while a move of that folder is in flight
+     */
+    public boolean isMoving(FolderInfo folderInfo) {
+        return folderInfo != null && movingFolderIds.contains(folderInfo.getId());
+    }
+
+    /** Marks a folder as being moved, or lets it go again. Both halves belong in a try/finally. */
+    void setMoving(FolderInfo folderInfo, boolean moving) {
+        if (folderInfo == null) {
+            return;
+        }
+        if (moving) {
+            movingFolderIds.add(folderInfo.getId());
+        } else {
+            movingFolderIds.remove(folderInfo.getId());
+        }
+    }
+
     public Folder findSubFolder(DirectoryInfo directoryInfo) {
 
         directoryInfo = FileInfoFactory.mapToTopFolder(directoryInfo);
@@ -1564,6 +1792,29 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the freshly created folder
      */
     public Folder createFolder(FolderInfo folderInfo,
+                                FolderSettings folderSettings, boolean fireEvent) {
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        /* PFC-3636: mounting the same folder twice at the same time ends here, before anything is
+         * built. The check for a folder that is already mounted and the map entry that answers it sit
+         * at opposite ends of mountFolder, so two threads used to build a Folder each on the same
+         * directory - and the second one could not open its search index, because the first one holds
+         * .PowerFolder/index/write.lock in this very JVM. The folder that lost the map was never
+         * closed, so it held that lock until the process ended. */
+        synchronized (mountLockFor(folderInfo)) {
+            return mountFolder(folderInfo, folderSettings, fireEvent);
+        }
+    }
+
+    /** The lock that mounts of {@code folderInfo} share. Mounts of other folders rarely meet it. */
+    private Object mountLockFor(FolderInfo folderInfo) {
+        // Spread the hash the way ConcurrentHashMap does: the low bits alone pick the stripe, and a
+        // folder id is not required to vary in them.
+        int hash = folderInfo.getId().hashCode();
+        hash ^= hash >>> 16;
+        return mountLocks[hash & (mountLocks.length - 1)];
+    }
+
+    private Folder mountFolder(FolderInfo folderInfo,
                                 FolderSettings folderSettings, boolean fireEvent) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
@@ -1859,9 +2110,33 @@ public class FolderRepository extends PFComponent implements Runnable {
                     metaFolder.shutdown();
                 }
 
+                /* PFC-3636: the search index closes BEFORE the folder leaves the map, not only in
+                 * folder.shutdown() further down. A mount of the same folder waits for this removal
+                 * only while it holds the same mount lock, and a removal started elsewhere holds none
+                 * - so the index has to be gone by the time the folder is, or the mount that follows
+                 * cannot open its own ("Lock held by this virtual machine" on write.lock). The second
+                 * call in folder.shutdown() returns at the shutdownStarted gate. */
+                LuceneIndexManager index = folder.getSearchIndexManager();
+                if (index != null && !folder.getInfo().isMetaFolder()) {
+                    index.shutdown();
+                }
+
                 // Remove internal
                 folders.remove(folder.getInfo());
                 existingFolderCache.invalidate(folder.getLocalBase());
+                /* PFC-3641: a tree unmounts its subfolders first, and the top folder scanned on in between -
+                 * without the barriers, into their subtrees. The barrier stays while the top folder is
+                 * mounted and goes with it. */
+                FolderInfo foInfo = folder.getInfo();
+                if (foInfo.isSubFolder()) {
+                    if (!deleteSystemSubDir && !foInfo.inheritsPermissions() && folder.getLocalBase() != null
+                        && folders.containsKey(foInfo.getTopFolder()))
+                    {
+                        interruptedSubFolders.seed(foInfo, folder.getLocalBase());
+                    }
+                } else {
+                    interruptedSubFolders.dropSeedsOf(foInfo);
+                }
                 // PFC-3543: keep the interrupted-subfolder index in sync.
                 refreshInterruptedSubFolders();
                 folder.removeProblemListener(valveProblemListenerSupport);
@@ -1893,6 +2168,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     try {
                         PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
+                    } catch (NoSuchFileException e) {
+                        // PFC-3536: gone with the directory that held it - nothing left to delete.
+                        logFine(folder + ": System directory already gone: " + folder.getSystemSubDir());
                     } catch (IOException e) {
                         logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
                     }
@@ -2021,11 +2299,71 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Triggers the synchronization of all known members with our folders. The
      * work is done in background thread. Former synchronization processed the
      * canceled.
+     * <p>
+     * PFC-3639: A bulk mount calls this once per folder - createFolder0 and removeFolder both do -
+     * and every run sends the COMPLETE folder list to every connected node. One workspace of 2487
+     * subfolders therefore queued 2487 messages against {@link Constants#MAX_MESSAGES_IN_SEND_QUEUE}
+     * of 2000, and the node was disconnected at the 2001st: "Too many messages in send queue: 2001".
+     * The reconnect mounted the tree again, so the cluster never settled.
+     * <p>
+     * The cancel below cannot prevent that: it is only checked between nodes, and with three nodes a
+     * run is through before the next trigger arrives. So the bulk callers' suspension is used instead
+     * - the same one that already keeps the configuration from being written per folder (PFC-3620) -
+     * and the memberships go out once per completed loop.
      */
     public void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
             logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
+        if (suspendConfigSave.get() > 0) {
+            membershipSyncPending.set(true);
+            return;
+        }
+        // A single change outside a bulk operation goes out at once, the way it always did: the
+        // debounce is for the release of a bulk run, where the requests arrive in their hundreds.
+        startFolderMembershipSynchronizer();
+    }
+
+    /**
+     * PFC-3639: Lets a burst of requests become one folder list.
+     * <p>
+     * Riding in the bulk callers' suspension took the count from one per folder down to one per
+     * completed loop, but a heavy mount wave completes many loops: mountFolder, mountTree and
+     * mountParallel each hold the suspension, and eight mount workers run at once. Measured on a
+     * cluster: a wave of about 6300 folders sent 200 folder lists in two minutes, together almost
+     * two million entries, because every release started one.
+     * <p>
+     * So the first release of a quiet period is served at once - that is the join, and the peer has
+     * to hear of it now - and everything arriving in the next
+     * {@link #MEMBERSHIP_SYNC_MIN_INTERVAL_MS} is answered by one list at the end of that window.
+     * A wave is then measured in a handful of lists, not in hundreds, and a single tree still sends
+     * exactly one.
+     */
+    private void scheduleFolderMembershipSynchronizer() {
+        long now = System.currentTimeMillis();
+        synchronized (folderMembershipSynchronizerLock) {
+            if (membershipSyncFuture != null && !membershipSyncFuture.isDone()) {
+                // One is already waiting for this window to end - this request rides along.
+                return;
+            }
+            long earliest = membershipSyncLastRunAt + MEMBERSHIP_SYNC_MIN_INTERVAL_MS;
+            if (now >= earliest) {
+                membershipSyncLastRunAt = now;
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+                return;
+            }
+            membershipSyncFuture = getController().schedule(() -> {
+                synchronized (folderMembershipSynchronizerLock) {
+                    membershipSyncLastRunAt = System.currentTimeMillis();
+                }
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+            }, earliest - now);
+        }
+    }
+
+    private void startFolderMembershipSynchronizer() {
         synchronized (folderMembershipSynchronizerLock) {
             if (folderMembershipSynchronizer != null) {
                 // Cancel the syncer
@@ -2217,6 +2555,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (configSavePending.getAndSet(false)) {
             logFine("Saving the configuration once for the completed bulk operation");
             getController().saveConfig();
+        }
+        /* PFC-3639: and the folder list once, for the same reason and with the same granularity -
+         * per completed loop instead of per mounted folder. Started directly, not through the
+         * trigger: while another bulk run still holds the suspension the trigger would only set the
+         * flag again, and the peers would not hear of the tree for as long as that run lasts. */
+        if (membershipSyncPending.get()) {
+            logFine("Synchronizing the folder memberships once for the completed bulk operation");
+            scheduleFolderMembershipSynchronizer();
         }
     }
 
@@ -3163,6 +3509,32 @@ public class FolderRepository extends PFComponent implements Runnable {
         return moveLocalFolder(folder, targetPath, false);
     }
 
+    /**
+     * PFS-5926: mounts a folder anew at the place its data already is - nothing on disk moves. A subfolder nested in
+     * a moved one travelled with the parent directory while its base kept naming the old place.
+     *
+     * @return the folder mounted at {@code newBase}, or the folder as it is when there is nothing to rebase
+     */
+    public Folder rebaseLocalFolder(Folder folder, Path newBase) {
+        if (folder.getLocalBase().equals(newBase) || !Files.isDirectory(newBase)) {
+            return folder;
+        }
+        basedirScanLock.readLock().lock();
+        try {
+            FolderSettings fs = FolderSettings.load(getController(), folder.getConfigEntryId()).changeBaseDir(newBase);
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
+            removeFolder(folder, false, false);
+            Folder rebased = createFolder(folder.getInfo().intern(), fs, false);
+            for (String pattern : patterns) {
+                rebased.addPattern(pattern);
+            }
+            fireFolderMoved(rebased, folder);
+            return rebased;
+        } finally {
+            basedirScanLock.readLock().unlock();
+        }
+    }
+
     public Folder moveLocalFolder(Folder folder, Path targetPath, boolean atomic) {
 
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
@@ -3583,6 +3955,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .folderRemoved(new FolderRepositoryEvent(this, folder));
     }
 
+    /**
+     * PFC-3536: Called by {@link Folder#unshare} once the subfolder is out of the repository. Package
+     * visible on purpose: only the unshare may say so, a plain unmount goes through the same
+     * {@link #removeFolder} and must not.
+     */
+    void fireSubFolderUnshared(Folder subFolder) {
+        folderRepositoryListenerSupport.subFolderUnshared(new FolderRepositoryEvent(this, subFolder));
+    }
+
     private void fireFolderMoved(Folder newFolder, Folder oldFolder) {
         folderRepositoryListenerSupport
                 .folderMoved(new FolderRepositoryEvent(this, newFolder, oldFolder));
@@ -3893,5 +4274,100 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (index != null) {
             index.requestStop();
         }
+    }
+
+    /**
+     * Stops and closes every search index, before the folders are closed one by one
+     * <p>
+     * Telling them to stop comes first, all of them, without waiting for any. A single index
+     * shutdown waits up to a second for its worker, and a server holds thousands of folders - done
+     * strictly in sequence that outlived the patience of the stop script, which killed the process
+     * mid-shutdown four times in one night. Signalled up front, the workers drain side by side and
+     * each wait below finds its worker already gone.
+     * <p>
+     * The closing then runs side by side as well. Closing one index is a commit and a file handle,
+     * a few milliseconds, and that is fine until a migration leaves thousands of interrupted
+     * subfolders behind, each of them a folder with an index of its own. narvi carries 7 425 of
+     * them, and closing them in sequence took 63 of the 70 seconds its shutdown lasted. Nothing
+     * here waits on anything else, so the only reason it was slow is that it was serial.
+     * <p>
+     * Nothing is discarded: the folders stay, so their indexes are committed and closed properly
+     * underneath - all but the ones whose queue did not drain, which the next start rebuilds from
+     * scratch anyway. {@link Folder#shutdown()} still asks its index to shut down afterwards; that
+     * second call returns at the {@code shutdownStarted} gate without doing anything, so the order
+     * of the rest of the shutdown is untouched. Meta folders are signalled but not closed here -
+     * Folder.shutdown skips their index as well.
+     */
+    private void shutdownIndexes() {
+        for (Folder metaFolder : metaFolders.values()) {
+            requestIndexStop(metaFolder);
+        }
+
+        for (Folder folder : folders.values()) {
+            requestIndexStop(folder);
+        }
+
+        List<Folder> indexed = new ArrayList<>(folders.size());
+
+        for (Folder folder : folders.values()) {
+            if (folder.getSearchIndexManager() != null && !folder.getInfo().isMetaFolder()) {
+                indexed.add(folder);
+            }
+        }
+
+        if (indexed.size() < 2) {
+            return;
+        }
+
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+
+        ExecutorService executor = Executors.newFixedThreadPool(
+                threads,
+                r -> {
+                    Thread t = new Thread(r, "Index-shutdown");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
+
+        long started = System.currentTimeMillis();
+
+        try {
+            List<Future<?>> tasks = new ArrayList<>(indexed.size());
+
+            for (Folder folder : indexed) {
+                tasks.add(
+                        executor.submit(() -> {
+                            try {
+                                LuceneIndexManager index = folder.getSearchIndexManager();
+
+                                if (index != null) {
+                                    index.shutdown();
+                                }
+                            } catch (Exception ex) {
+                                logWarning("Problem closing the search index of "
+                                        + folder.getInfo(), ex);
+                            }
+                        })
+                );
+            }
+
+            // Explicit barrier: no folder is closed while its index is still being written.
+            for (Future<?> f : tasks) {
+                try {
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logWarning("Search index shutdown failed", e);
+                }
+            }
+        } finally {
+            executor.shutdown();
+        }
+
+        logInfo("Closed " + indexed.size() + " search index(es) in "
+                + (System.currentTimeMillis() - started) + " ms");
     }
 }

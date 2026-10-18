@@ -185,6 +185,75 @@ public class NetworkUtil {
      *            the address to check
      * @return if the address is on lan or on loopback device
      */
+/**
+     * Whether one address from a proxy header is a loopback address. Parsed rather than compared: the
+     * notation is the sender's choice, so brackets, a port, an IPv6 zone and the IPv4-mapped prefix come
+     * off first. Only literals are resolved - a host name would mean a DNS lookup inside a request.
+     */
+    /**
+     * The port an address carries as {@code host:port} or {@code [v6]:port}, or -1 when it names none.
+     * A bare IPv6 address is not mistaken for one: it has more than one colon and no brackets, so there
+     * is nothing to separate. Anything outside 1-65535 is no port either and answers -1 as well.
+     */
+    public static int portOf(String address) {
+        if (StringUtils.isBlank(address)) {
+            return -1;
+        }
+        String candidate = address.trim();
+        int colon = candidate.startsWith("[")
+            ? candidate.indexOf(':', candidate.indexOf(']'))
+            : (candidate.indexOf(':') == candidate.lastIndexOf(':') ? candidate.indexOf(':') : -1);
+        if (colon < 0 || colon == candidate.length() - 1) {
+            return -1;
+        }
+        try {
+            int port = Integer.parseInt(candidate.substring(colon + 1));
+            return port >= 1 && port <= 65535 ? port : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    public static boolean isLoopbackAddress(String address) {
+        String candidate = address.trim().toLowerCase();
+        if (candidate.startsWith("[")) {
+            int end = candidate.indexOf(']');
+            candidate = end > 0 ? candidate.substring(1, end) : candidate.substring(1);
+        } else if (candidate.indexOf(':') > 0 && candidate.indexOf(':') == candidate.lastIndexOf(':')) {
+            // A single colon is a port on an IPv4 address; IPv6 always carries more than one.
+            candidate = candidate.substring(0, candidate.indexOf(':'));
+        }
+        int zone = candidate.indexOf('%');
+        if (zone >= 0) {
+            candidate = candidate.substring(0, zone);
+        }
+        if (candidate.isEmpty()) {
+            return false;
+        }
+        if ("localhost".equals(candidate)) {
+            return true;
+        }
+        if (!isAddressLiteral(candidate)) {
+            return false;
+        }
+        try {
+            return InetAddress.getByName(candidate).isLoopbackAddress();
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
+
+/** Hex digits, dots and colons only - enough to keep {@link InetAddress} from asking a name server. */
+    private static boolean isAddressLiteral(String candidate) {
+        for (int i = 0; i < candidate.length(); i++) {
+            char c = candidate.charAt(i);
+            if (Character.digit(c, 16) < 0 && c != '.' && c != ':') {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         if (!(addr instanceof Inet4Address)) {

@@ -25,15 +25,17 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class LoginUtilTest extends TestCase {
+public class LoginUtilTest {
+    @Test
 
     public void testDecorateUrlNullPass() {
         String url = "http://localhost:8080";
@@ -46,6 +48,7 @@ public class LoginUtilTest extends TestCase {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameWithSpecial), LoginUtil.decorateURL(url, usernameWithSpecial, password));
 
     }
+    @Test
 
     public void testDecorateUrlNullUsername() {
         String url = "http://localhost:8080";
@@ -57,6 +60,7 @@ public class LoginUtilTest extends TestCase {
         String usernameEmpty = "";
         assertEquals(url, LoginUtil.decorateURL(url, username, password));
     }
+    @Test
 
 
     public void testDecorateUrlOk() {
@@ -68,12 +72,14 @@ public class LoginUtilTest extends TestCase {
                 LoginUtil.decorateURL(url, username, password));
 
     }
+    @Test
 
     public void testDecorateUrlException() {
         String nullString = null;
         char[] nullChars = null;
         assertNull(LoginUtil.decorateURL(nullString, nullString, nullChars));
     }
+    @Test
 
     public void testDecorateUrlObfuscatedEmptyUser() {
         String url = "http://localhost:8080";
@@ -89,6 +95,7 @@ public class LoginUtilTest extends TestCase {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password), LoginUtil.decorateURL(url, usernameSpaces, password));
 
     }
+    @Test
 
     public void testDecorateUrlObfuscatedEmptyPassword() {
         String url = "http://localhost:8080";
@@ -103,6 +110,7 @@ public class LoginUtilTest extends TestCase {
         String passwordSpaces = "   ";
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username), LoginUtil.decorateURL(url, username, passwordSpaces));
     }
+    @Test
 
     public void testDecorateUrlObfuscatedOk() {
         String url = "http://localhost:8080";
@@ -118,17 +126,20 @@ public class LoginUtilTest extends TestCase {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameSpecialChars) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(passwordSpaces)
                 , LoginUtil.decorateURL(url, usernameSpecialChars, passwordSpaces));
     }
+    @Test
 
     public void testMatchesHashedPwBlank() {
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, ""));
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, null));
         assertFalse(LoginUtil.matches(new char[] {'t','s','t'}, "   "));
     }
+    @Test
 
     public void testHasAndSaltBlankPass() {
         assertNull(LoginUtil.hashAndSalt(new char[0]));
         assertNull(LoginUtil.hashAndSalt((char[]) null));
     }
+    @Test
 
     public void testClearNullAndEmpty() {
         char[] password = null;
@@ -138,6 +149,7 @@ public class LoginUtilTest extends TestCase {
         LoginUtil.clear(emptyPassword);
         assertTrue(emptyPassword.length == 0);
     }
+    @Test
 
     public void testClearOk() {
 
@@ -151,6 +163,7 @@ public class LoginUtilTest extends TestCase {
         }
 
     }
+    @Test
 
     public void testIsUsernameAny() throws IOException {
         Controller controller = new Controller();
@@ -179,6 +192,7 @@ public class LoginUtilTest extends TestCase {
 
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testIsBooleanConfValueNull() throws IOException {
         Controller controller = new Controller();
@@ -215,6 +229,7 @@ public class LoginUtilTest extends TestCase {
         controller.shutdown();
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testGetInviteUsernameShibboleth() throws IOException {
         Controller controller = new Controller();
@@ -247,6 +262,7 @@ public class LoginUtilTest extends TestCase {
         controller.shutdown();
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testGetInviteUsername() throws IOException {
         Controller controller = new Controller();
@@ -280,6 +296,7 @@ public class LoginUtilTest extends TestCase {
         FileUtils.forceDelete(file);
 
     }
+    @Test
 
     public void testGetUsernameTextNull() {
         Controller controller = null;
@@ -291,6 +308,7 @@ public class LoginUtilTest extends TestCase {
             //OK since controller was null
         }
     }
+    @Test
 
     public void testGetUsernameTestOk() throws IOException {
         Controller controller = new Controller();
@@ -322,6 +340,7 @@ public class LoginUtilTest extends TestCase {
 
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testIsUsernameEmailOnlyTest() throws IOException {
         Controller controller = new Controller();
@@ -346,6 +365,7 @@ public class LoginUtilTest extends TestCase {
 
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testIsValidUsername() throws IOException {
         Controller controller = new Controller();
@@ -373,17 +393,20 @@ public class LoginUtilTest extends TestCase {
 
         FileUtils.forceDelete(file);
     }
+    @Test
 
     public void testSatisfiesUnixPoicyNull() {
         assertFalse(LoginUtil.satisfiesUnixPolicy(null));
         String pass = null;
         assertFalse(LoginUtil.satisfiesUnixPolicy(pass));
     }
+    @Test
 
     public void testDeobfuscateIllegalArgument() {
         assertNull(LoginUtil.deobfuscate("!"));
         assertNull(LoginUtil.deobfuscate("\""));
     }
+    @Test
 
 
     public void testObfuscate() {
@@ -395,7 +418,7 @@ public class LoginUtilTest extends TestCase {
             password = IdGenerator.makeId();
             obf = LoginUtil.obfuscate(password.toCharArray());
             String deObf = Util.toString(LoginUtil.deobfuscate(obf));
-            assertEquals(deObf, password.length(), deObf.length());
+            assertEquals(password.length(), deObf.length(), deObf);
             assertEquals(password, deObf);
         }
         assertNull(LoginUtil.obfuscate(null));
@@ -415,6 +438,7 @@ public class LoginUtilTest extends TestCase {
         assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
         assertEquals(password, Util.toString(LoginUtil.deobfuscate(obf)));
     }
+    @Test
 
     public void testHash() {
         String password = IdGenerator.makeId();
@@ -425,6 +449,7 @@ public class LoginUtilTest extends TestCase {
         // Legacy support.
         assertTrue(LoginUtil.matches("XXX".toCharArray(), "XXX"));
     }
+    @Test
 
     public void testHashFormat() {
         String hashed = LoginUtil.hashAndSalt("testPassword123".toCharArray());
@@ -435,17 +460,18 @@ public class LoginUtilTest extends TestCase {
         assertFalse(parts[1].isEmpty());
         assertFalse(parts[2].isEmpty());
     }
+    @Test
 
     public void testHashUniqueSalts() {
         String hash1 = LoginUtil.hashAndSalt("samePassword".toCharArray());
         String hash2 = LoginUtil.hashAndSalt("samePassword".toCharArray());
         assertNotNull(hash1);
         assertNotNull(hash2);
-        assertFalse("Same password must produce different hashes due to salt",
-                hash1.equals(hash2));
+        assertFalse(hash1.equals(hash2), "Same password must produce different hashes due to salt");
         assertTrue(LoginUtil.matches("samePassword".toCharArray(), hash1));
         assertTrue(LoginUtil.matches("samePassword".toCharArray(), hash2));
     }
+    @Test
 
     public void testHashDifferentPasswords() {
         String hash1 = LoginUtil.hashAndSalt("password1".toCharArray());
@@ -455,6 +481,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.matches("password1".toCharArray(), hash2));
         assertFalse(LoginUtil.matches("password2".toCharArray(), hash1));
     }
+    @Test
 
     public void testMatchesWrongPassword() {
         String hashed = LoginUtil.hashAndSalt("correctPassword".toCharArray());
@@ -464,11 +491,13 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.matches(" correctPassword".toCharArray(), hashed));
         assertFalse(LoginUtil.matches("".toCharArray(), hashed));
     }
+    @Test
 
     public void testMatchesNullCandidate() {
         String hashed = LoginUtil.hashAndSalt("test".toCharArray());
         assertFalse(LoginUtil.matches(null, hashed));
     }
+    @Test
 
     public void testMatchesInvalidFormat() {
         assertFalse(LoginUtil.matches("test".toCharArray(), "SHA-256:onlytwocolons"));
@@ -476,6 +505,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.matches("test".toCharArray(), "MD5:"));
         assertFalse(LoginUtil.matches("test".toCharArray(), "SHA-256:"));
     }
+    @Test
 
     public void testMatchesLegacyCleartext() {
         assertTrue(LoginUtil.matches("plaintext".toCharArray(), "plaintext"));
@@ -483,6 +513,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.matches("MD5password".toCharArray(), "MD5password"));
         assertFalse(LoginUtil.matches("SHA-256pw".toCharArray(), "SHA-256pw"));
     }
+    @Test
 
     public void testMatchesLegacySHA256() {
         String password = "TestPassword123!";
@@ -494,6 +525,7 @@ public class LoginUtilTest extends TestCase {
         assertTrue(LoginUtil.needsRehash(legacyHash));
         assertTrue(LoginUtil.isHashed(legacyHash));
     }
+    @Test
 
     public void testMatchesLegacyMD5() {
         String password = "TestPassword123!";
@@ -505,6 +537,7 @@ public class LoginUtilTest extends TestCase {
         assertTrue(LoginUtil.needsRehash(legacyHash));
         assertTrue(LoginUtil.isHashed(legacyHash));
     }
+    @Test
 
     public void testNeedsRehash() {
         String argon2Hash = LoginUtil.hashAndSalt("test".toCharArray());
@@ -519,6 +552,7 @@ public class LoginUtilTest extends TestCase {
         assertTrue(LoginUtil.needsRehash("cleartext"));
         assertFalse(LoginUtil.needsRehash(null));
     }
+    @Test
 
     public void testIsHashed() {
         assertTrue(LoginUtil.isHashed("SHA-256:salt:hash"));
@@ -528,6 +562,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.isHashed(null));
         assertFalse(LoginUtil.isHashed(""));
     }
+    @Test
 
     public void testHashSpecialCharacters() {
         String[] passwords = {
@@ -540,11 +575,11 @@ public class LoginUtilTest extends TestCase {
         };
         for (String pw : passwords) {
             String hashed = LoginUtil.hashAndSalt(pw.toCharArray());
-            assertNotNull("hashAndSalt returned null for: " + pw, hashed);
-            assertTrue("matches failed for: " + pw,
-                    LoginUtil.matches(pw.toCharArray(), hashed));
+            assertNotNull(hashed, "hashAndSalt returned null for: " + pw);
+            assertTrue(LoginUtil.matches(pw.toCharArray(), hashed), "matches failed for: " + pw);
         }
     }
+    @Test
 
     public void testHashConsistency() {
         String password = "consistencyTest";
@@ -553,46 +588,53 @@ public class LoginUtilTest extends TestCase {
             assertTrue(LoginUtil.matches(password.toCharArray(), hashed));
         }
     }
+    @Test
 
     public void testHashDirectMethod() {
         String digest = "SHA-256";
         String salt = "testSalt";
         String hash1 = LoginUtil.hash(digest, "password", salt);
         String hash2 = LoginUtil.hash(digest, "password", salt);
-        assertEquals("Same input must produce same hash", hash1, hash2);
+        assertEquals(hash1, hash2, "Same input must produce same hash");
 
         String hash3 = LoginUtil.hash(digest, "password", "differentSalt");
-        assertFalse("Different salt must produce different hash", hash1.equals(hash3));
+        assertFalse(hash1.equals(hash3), "Different salt must produce different hash");
 
         String hash4 = LoginUtil.hash(digest, "differentPassword", salt);
-        assertFalse("Different password must produce different hash", hash1.equals(hash4));
+        assertFalse(hash1.equals(hash4), "Different password must produce different hash");
     }
+    @Test
 
     public void testPasswordPolicyMinLength() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("aA1!"));
         assertFalse(LoginUtil.satisfiesUnixPolicy("aA1!567"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("aA1!5678"));
     }
+    @Test
 
     public void testPasswordPolicyRequiresDigit() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("aAbBcCd!"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("aAbBcC1!"));
     }
+    @Test
 
     public void testPasswordPolicyRequiresLowercase() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("ABCDEF1!"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("ABCDEf1!"));
     }
+    @Test
 
     public void testPasswordPolicyRequiresUppercase() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abcdef1!"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("abcdeF1!"));
     }
+    @Test
 
     public void testPasswordPolicyRequiresSpecialChar() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abcdeF12"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("abcdeF1!"));
     }
+    @Test
 
     public void testPasswordPolicyNoWhitespace() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abc deF1!"));
@@ -604,6 +646,7 @@ public class LoginUtilTest extends TestCase {
      * passwords against a hash. Demonstrates that the 1597-iteration
      * SHA-256 approach is relatively fast to crack compared to BCrypt/Argon2.
      */
+    @Test
     public void testBruteForceAttackResistance() {
         String secretPassword = "Secr3t!X";
         String hashed = LoginUtil.hashAndSalt(secretPassword.toCharArray());
@@ -629,7 +672,7 @@ public class LoginUtilTest extends TestCase {
         }
 
         long dictionaryTimeMs = (System.nanoTime() - startTime) / 1_000_000;
-        assertTrue("Dictionary attack should find the password", cracked);
+        assertTrue(cracked, "Dictionary attack should find the password");
         System.out.println("[Dictionary Attack] Cracked in " + attempts
                 + " attempts, " + dictionaryTimeMs + " ms");
 
@@ -650,14 +693,14 @@ public class LoginUtilTest extends TestCase {
                 + "would take ~" + (576_000_000_000L / Math.max(hashesPerSecond, 1) / 3600 / 24 / 365)
                 + " years on a single thread");
 
-        assertTrue("Argon2id should be slow enough to resist brute force",
-                hashesPerSecond < 100);
+        assertTrue(hashesPerSecond < 100, "Argon2id should be slow enough to resist brute force");
     }
 
     /**
      * Timing attack resistance: verifies that matching a correct vs incorrect
      * password takes roughly the same time (no early-exit information leak).
      */
+    @Test
     public void testTimingAttackResistance() {
         String password = "TimingT3st!";
         String hashed = LoginUtil.hashAndSalt(password.toCharArray());
@@ -703,10 +746,11 @@ public class LoginUtilTest extends TestCase {
         double ratio = Math.max(correctMs, wrongMs) / Math.max(Math.min(correctMs, wrongMs), 0.01);
         System.out.println("[Timing Attack] Correct/Wrong ratio: " + String.format("%.2f", ratio)
                 + " (should be close to 1.0)");
-        assertTrue("Timing difference between correct and wrong password should be < 2x "
-                        + "(ratio=" + String.format("%.2f", ratio) + ")",
-                ratio < 2.0);
+        assertTrue(ratio < 2.0,
+            "Timing difference between correct and wrong password should be < 2x (ratio=" + String.format("%.2f", ratio)
+                + ")");
     }
+    @Test
 
     public void testOTP() {
         // Valid
@@ -729,6 +773,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil
                 .isOTPValid("30957s0cuxpcfeärl43#r3ä2ö43täö4eäföedäfgsdägösdägösäfdglsd08g7sa0g7w098470387"));
     }
+    @Test
 
     public void testPasswordPolicy() {
         assertFalse(LoginUtil.satisfiesUnixPolicy("12"));
@@ -746,6 +791,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abc123"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("ABC123abc!"));
     }
+    @Test
 
     public void testGetDigestException() {
         try {
@@ -755,6 +801,7 @@ public class LoginUtilTest extends TestCase {
             //OK
         }
     }
+    @Test
 
     public void testControllerNotStarter() {
         Controller controller = new Controller();

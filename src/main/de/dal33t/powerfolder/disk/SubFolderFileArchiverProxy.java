@@ -124,6 +124,7 @@ public class SubFolderFileArchiverProxy implements FileArchiver {
         if (Files.exists(subArchive)) {
             PathUtils.recursiveDelete(subArchive);
         }
+        delegate.forget();
         folder.fireArchivePurged();
         log.info("Purged subfolder archive for " + folder.getName() + " by " + account);
     }
@@ -149,9 +150,30 @@ public class SubFolderFileArchiverProxy implements FileArchiver {
                 }
             }
         }
+        delegate.forget();
         folder.fireArchivePurged();
         log.info("Purged archive of " + (fileInfo.isDiretory() ? "directory " : "file ")
             + fileInfo.getRelativeName() + " in subfolder " + folder.getName() + " by " + account);
+    }
+
+    /** A path of this subfolder, in the coordinates of the top folder whose archive holds it. */
+    private String toTop(String relativePath) {
+        return relativePath == null || relativePath.isEmpty() ? subfolderPath : subfolderPath + "/" + relativePath;
+    }
+
+    @Override
+    public void moveVersions(String fromPath, FileArchiver target, String toPath) {
+        delegate.moveVersions(toTop(fromPath), target, toPath);
+    }
+
+    @Override
+    public Path versionsDirectory(String relativePath) {
+        return delegate.versionsDirectory(toTop(relativePath));
+    }
+
+    @Override
+    public boolean hasArchivedFilesBelow(String relativeDirectory) {
+        return delegate.hasArchivedFilesBelow(toTop(relativeDirectory));
     }
 
     @Override

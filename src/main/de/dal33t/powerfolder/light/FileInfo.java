@@ -870,7 +870,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             subPath += subFolderInfo.getParent().getRelativeName() + '/';
         }
         subPath += subFolderInfo.getName();
-        return filePath != null && filePath.startsWith(subPath);
+        return isAtOrBelow(filePath, subPath);
     }
 
     /**
@@ -907,7 +907,23 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (subFolderPath == null || subFolderPath.isBlank()) {
             return true;
         }
-        return getRelativeName().startsWith(subFolderPath);
+        return isAtOrBelow(getRelativeName(), subFolderPath);
+    }
+
+    /**
+     * PFS-5700: whether a path IS the given location or sits below it, comparing whole segments. A bare
+     * {@code startsWith} let the sibling "Team2" pass as content of the shared "Team" - the neighbour's
+     * rows were then mapped into the subfolder, with a name nobody there may see.
+     */
+    private static boolean isAtOrBelow(String path, String location) {
+        if (path == null) {
+            return false;
+        }
+        int length = location.length();
+        if (!path.startsWith(location)) {
+            return false;
+        }
+        return path.length() == length || path.charAt(length) == '/';
     }
 
     @Override
@@ -1196,6 +1212,21 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @param newFileName
      * @return
      */
+    /**
+     * The directory a relative name sits in, blank when it sits at the top level of its folder.
+     * <p>
+     * Example: {@code parentOfRelativeName("directory/subdirectory/myFile.txt")} ==>
+     * {@code "directory/subdirectory"}. The counterpart of {@link #getFilenameOnly()}, which answers
+     * the other half. NOTE: this is static, so it does not affect a FileInfo.
+     *
+     * @param relativeName a name relative to a folder, separated by {@code /}
+     * @return the part before the last separator, blank when there is none
+     */
+    public static String parentOfRelativeName(String relativeName) {
+        int cut = relativeName.lastIndexOf('/');
+        return cut < 0 ? "" : relativeName.substring(0, cut);
+    }
+
     public static String renameRelativeFileName(String relativeName,
                                                 String newFileName) {
         if (newFileName.contains(UNIX_SEPARATOR)) {

@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * PFC-3543: Index of all subfolders whose permission inheritance is currently
@@ -84,6 +85,14 @@ public class InterruptedSubFolderIndex {
     // mount state is the authority from then on.
     private final Map<FolderInfo, Path> seeds = new ConcurrentHashMap<>();
 
+    /* PFS-5814: A rebuild is serialized and coalesced. Every mounting thread seeds the workspace it is
+     * about to mount, and a rebuild walks all folders of the repository and the barriers of the whole
+     * process - done in parallel by two hundred threads, that is all any of them did. A thread whose
+     * seeds a concurrent rebuild has already picked up leaves without starting one of its own. */
+    private final Object refreshLock = new Object();
+    private final AtomicLong seedVersion = new AtomicLong();
+    private long publishedSeedVersion;
+
     /**
      * Recomputes the index from the given folders. Allocates only here, never on
      * the read hot path. An interrupted subfolder is one that is a subfolder, does
@@ -92,6 +101,30 @@ public class InterruptedSubFolderIndex {
      * @param folders all (non-meta) folders of the repository
      */
     void refresh(Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            // Read before the walk: a seed added while it runs gets a higher version and its own rebuild.
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    /**
+     * PFS-5814: Rebuilds only if no concurrent rebuild has already carried the given seed version.
+     *
+     * @param version the version {@link #seedAll(Map)} handed out
+     * @param folders all (non-meta) folders of the repository
+     */
+    void publishSeeds(long version, Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            if (publishedSeedVersion >= version) {
+                return;
+            }
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    private void refresh0(Collection<Folder> folders) {
         List<Path> newBases = null;
         List<FolderInfo> newSubs = null;
         Set<FolderInfo> mounted = seeds.isEmpty() ? null : new HashSet<>();
@@ -162,6 +195,64 @@ public class InterruptedSubFolderIndex {
      */
     void seed(FolderInfo subFolder, Path base) {
         seeds.put(subFolder, base);
+    }
+
+    /**
+     * PFC-3641: Drops the seeds of a tree whose top folder is unmounted - a barrier only holds back the
+     * scan of a mounted top folder. The next mount of the tree seeds it again from the database.
+     *
+     * @param topFolder the unmounted top folder
+     */
+    void dropSeedsOf(FolderInfo topFolder) {
+        seeds.keySet().removeIf(subFolder -> topFolder.equals(subFolder.getTopFolder()));
+    }
+
+    /**
+     * PFC-3543: Drops the seed of a subfolder that is GONE - deleted, not merely unmounted
+     * <p>
+     * {@link #refresh0} retires a seed when its folder mounts, and that is the only way out it has:
+     * everything else stays a barrier, because "not mounted yet" is exactly what a seed is for. A
+     * deleted subfolder never mounts again, so its barrier outlives it and blocks the path it used
+     * to occupy for the rest of the process.
+     * <p>
+     * That is not theoretical. A migration purge deleted "AG Stoffliste/05 Vorträge" and the next
+     * run did not interrupt it again, so no folder owned that path any more - while the seed still
+     * said one did. Every write below it went through the top folder and PF-CORE refused it
+     * ("Skipped scan - inside interrupted subfolder"): no FileInfo, and with it no tags, for 14 of
+     * the workspace's 216 tagged items. Over a whole run of 237 workspaces it was 14 667 files. The
+     * workspace's own migration report was written into such a path too and could not be secured.
+     * <p>
+     * Seeds exist only where folders mount on demand, which is why this surfaced the day dynamic
+     * mounting was switched on and not before.
+     *
+     * @param subFolder the subfolder that no longer exists
+     *
+     * @return true when a seed was actually dropped, so the caller can skip a rebuild it does not
+     *         need
+     */
+    boolean dropSeed(FolderInfo subFolder) {
+        return subFolder != null && seeds.remove(subFolder) != null;
+    }
+
+    /**
+     * PFS-5814: Seeds a whole workspace at once and says whether the index actually changed.
+     * <p>
+     * Every mount seeds the interrupted subfolders of its workspace, and a refresh is not cheap: it
+     * walks all folders of the repository and rebuilds the barrier snapshot of the whole process. Done
+     * per subfolder, a workspace with thirty interruptions paid it thirty times - times every mounting
+     * thread. The mount asks once now, and a mount that finds every seed already there pays nothing.
+     *
+     * @param newSeeds the interrupted subfolders with their local bases
+     * @return the version to hand to {@link #publishSeeds(long, Collection)}, or 0 when every seed
+         *         was already there and nothing has to be rebuilt
+     */
+    long seedAll(Map<FolderInfo, Path> newSeeds) {
+        boolean changed = false;
+        for (Map.Entry<FolderInfo, Path> seed : newSeeds.entrySet()) {
+            Path previous = seeds.put(seed.getKey(), seed.getValue());
+            changed |= !seed.getValue().equals(previous);
+        }
+        return changed ? seedVersion.incrementAndGet() : 0;
     }
 
     /**
@@ -278,8 +369,9 @@ public class InterruptedSubFolderIndex {
      *
      * @param path    an absolute path (a scanned directory or a watched file)
      * @param ownBase the local base of the querying folder
-     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} is one other
-     *         than the querying folder itself
+     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} encloses the
+     *         querying folder's own base as well - then that subfolder, and not the querying folder,
+     *         owns the path
      */
     boolean contains(Path path, Path ownBase) {
         if (path == null) {
@@ -303,7 +395,16 @@ public class InterruptedSubFolderIndex {
                 innermost = base;
             }
         }
-        return innermost != null && !innermost.equals(ownBase);
+        /* The querying folder owns the path where its own base lies INSIDE that subfolder, not only
+         * where it IS the subfolder. A folder can sit below the base of another one: the metadata
+         * folder of an interrupted subfolder has its base at <subfolder>/.PowerFolder/meta, and
+         * comparing for equality refused it its own content ("Skipped scan - inside interrupted
+         * subfolder", followed by "Folder not joined, not requesting files"). Nobody else owns that
+         * path - the subfolder itself excludes its system directory - so the member list of every
+         * interrupted subfolder simply never synced. A folder OUTSIDE the barrier, i.e. the top
+         * folder, is still refused: that is what the barrier is for. */
+        // A folder without a base owns nothing, so an enclosing barrier decides - as before.
+        return innermost != null && (ownBase == null || !ownBase.startsWith(innermost));
     }
 
     /**
@@ -329,6 +430,22 @@ public class InterruptedSubFolderIndex {
             return false;
         }
         FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(ownInfo, fInfo.getRelativeName());
-        return innermost != null && !innermost.equals(ownInfo);
+        if (innermost == null || innermost.equals(ownInfo)) {
+            return false;
+        }
+        /* The same rule the path variant above was given by PFC-3634, which this check was not: the
+         * querying folder owns the path where it lies INSIDE that subfolder, not only where it IS the
+         * subfolder. A subfolder that inherits its permissions and sits below an interrupted one was
+         * told its own content belongs to somebody else - so it stored nothing, the interrupted folder
+         * above is barred from the subtree by this very rule, and the top folder even more so. Nobody
+         * was left to store it: a new directory existed on disk and in no database, invisible to every
+         * listing, and the next attempt answered "already exists" from the disk check (PFS-5881). */
+        String barrier = innermost.locationPath();
+        String own = ownInfo.locationPath();
+        if (barrier == null || own == null) {
+            // No location to compare - the barrier decides, as before.
+            return true;
+        }
+        return !own.equals(barrier) && !own.startsWith(barrier + '/');
     }
 }

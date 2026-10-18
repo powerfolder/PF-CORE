@@ -317,7 +317,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             return null;
         }
         if (webDAVURL == null) {
-            webDAVURL = serverClient.getFolderService(folderInfo).getWebDAVURL(folderInfo);
+            try {
+                webDAVURL = serverClient.getFolderService(folderInfo).getWebDAVURL(folderInfo);
+            } catch (de.dal33t.powerfolder.security.SecurityException e) {
+                // No read permission on the server (e.g. a local-only folder): asking again every refresh won't help
+                logWarning(folderInfo + ": WebDAV URL not available: " + e);
+            }
             if (webDAVURL == null) {
                 // Don't fetch again. It's simply not available.
                 webDAVURL = "";

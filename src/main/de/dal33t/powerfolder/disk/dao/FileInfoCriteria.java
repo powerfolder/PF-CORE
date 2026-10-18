@@ -29,7 +29,10 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
+import java.io.Serializable;
+
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 
@@ -39,7 +42,13 @@ import static de.dal33t.powerfolder.util.StringUtils.isBlank;
  *
  * @author sprajc
  */
-public class FileInfoCriteria {
+public class FileInfoCriteria implements Serializable {
+
+    /* PFS-5851: a search of a cluster travels to the nodes that host the folders, and the criteria go
+     * along instead of being parsed again there - both nodes ask exactly the same question that way.
+     * Every field is a string, a number, a date, an enum or a collection of those. */
+    private static final long serialVersionUID = 100L;
+
     private List<String> domains = new LinkedList<>();
     private String path;
     private boolean recursive;
@@ -61,6 +70,43 @@ public class FileInfoCriteria {
     private SortField sortField;
     private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
+
+    public FileInfoCriteria() {
+    }
+
+    /**
+     * PFS-5851: the same question, on an object of its own. A search writes into its criteria - it
+     * adds the domain of the folder it walks, and an inheriting subfolder bends the path to its own
+     * for the length of the query - so two searches must never share one instance. Whoever searches
+     * several folders, here or on another node of a cluster, hands each of them a copy.
+     *
+     * @param other the criteria to copy; every field is a value, a date or a collection of strings,
+     *              so the copy shares nothing mutable with the original
+     */
+    public FileInfoCriteria(FileInfoCriteria other) {
+        Reject.ifNull(other, "Criteria to copy is null");
+        this.domains = new LinkedList<>(other.domains);
+        this.path = other.path;
+        this.recursive = other.recursive;
+        this.type = other.type;
+        this.keyWords = new HashSet<>(other.keyWords);
+        this.maxResults = other.maxResults;
+        this.includeDeleted = other.includeDeleted;
+        this.fileName = other.fileName;
+        this.extensions.addAll(other.extensions);
+        this.modifiedBy = other.modifiedBy;
+        this.modifiedByAccountId = other.modifiedByAccountId;
+        this.modifiedByDeviceId = other.modifiedByDeviceId;
+        this.modifiedByDeviceName = other.modifiedByDeviceName;
+        this.modifiedAfter = other.modifiedAfter != null ? new Date(other.modifiedAfter.getTime()) : null;
+        this.modifiedBefore = other.modifiedBefore != null ? new Date(other.modifiedBefore.getTime()) : null;
+        this.minSize = other.minSize;
+        this.maxSize = other.maxSize;
+        this.categories.addAll(other.categories);
+        this.sortField = other.sortField;
+        this.sortDescending = other.sortDescending;
+        this.tags.addAll(other.tags);
+    }
 
     /**
      * @return the domain(s) to search in.
@@ -403,16 +449,43 @@ public class FileInfoCriteria {
     }
 
     private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
+        return matchesKeyWords(fileInfo, keyWords);
+    }
+
+    /**
+     * Whether every keyword of a search is met by the given file, for a search the index cannot answer.
+     * <p>
+     * A keyword may sit in the name, in the path above it, or in a tag the file carries -
+     * {@link de.dal33t.powerfolder.search.LuceneIndexManager} searches the same places (plus the
+     * extracted content), so a search answers the same way whether the index or the database answered
+     * it. Tags used to be reachable through the "tag:" operator alone, which is what the tag chip
+     * inserts: clicking a tag found every tagged element, typing the very same words found none. On a
+     * server that mounts its folders on demand the database answers often - right after a mount the
+     * index is not searchable yet - so that was the normal case, not the exception.
+     *
+     * @param fileInfo the file to test
+     * @param keyWords the keywords of the search, lower case (see {@link #addKeyWord})
+     */
+    static boolean matchesKeyWords(FileInfo fileInfo, Set<String> keyWords) {
         if (keyWords.isEmpty()) {
             return true;
         }
-        String name = fileInfo.getFilenameOnly().toLowerCase();
+        String path = fileInfo.getRelativeName().toLowerCase();
         for (String keyWord : keyWords) {
-            if (!name.contains(keyWord)) {
+            if (!path.contains(keyWord) && !matchesAnyTag(fileInfo, keyWord)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean matchesAnyTag(FileInfo fileInfo, String keyWord) {
+        for (String tag : fileInfo.getTagsList()) {
+            if (tag.toLowerCase().contains(keyWord)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -439,7 +512,7 @@ public class FileInfoCriteria {
 
     /**
      * The words a "name:" value is compared by, lower cased. The index tokenizes a file name on everything
-     * that is neither a letter nor a digit, so "!Migrationsreport!" is stored as "migrationsreport" - a
+     * that is neither a letter nor a digit, so "!urgent!" is stored as "urgent" - a
      * value has to be cut the same way, otherwise the punctuation the user typed matches nothing. A value
      * of nothing but punctuation leaves no word at all and therefore filters nothing.
      */
@@ -448,17 +521,27 @@ public class FileInfoCriteria {
             return Collections.emptyList();
         }
         List<String> words = new ArrayList<>();
-        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ").split("\\s+")) {
+        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-*?]", " ").split("\\s+")) {
             /* PFS-5306: the tokenizer keeps a dot only between alphanumerics, so a trailing one - as in
              * "29.7." - would be searched for but never indexed. */
             while (word.endsWith(".")) {
                 word = word.substring(0, word.length() - 1);
             }
-            if (!word.isEmpty()) {
+            if (hasLetterOrDigit(word)) {
                 words.add(word);
             }
         }
         return words;
+    }
+
+    /** Dots, hyphens and underscores stay inside a word, but on their own they are no word at all. */
+    private static boolean hasLetterOrDigit(String word) {
+        for (int i = 0; i < word.length(); i++) {
+            if (Character.isLetterOrDigit(word.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
@@ -470,19 +553,23 @@ public class FileInfoCriteria {
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
-        if (modifiedBy == null || modifiedBy.isEmpty()) {
+        List<String> words = nameWords(modifiedBy);
+        if (words.isEmpty()) {
             return true;
         }
         AccountInfo account = fileInfo.getModifiedByAccount();
         if (account == null) {
             return false;
         }
-        String content = account.getDisplayName() + account.getUsername();
+        /* Kept apart by blanks: a word may sit in the display name, the username or the device nick, but
+         * never across the seam between two of them. */
+        StringBuilder content = new StringBuilder()
+                .append(account.getDisplayName()).append(' ').append(account.getUsername());
         MemberInfo member = fileInfo.getModifiedBy();
         if (member != null) {
-            content += member.nick;
+            content.append(' ').append(member.nick);
         }
-        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
+        return containsAllWords(content.toString(), words);
     }
 
     private static boolean matchesModifiedDate(FileInfo fileInfo, Date after, Date before) {
@@ -532,12 +619,57 @@ public class FileInfoCriteria {
 
     /** PFS-5653: the device: filter - the name of the device a file was changed on. */
     private static boolean matchesDeviceName(FileInfo fileInfo, String deviceName) {
-        if (isBlank(deviceName)) {
+        List<String> words = nameWords(deviceName);
+        if (words.isEmpty()) {
             return true;
         }
         MemberInfo member = fileInfo.getModifiedBy();
-        return member != null && member.nick != null
-                && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
+        return member != null && member.nick != null && containsAllWords(member.nick, words);
+    }
+
+    /** True when every word - already lower cased by {@link #nameWords(String)} - sits in the text. */
+    private static boolean containsAllWords(String text, List<String> words) {
+        String lower = text.toLowerCase();
+        for (String word : words) {
+            if (!nameWordMatches(lower, word)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether one word of a name filter sits in the text, which is expected in lower case already. A word
+     * the user wrote a star or a question mark into is a pattern and is matched as one; every other word
+     * is looked for the way it always was, as a part of the text.
+     */
+    public static boolean nameWordMatches(String lowerText, String word) {
+        if (word.indexOf('*') < 0 && word.indexOf('?') < 0) {
+            return lowerText.contains(word);
+        }
+        return globPattern(word).matcher(lowerText).find();
+    }
+
+    /** The regular expression a pattern of stars and question marks stands for. */
+    private static Pattern globPattern(String pattern) {
+        StringBuilder regex = new StringBuilder(pattern.length() + 8);
+        StringBuilder literal = new StringBuilder();
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c != '*' && c != '?') {
+                literal.append(c);
+                continue;
+            }
+            if (literal.length() > 0) {
+                regex.append(Pattern.quote(literal.toString()));
+                literal.setLength(0);
+            }
+            regex.append(c == '*' ? ".*" : ".");
+        }
+        if (literal.length() > 0) {
+            regex.append(Pattern.quote(literal.toString()));
+        }
+        return Pattern.compile(regex.toString());
     }
 
     private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {

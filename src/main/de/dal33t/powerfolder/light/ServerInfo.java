@@ -177,19 +177,28 @@ public class ServerInfo implements Serializable, D2DObject {
 
     /**
      * @param uri
-     * @return the absolute URL for the URI at the server/service.
+     * @return the absolute URL for the URI at the server/service. Exactly one slash joins the two,
+     *         whether or not the configured web URL was written with a trailing one.
      */
     public String getURL(String uri) {
         String theBaseURL = webUrl;
         if (theBaseURL == null) {
             theBaseURL = "";
         }
-        if (uri == null) {
+        if (uri == null || isBlank(uri)) {
             return theBaseURL;
         }
-        boolean slashOk = uri.startsWith("/") || theBaseURL.endsWith("/") || isBlank(uri);
-        String slash = slashOk ? "" : "/";
-        return theBaseURL + slash + uri;
+        boolean baseEndsWithSlash = theBaseURL.endsWith("/");
+        boolean uriStartsWithSlash = uri.startsWith("/");
+        if (baseEndsWithSlash && uriStartsWithSlash) {
+            // "https://host/" + "/files/..." used to make "https://host//files/...". A browser keeps
+            // that empty segment, and whoever reads the path back counts one segment too many.
+            return theBaseURL + uri.substring(1);
+        }
+        if (!baseEndsWithSlash && !uriStartsWithSlash) {
+            return theBaseURL + "/" + uri;
+        }
+        return theBaseURL + uri;
     }
 
     /**

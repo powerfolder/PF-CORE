@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -390,7 +391,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     isSelected, cellHasFocus);
                 if (value instanceof Locale) {
                     Locale locale = (Locale) value;
-                    setText(locale.getDisplayName(locale));
+                    String text = locale.getDisplayName(locale);
+                    setText(text);
+                    // Each language is shown in its own script, so the default
+                    // font may lack glyphs (e.g. Devanagari/Thai -> boxes).
+                    // Pick a font that can render this locale's name.
+                    setFont(LookAndFeelSupport.fontFor(getFont(), text, locale));
                 } else {
                     setText("- unknown -");
                 }

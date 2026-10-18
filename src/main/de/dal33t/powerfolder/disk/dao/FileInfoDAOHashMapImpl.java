@@ -388,19 +388,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
      * TODO: Performance optimization
      */
     private boolean matches(FileInfo fInfo, Set<String> keyWords) {
-        if (keyWords.isEmpty()) {
-            return true;
-        }
-        String lower = fInfo.getRelativeName().toLowerCase();
-        for (String keyWord : keyWords) {
-            if (!lower.contains(keyWord)) {
-                return false;
-            }
-        }
-        return true;
+        // The same places a keyword may sit in as on the findFilesFast path - the name, its path and its
+        // tags (FileInfoCriteria#matchesKeyWords).
+        return FileInfoCriteria.matchesKeyWords(fInfo, keyWords);
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
+        // The path arrives normalized from the callers: empty, or ending in a slash - which is what makes
+        // this comparison segment-exact. Do not "harden" it without checking them (PFS-5700).
         if (!fInfo.getRelativeName().startsWith(path)) {
             return false;
         }

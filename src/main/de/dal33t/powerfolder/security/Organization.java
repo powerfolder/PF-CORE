@@ -31,6 +31,8 @@ import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -48,6 +50,10 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * @version $Revision: 1.5 $
  */
 @Entity
+@Table(indexes = {
+    @Index(name = "IDX_ORGANIZATION_NAME", columnList = Organization.PROPERTYNAME_NAME),
+    @Index(name = "IDX_ORGANIZATION_LDAPDN", columnList = Organization.PROPERTYNAME_LDAPDN)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization implements Serializable , Auditable {
 
@@ -65,7 +71,6 @@ public class Organization implements Serializable , Auditable {
 
     @Id
     private String oid;
-    @Index(name = "IDX_ORGANIZATION_NAME")
     @Column(nullable = false)
     private String name;
 
@@ -74,7 +79,6 @@ public class Organization implements Serializable , Auditable {
 
     private int maxUsers;
 
-    @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
 
@@ -87,8 +91,9 @@ public class Organization implements Serializable , Auditable {
     private OnlineStorageSubscription osSubscription;
 
     // PFS-2005
-    @CollectionOfElements
-    @IndexColumn(name = "IDX_DOMAINS", base = 0, nullable = false)
+    @javax.persistence.ElementCollection
+    @javax.persistence.CollectionTable(name = "Organization_domains", joinColumns = @javax.persistence.JoinColumn(name = "Organization_oid"))
+    @javax.persistence.OrderColumn(name = "IDX_DOMAINS")
     @Cascade(value = {CascadeType.ALL})
     @Column(name = "domain", length = 512)
     @BatchSize(size = 1337)
@@ -134,6 +139,7 @@ public class Organization implements Serializable , Auditable {
 
     public Organization(String oid) {
         Reject.ifBlank(oid, "OID");
+        Permission.rejectSeparatorIn(oid, "Organization");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
         this.domains = new CopyOnWriteArrayList<>();
@@ -166,8 +172,16 @@ public class Organization implements Serializable , Auditable {
 
     public boolean isUnlimitedUsers() { return this.maxUsers == UNLIMITED_USERS; }
 
+    /**
+     * Whether a user limit applies. Only {@link #UNLIMITED_USERS} means "no limit" - a limit of
+     * ZERO is a limit like any other and says that no account may be a member of this organization.
+     * It used to be read as "none configured", which made zero the one number an administrator could
+     * enter without any effect, although the dialog accepts and stores it.
+     *
+     * @return {@code true} if {@link #getMaxUsers()} is to be enforced
+     */
     public boolean hasMaxUsers() {
-        return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
+        return this.maxUsers >= 0 && this.maxUsers != UNLIMITED_USERS;
     }
 
     public void setLdapDN(String ldapDN) {

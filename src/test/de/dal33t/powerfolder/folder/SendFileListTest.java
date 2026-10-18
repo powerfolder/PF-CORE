@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +37,7 @@ import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the correct automatic sending of the filelist.
@@ -44,7 +48,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class SendFileListTest extends TwoControllerTestCase {
     private MyMessageListener lisasListener;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -54,6 +58,7 @@ public class SendFileListTest extends TwoControllerTestCase {
             lisasListener);
     }
 
+    @Test
     public void testAfterFolderJoin() {
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
@@ -61,8 +66,8 @@ public class SendFileListTest extends TwoControllerTestCase {
                 return lisasListener.messages.size() == 2;
             }
         });
-        assertEquals("Received: " + lisasListener.messages, 2,
-            lisasListener.messages.size());
+        assertEquals( 2,
+            lisasListener.messages.size(),"Received: " + lisasListener.messages);
         assertTrue(lisasListener.messages.get(0) instanceof FileList);
         assertTrue(lisasListener.messages.get(1) instanceof FileList);
         FileList list = (FileList) lisasListener.messages.get(0);
@@ -71,10 +76,11 @@ public class SendFileListTest extends TwoControllerTestCase {
         list = (FileList) lisasListener.messages.get(1);
         assertEquals(0, list.nFollowingDeltas);
         // Members file
-        assertEquals("Files? " + Arrays.asList(list.files), 1,
-            list.files.length);
+        assertEquals( 1,
+            list.files.length,"Files? " + Arrays.asList(list.files));
     }
 
+    @Test
     public void testSendAfterScan() {
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
@@ -83,6 +89,7 @@ public class SendFileListTest extends TwoControllerTestCase {
                     .getInfo());
             }
         });
+        TestHelper.waitMilliSeconds(2000);
         lisasListener.ignoreMetaFolder = true;
         lisasListener.messages.clear();
 
@@ -101,8 +108,8 @@ public class SendFileListTest extends TwoControllerTestCase {
 
         // Test
         assertEquals(1, lisasListener.messages.size());
-        assertTrue("Wrong message received: " + lisasListener.messages.get(0),
-            lisasListener.messages.get(0) instanceof FolderFilesChanged);
+        assertTrue(
+            lisasListener.messages.get(0) instanceof FolderFilesChanged,"Wrong message received: " + lisasListener.messages.get(0));
         FolderFilesChanged list = (FolderFilesChanged) lisasListener.messages
             .get(0);
         assertEquals(nFiles, list.getFiles().length);

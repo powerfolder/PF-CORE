@@ -85,7 +85,11 @@ public class FileRequestor extends PFComponent {
 
         Folder folder = foInfo.getFolder(getController());
         if (folder == null) {
-            logWarning("Folder not joined, not requesting files: " + foInfo);
+            if (foInfo.isMetaFolder()) {
+                logFine(foInfo + ": Not joined, not requesting files.");
+            } else {
+                logWarning(foInfo + ": Not joined, not requesting files.");
+            }
             return;
         }
         synchronized (foldersToRequest) {

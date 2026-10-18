@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
 import java.io.Serializable;
@@ -37,6 +38,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -46,6 +49,19 @@ public class PermissionUserType extends Loggable implements UserType {
 
     private static final int[] sqlTypes = {Types.VARCHAR};
     private static List<FolderInfoDAO> FOLDER_INFO_DAOS = new LinkedList<>();
+    /**
+     * Folder IDs of broken permission rows already reported at WARN. Hibernate re-reads the same row on every
+     * account hydration, so repeats go to FINER. Bounded: cleared when full, which re-reports at most once per fill.
+     */
+    private static final Set<String> REPORTED_FOLDER_IDS = ConcurrentHashMap.newKeySet();
+    private static final int MAX_REPORTED_FOLDER_IDS = 50_000;
+
+    private static boolean firstReport(String folderId) {
+        if (REPORTED_FOLDER_IDS.size() >= MAX_REPORTED_FOLDER_IDS) {
+            REPORTED_FOLDER_IDS.clear();
+        }
+        return REPORTED_FOLDER_IDS.add(folderId);
+    }
 
     public Object assemble(Serializable cached, Object owner)
         throws HibernateException
@@ -79,7 +95,8 @@ public class PermissionUserType extends Loggable implements UserType {
         return false;
     }
 
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names,
+        SharedSessionContractImplementor session, Object owner)
         throws HibernateException, SQLException
     {
         Permission p = null;
@@ -114,20 +131,36 @@ public class PermissionUserType extends Loggable implements UserType {
             }
 
             if (fdInfo == null) {
-                logWarning("FolderInfo with ID " + fiId + " not found", new StackDump());
+                if (firstReport(fiId)) {
+                    logWarning("FolderInfo with ID " + fiId + " not found", new StackDump());
+                } else if (isFiner()) {
+                    logFiner("FolderInfo with ID " + fiId + " not found");
+                }
                 fdInfo = FolderInfoFactory.lookupInstance(fiId);
             } else if (!fdInfo.isLookupInstance()) {
                 // /PF-1790: Remove all this later...
                 if (fdInfo.intern().getVersion() > fdInfo.getVersion()) {
-                    logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
+                    /* A row a version behind that says the SAME thing is not an event: every permission
+                     * of every folder is hydrated, so one deletion or rename of a folder produces the
+                     * line hundreds of times over. Only a copy that differs in CONTENT is worth reading
+                     * about - the same distinction FolderInfoDAOsqlImpl#store draws. */
+                    if (fdInfo.saysTheSameAs(fdInfo.intern())) {
+                        logFine(fdInfo.intern() + ": Found newer version in memory, same content. In DB " + fdInfo);
+                    } else {
+                        logInfo(fdInfo.intern().toDetailString() + ": Found newer version in memory. In DB "
+                            + fdInfo.toDetailString());
+                    }
                     fdInfo = fdInfo.intern();
                 }
-            } else {
-                logWarning(fdInfo + ": Found lookup instance in DB. Please correct this via SQL if the problem persists: UPDATE FolderInfo SET version = 0 WHERE version < 0;");
+            } else if (firstReport(fdInfo.getId())) {
+                logWarning(fdInfo + ": Found lookup instance in DB. Please correct this via SQL if the problem persists: "
+                    + "UPDATE FolderInfo SET version = 0 WHERE version < 0;");
+            } else if (isFiner()) {
+                logFiner(fdInfo + ": Found lookup instance in DB");
             }
 
-            if (StringUtils.isBlank(fdInfo.getName()) && isFine()) {
-                logFine("Unknown folder with ID=" + fdInfo.getId());
+            if (StringUtils.isBlank(fdInfo.getName()) && isFiner()) {
+                logFiner("Unknown folder with ID=" + fdInfo.getId());
             }
 
             // choose the right permission implementation
@@ -232,7 +265,8 @@ public class PermissionUserType extends Loggable implements UserType {
         return p;
     }
 
-    public void nullSafeSet(PreparedStatement st, Object value, int index)
+    public void nullSafeSet(PreparedStatement st, Object value, int index,
+        SharedSessionContractImplementor session)
         throws HibernateException, SQLException
     {
         if (value == null) {

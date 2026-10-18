@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import org.hibernate.annotations.*;
 
 import javax.persistence.Column;
@@ -38,6 +39,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Table;
+import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,6 +60,11 @@ import java.util.logging.Logger;
  * @version $Revision: 1.5 $
  */
 @Entity(name = "AGroup")
+@Table(indexes = {
+    @Index(name = "IDX_GROUP_NAME", columnList = Group.PROPERTYNAME_GROUPNAME),
+    @Index(name = "IDX_GROUP_LDAPDN", columnList = Group.PROPERTYNAME_LDAPDN),
+    @Index(name = "IDX_GRP_ORG_ID", columnList = Group.PROPERTYNAME_ORGANIZATION_ID)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Group implements Serializable, D2DObject, Auditable {
 
@@ -73,18 +81,15 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     @Id
     private String oid;
-    @Index(name = "IDX_GROUP_NAME")
     @Column(nullable = false)
     private String name;
 
-    @Index(name = "IDX_GROUP_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
 
     @Column(length = 2048)
     private String notes;
 
-    @Index(name = "IDX_GRP_ORG_ID")
     @Column(nullable = true, unique = false)
     private String organizationOID;
 
@@ -92,8 +97,10 @@ public class Group implements Serializable, D2DObject, Auditable {
      * Without a batch size that is one SELECT per group and collection - a list of a few thousand
      * groups spent seconds on nothing else. Batched, the same load takes a handful of statements.
      * The size matches the one Account and Organization use for their collections. */
-    @CollectionOfElements
+    @javax.persistence.ElementCollection
+    @javax.persistence.CollectionTable(name = "AGroup_permissions", joinColumns = @JoinColumn(name = "AGroup_oid"))
     @Type(type = "permissionType")
+    @Column(name = "element")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -122,6 +129,7 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     public Group(String oid, String name) {
         Reject.ifBlank(oid, "OID");
+        Permission.rejectSeparatorIn(oid, "Group");
         this.oid = oid;
         this.name = name;
         this.permissions = new CopyOnWriteArrayList<>();
@@ -613,6 +621,28 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
+    }
+
+    /**
+     * PFS-5840: whether this group belongs to an organization at all. Mirrors
+     * {@link Account#isMemberOfOrganization()}.
+     *
+     * @return {@code true} if an organization is set
+     **/
+    public boolean isMemberOfOrganization() {
+        return StringUtils.isNotBlank(organizationOID);
+    }
+
+    /**
+     * PFS-5840: whether the other group belongs to the same organization - two groups without one
+     * included, the same way {@link Account#isInSameOrganization(Account)} answers it.
+     *
+     * @param other the group to compare with
+     *
+     * @return {@code true} if both carry the same organization
+     **/
+    public boolean isInSameOrganization(Group other) {
+        return other != null && Util.equals(organizationOID, other.getOrganizationOID());
     }
 
     public GroupInfo createInfo() {

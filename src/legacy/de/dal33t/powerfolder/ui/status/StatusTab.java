@@ -789,6 +789,10 @@ public class StatusTab extends PFUIComponent {
             updateFoldersText();
         }
 
+        @Override
+        public void subFolderUnshared(FolderRepositoryEvent e) {
+        }
+
         public void folderRemoved(FolderRepositoryEvent e) {
             e.getFolder().removeFolderListener(folderListener);
             updateFoldersText();

@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
@@ -36,7 +37,6 @@ import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
 
 import javax.persistence.*;
 import java.io.*;
@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +59,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * @version $Revision: 1.9 $
  */
 @Entity
+@Table(indexes = @Index(name = "IDX_FOLDER_NAME", columnList = FolderInfo.PROPERTYNAME_NAME))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private static final Logger LOG = Logger.getLogger(FolderInfo.class.getName());
@@ -73,7 +75,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * exactly this reason). Wire-format evolution is versioned separately via extVersionUID.
      */
     private static final long serialVersionUID = 102L;
-    private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
+    private static final FolderInfoInternalizer INTERNALIZER = new FolderInfoInternalizer();
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
@@ -83,7 +85,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_INHERITS_PERMISSIONS = "inheritsPermissions";
     public static final String PROPERTYNAME_TAGS = "tags";
 
-    @Index(name="IDX_FOLDER_NAME")
     private String name;
     @Id
     public String id;
@@ -141,6 +142,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     FolderInfo(String name, String id, int version, DirectoryInfo parent, String tags,
         boolean inheritsPermissions)
     {
+        /* PFS-5818: a real folder never carries a permission id separator. A LOOKUP instance is
+           exempt: it is a query object built from whatever an id parameter of a request said, and
+           the answer to a crafted one is "not found", not an exception. */
+        if (version >= 0) {
+            Permission.rejectSeparatorIn(id, "Folder");
+        }
         this.name = name;
         this.id = id;
         this.version = version;
@@ -517,9 +524,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         FolderInfo innermost = current;
         int innermostLength = enclosingPathLength(current, top, path);
         for (FolderInfo candidate : candidates) {
-            int length = enclosingPathLength(candidate, top, path);
+            // PFS-5926: a permission carries a snapshot of its folder - the location counts where it is now
+            FolderInfo latest = candidate != null ? candidate.latest() : null;
+            int length = enclosingPathLength(latest, top, path);
             if (length > innermostLength) {
-                innermost = candidate;
+                innermost = latest;
                 innermostLength = length;
             }
         }
@@ -669,6 +678,41 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return false;
     }
 
+    /**
+     * Whether two copies of the same folder say the same thing - everything a row holds except the
+     * version: the name, the path below the top folder, the top folder itself, the inheritance flag
+     * and the tags. A copy that is only a version behind is not an event worth a log line; one that
+     * differs in content is.
+     *
+     * @param other the other copy of this folder
+     *
+     * @return whether both say the same thing
+     */
+    public boolean saysTheSameAs(FolderInfo other) {
+        if (other == null) {
+            return false;
+        }
+        return Objects.equals(getName(), other.getName())
+            && Objects.equals(getTopPath(), other.getTopPath())
+            && Objects.equals(topFolderId(this), topFolderId(other))
+            && inheritsPermissions() == other.inheritsPermissions()
+            && Objects.equals(getTags(), other.getTags());
+    }
+
+    private static String topFolderId(FolderInfo foInfo) {
+        return foInfo.getTopFolder() != null ? foInfo.getTopFolder().getId() : null;
+    }
+
+    /**
+     * PFS-5926: this folder as the repository holds it now. A copy kept elsewhere - in a permission, for instance -
+     * is a snapshot, and the location in it may have moved on since.
+     *
+     * @return the held instance, or this one when none is held - nothing is put into the pool
+     */
+    public FolderInfo latest() {
+        return INTERNALIZER.peek(this);
+    }
+
     public FolderInfo intern() {
         return intern(false);
     }
@@ -685,6 +729,29 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public int compareTo(Object other) {
         FolderInfo otherFolderInfo = (FolderInfo) other;
         return name.compareToIgnoreCase(otherFolderInfo.name);
+    }
+
+    /**
+     * Appends to the buffer everything {@link #toString()} does not show: where a subfolder sits, and
+     * the two fields that decide whether two copies of a folder say the same thing without being
+     * visible in either of them - the inheritance flag and the tags.
+     *
+     * @param str the stringbuilder to add the detail info to.
+     */
+    private void toDetailString(StringBuilder str) {
+        str.append(this);
+        if (isSubFolder()) {
+            str.append(", top folder: ").append(getTopFolder() != null ? getTopFolder().getId() : "(none)");
+            str.append(", at: '").append(getTopPath()).append("'");
+            str.append(", inherits permissions: ").append(inheritsPermissions());
+        }
+        str.append(", tags: ").append(isNotBlank(tags) ? tags : "(none)");
+    }
+
+    public String toDetailString() {
+        StringBuilder str = new StringBuilder();
+        toDetailString(str);
+        return str.toString();
     }
 
     @Override

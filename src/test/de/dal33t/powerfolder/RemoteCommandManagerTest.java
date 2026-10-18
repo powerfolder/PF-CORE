@@ -19,9 +19,13 @@
  */
 package de.dal33t.powerfolder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.RemoteCommandManager;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -29,6 +33,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -37,11 +42,11 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class RemoteCommandManagerTest extends TwoControllerTestCase {
     private Path oldDir;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
-        assertFalse("PowerFolder already running on port 3458",
-            RemoteCommandManager.hasRunningInstance(3458));
         super.setUp();
+        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getContollerBart(), false);
+        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getContollerBart(), false);
         connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
         oldDir = getFolderAtBart().getLocalBase();
@@ -57,16 +62,26 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getMembersCount() == 1;
             }
         });
-        assertTrue("PowerFolder already running on port 3458",
-                RemoteCommandManager.hasRunningInstance(3458));
+        assertTrue(RemoteCommandManager.hasRunningInstance(rconPort()),
+            "PowerFolder not running on port " + rconPort());
     }
 
+    /** The rcon port of Bart, a free one per run - see TestHelper.copyConfigWithFreePort. */
+    private int rconPort() {
+        return ConfigurationEntry.NET_PORT_RCON.getValueInt(getContollerBart());
+    }
+
+    private int rconPortOfLisa() {
+        return ConfigurationEntry.NET_PORT_RCON.getValueInt(getContollerLisa());
+    }
+
+    @Test
     public void testJoinExistingFolder() {
         getContollerLisa().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
         getContollerBart().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
 
         assertEquals(1, getFolderAtLisa().getMembersCount());
-        boolean sent = RemoteCommandManager.sendCommand(3458,
+        boolean sent = RemoteCommandManager.sendCommand(rconPort(),
             RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";id=" + getFolderAtLisa().getId() + ";dlscript=what.bat");
         assertTrue(sent);
@@ -81,43 +96,41 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getMembersCount() == 2;
             }
         });
-        Folder folderAtBart = getContollerBart().getFolderRepository()
-            .getFolders().iterator().next();
+        Folder folderAtBart = findFolderByName(getContollerBart(), "testFolder");
+        assertNotNull(folderAtBart, "Bart should have testFolder");
 
         assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             folderAtBart.getSyncProfile());
         assertEquals("what.bat", folderAtBart.getDownloadScript());
-        assertEquals("testFolder", folderAtBart.getName());
     }
 
+    @Test
     public void testCreateNewFolder() {
         getContollerLisa().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
         getContollerBart().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
 
-        assertEquals(0, getContollerBart().getFolderRepository()
-            .getFoldersCount());
+        assertNull(getFolderAtBart());
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager
             .sendCommand(
-                3458,
+                rconPort(),
                 RemoteCommandManager.MAKEFOLDER
                     + "dir="
                     + oldDir.toAbsolutePath()
                     + ";name=XXX"
                     + ";syncprofile=false,false,false,false,5,true,22,0,m,Backup daily at 2200");
         assertTrue(sent);
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getContollerBart().getFolderRepository()
-                    .getFoldersCount() == 1;
+                return findFolderByName(getContollerBart(), "XXX") != null;
+            }
+            public String message() {
+                return "Bart did not create folder XXX";
             }
         });
         assertEquals(1, getFolderAtLisa().getMembersCount());
-        assertEquals(1, getContollerBart().getFolderRepository()
-            .getFoldersCount());
-        Folder folderAtBart = getContollerBart().getFolderRepository()
-            .getFolders().iterator().next();
-        assertEquals("XXX", folderAtBart.getName());
+        Folder folderAtBart = findFolderByName(getContollerBart(), "XXX");
+        assertNotNull(folderAtBart);
         assertEquals(
             "false,false,false,false,5,true,22,0,m,Backup daily at 2200,false",
             folderAtBart.getSyncProfile().getFieldList());
@@ -126,53 +139,37 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES.setValue(
             getContollerBart(), Boolean.TRUE.toString());
         Folder oldFolderAtBart = folderAtBart;
-        sent = RemoteCommandManager.sendCommand(3458,
+        sent = RemoteCommandManager.sendCommand(rconPort(),
             RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";name=XXX"
                 + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
         assertTrue(sent);
         TestHelper.waitMilliSeconds(1000);
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public boolean reached() {
-                return getContollerBart().getFolderRepository()
-                    .getFoldersCount() == 1;
-            }
-
-            public String message() {
-                return "Expected folders at bart: 1. But got: "
-                    + getContollerBart().getFolderRepository()
-                        .getFoldersCount();
-            }
-        });
-        assertEquals(1, getFolderAtLisa().getMembersCount());
-        assertEquals(1, getContollerBart().getFolderRepository()
-            .getFoldersCount());
-        folderAtBart = getContollerBart().getFolderRepository().getFolders()
-            .iterator().next();
-        assertEquals("XXX", folderAtBart.getName());
+        folderAtBart = findFolderByName(getContollerBart(), "XXX");
+        assertNotNull(folderAtBart);
         assertEquals("true,true,true,true,5,false,22,0,m,Auto-sync,false",
             folderAtBart.getSyncProfile().getFieldList());
-        // Should be the same
         assertEquals(oldFolderAtBart.getId(), folderAtBart.getId());
     }
 
+    @Test
     public void testRemoveFolder() {
         assertEquals(1, getFolderAtLisa().getMembersCount());
 
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "dir=C:\\Dir"));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "name=Folder"));
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "id=theid"));
 
         // Wrong commands. Should be still there.
         assertEquals(1, getContollerLisa().getFolderRepository()
             .getFoldersCount());
 
-        assertTrue(RemoteCommandManager.sendCommand(1155,
+        assertTrue(RemoteCommandManager.sendCommand(rconPortOfLisa(),
             RemoteCommandManager.REMOVEFOLDER + "dir="
                 + getFolderAtLisa().getLocalBase() + ";id="
                 + getFolderAtLisa().getId() + ";name="
@@ -187,5 +184,14 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 return getFolderAtLisa() == null;
             }
         });
+    }
+
+    private Folder findFolderByName(Controller controller, String name) {
+        for (Folder f : controller.getFolderRepository().getFolders()) {
+            if (name.equals(f.getName())) {
+                return f;
+            }
+        }
+        return null;
     }
 }

@@ -40,6 +40,37 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     int countMembers(FolderInfo folder);
 
     /**
+     * Stores the FolderInfo only if the table has no row for it yet - an existing row is left alone.
+     * <p>
+     * For a copy that arrives inside a permission this is the only sensible write. Storing an account
+     * or a group writes back the FolderInfo of every folder it holds a permission on, and that copy is
+     * a snapshot from whenever the permission was read: while the migration runs, the folder has moved
+     * on - a version, its tags, its inheritance flag - so an update from there can only ever overwrite
+     * the newer row with an older one. {@link #store} refuses that by version and said so, thousands of
+     * times a night; asking first is cheaper and says nothing.
+     *
+     * @param folderInfo the folder to insert if it is unknown
+     */
+    void storeIfMissing(FolderInfo folderInfo);
+
+    /**
+     * PFS-5835: Lifts every stored lookup instance back to an ordinary row - the one statement the
+     * warning about them has been asking the operator to run.
+     * <p>
+     * A row with a negative version is a {@link de.dal33t.powerfolder.light.FolderInfoFactory#lookupInstance
+     * lookup instance}: a query object that was written to the table. Hibernate re-reads it on every
+     * hydration of an account or group holding a permission on that folder, and each read warns. On one
+     * node of a customer's production system that was 1.6 million lines for 11 863 rows in three hours.
+     * <p>
+     * The blank name stays - it is not recoverable here - and nothing is kept from healing: a real
+     * FolderInfo overwrites a version-0 row, and a blank name still counts as stale. Idempotent, so
+     * every node of a cluster may run it.
+     *
+     * @return the number of rows corrected, {@code -1} when the statement failed
+     */
+    int repairLookupInstances();
+
+    /**
      * Returns all subfolders belonging to the specified top-level folder.
      *
      * <p>
@@ -77,11 +108,50 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
      * }</pre>
      *
      * @param topFolderInfo
-     *         the top-level folder info whose subfolders should be returned;
-     *         must not be {@code null}
+     *         the folder info whose subfolders should be returned; must not be {@code null}. A
+     *         SUBFOLDER is a valid question as well: the interruptions nest, so a subfolder can be
+     *         the top folder of rows of its own
      * @return
      *         a {@link Collection} of {@link FolderInfo} objects;
      *         empty if no matching subfolders exist
      */
     Collection<FolderInfo> getSubFolders(FolderInfo topFolderInfo);
+
+    /**
+     * PFS-5912: The subfolder at a location of the tree, from the database - the same answer on every
+     * cluster node, mounted here or not. A permission change names its subfolder by workspace and path
+     * and arrives on whichever node the load balancer picks; asking the repository there refused every
+     * change on a node that did not have the subfolder mounted.
+     *
+     * @param topFolderInfo the top folder of the tree
+     * @param location      the location inside it, as {@link FolderInfo#locationPath()} writes it
+     * @return the subfolder there, or {@code null} if no row names that location
+     */
+    default FolderInfo findSubFolder(FolderInfo topFolderInfo, String location) {
+        if (topFolderInfo == null || location == null || location.isEmpty()) {
+            return null;
+        }
+        for (FolderInfo subFolder : getSubFolders(topFolderInfo)) {
+            if (location.equals(subFolder.locationPath())) {
+                return subFolder;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * PFS-5858: The other rows that stand for the same directory as this subfolder - same top folder,
+     * same location, a different id.
+     * <p>
+     * There must never be one. A purge used to keep the rows of a subfolder that INHERITS its
+     * permissions, and such a row survives its workspace unmounted, where
+     * {@code FolderRepository#findSubFolder} - the only guard {@code Folder#share} has - cannot see it.
+     * Sharing that directory again therefore put a SECOND row next to it, the mounter found both,
+     * mounted one, and the other answered no request for the rest of its life.
+     *
+     * @param subFolder the subfolder that is being created
+     * @return the rows for the same location, without {@code subFolder} itself; empty in the normal
+     *         case
+     */
+    Collection<FolderInfo> findSameLocation(FolderInfo subFolder);
 }

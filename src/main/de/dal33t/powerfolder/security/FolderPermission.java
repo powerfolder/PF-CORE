@@ -194,7 +194,8 @@ public abstract class FolderPermission
      *   <li>Both permissions refer to the same top-level folder.</li>
      *   <li>The target folder is the same as, or located below, the source folder
      *       in the folder hierarchy.</li>
-     *   <li>The target folder does not explicitly opt out of permission inheritance.</li>
+     *   <li>No subfolder with interrupted permission inheritance lies between the source folder
+     *       (exclusive) and the target folder (inclusive).</li>
      * </ul>
      *
      * @param impliedPermission the permission to check
@@ -215,8 +216,10 @@ public abstract class FolderPermission
             return false;
         }
 
-        FolderInfo thisFolder = getFolder();
-        FolderInfo otherFolder = otherPermission.getFolder();
+        // PFS-5926: a permission carries a snapshot of its folder - the location and the inheritance flag count as
+        // they are now, which is what the barriers below are compared against.
+        FolderInfo thisFolder = getFolder().latest();
+        FolderInfo otherFolder = otherPermission.getFolder().latest();
 
         // Respect explicit opt-out on target subfolders: a non-inheriting subfolder must not receive
         // permissions by INHERITANCE from an ancestor. This must NOT block a permission granted
@@ -226,7 +229,15 @@ public abstract class FolderPermission
             return false;
         }
 
-        return isSameOrBelow(thisFolder, otherFolder);
+        if (!isSameOrBelow(thisFolder, otherFolder)) {
+            return false;
+        }
+
+        // PFS-5904: the interruption may also sit BETWEEN the two - an inheriting subfolder below an interrupted one
+        // inherits from that one, not from the top folder. The innermost barrier enclosing the target decides: a
+        // permission granted on it or below it reaches down, one granted above it does not.
+        FolderInfo barrier = FolderInfo.findEnclosingInterruptedSubFolder(otherFolder, null);
+        return barrier == null || isSameOrBelow(barrier, thisFolder);
     }
 
     /**

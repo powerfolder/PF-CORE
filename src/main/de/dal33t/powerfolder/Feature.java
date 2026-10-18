@@ -125,6 +125,12 @@ public enum Feature {
     LOG_INVALIDATE_ALL_CACHES(false),
 
     /**
+     * PFS-5913: Every five minutes, how many cluster cache broadcasts went out and how many of them came from
+     * soft locks, per region. Enable server-internally to see the traffic before it reaches a customer's cluster.
+     */
+    LOG_CLUSTER_CACHE_BROADCASTS(false),
+
+    /**
      * INT-1725: Log (once per method) service methods that have no "&lt;method&gt;Allowed" authorization companion
      * while the dispatcher runs in audit-only mode. Disabled by default; enable server-internally to enumerate the
      * reachable surface that still needs a companion.

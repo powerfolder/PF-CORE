@@ -317,24 +317,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             } catch (IOException ignore) {
                 // On TLS sockets this may throw "unsupported", so ignore
             }
-
-            socket.setSoTimeout(200);
-
-            // Drain input without blocking forever
-            if (in != null) {
-                byte[] buf = new byte[1024];
-                try {
-                    while (in.read(buf) != -1) {
-                        // ignore incoming data
-                    }
-                } catch (SocketTimeoutException ignore) {
-                    // timeout = normal, stop reading
-                }
-            }
+            // No draining here: the receiver thread holds the read lock until a dead peer times out in TCP
         } catch (IOException e) {
             // Ignore
         } finally {
-            // Close streams AFTER shutdown + drain
+            // Closing the socket wakes up the receiver thread
             try { if (out != null) out.close(); } catch (IOException ignore) {}
             try { if (in != null) in.close(); } catch (IOException ignore) {}
 
@@ -400,6 +387,24 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     @Override
     public Member getMember() {
         return member;
+    }
+
+    /**
+     * PFC-3639: Whether this connection runs between two servers.
+     * <p>
+     * The queue limit guards a server against a peer that does not read fast enough (PFC-2591,
+     * PFC-2742) - a client, where dropping the connection costs that client and nothing else.
+     * Between two nodes of a cluster the same limit IS the damage: a mount wave queues one message
+     * per folder, and cutting the link over it throws the whole tree away. The node reconnects,
+     * mounts the tree again and fills the queue again, which is the loop seen in production. What
+     * fills the queue there is work the cluster owes itself, so it is allowed to queue up.
+     *
+     * @return true when this node and the node at the other end are both servers
+     */
+    private boolean isServerToServer() {
+        Member remote = member;
+        return remote != null && remote.isServer()
+            && getController().getMySelf().isServer();
     }
 
     @Override
@@ -562,9 +567,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 logFine(msg);
             }
             // PFC-2591/PFC-2742: Start
-            if (messagesToSendQueue
-                .size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE)
-            {
+            if (messagesToSendQueue.size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE && !isServerToServer()) {
                 String msg = "Disconnecting " + getIdentity()
                     + ": Too many messages in send queue: "
                     + messagesToSendQueue.size();
