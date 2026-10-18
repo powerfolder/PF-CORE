@@ -2083,7 +2083,8 @@ public class PathUtilsTest {
             "PathUtils.openFile hands the file to the desktop shell, which starts a real"
                 + " application. A CI runner has no interactive desktop session, so the call"
                 + " blocks instead of returning and the started application would outlive the"
-                + " test. Run this on a workstation.");
+                + " test. Run this on a workstation, with"
+                + " -Dtest.awt.headless=false.");
         assertTrue(PathUtils.openFile(file.toPath()));
     }
 
@@ -2103,7 +2104,8 @@ public class PathUtilsTest {
     }
 
     private static boolean hasInteractiveDesktop() {
-        return System.getenv("CI") == null
+        return !java.awt.GraphicsEnvironment.isHeadless()
+            && System.getenv("CI") == null
             && System.getenv("GITLAB_CI") == null
             && System.getenv("CI_JOB_ID") == null;
     }
