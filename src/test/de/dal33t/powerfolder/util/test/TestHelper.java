@@ -906,6 +906,49 @@ public class TestHelper {
         }
     }
 
+    public static final String describeDifference(Path a, Path b) {
+        try {
+            long sizeA = Files.size(a);
+            long sizeB = Files.size(b);
+            if (sizeA != sizeB) {
+                return "the two are " + sizeA + " and " + sizeB
+                    + " bytes long";
+            }
+            try (InputStream ain = Files.newInputStream(a);
+                InputStream bin = Files.newInputStream(b))
+            {
+                byte[] abuf = new byte[8192], bbuf = new byte[8192];
+                long offset = 0;
+                long differing = 0;
+                long firstDifference = -1;
+                int aread;
+                while ((aread = ain.read(abuf)) > 0) {
+                    int bread, bpos = 0, rem = aread;
+                    while ((bread = bin.read(bbuf, bpos, rem)) > 0) {
+                        bpos += bread;
+                        rem -= bread;
+                    }
+                    for (int i = 0; i < aread; i++) {
+                        if (abuf[i] != bbuf[i]) {
+                            differing++;
+                            if (firstDifference < 0) {
+                                firstDifference = offset + i;
+                            }
+                        }
+                    }
+                    offset += aread;
+                }
+                if (differing == 0) {
+                    return "they are identical now - the mismatch was transient";
+                }
+                return differing + " of " + sizeA
+                    + " bytes differ, the first at offset " + firstDifference;
+            }
+        } catch (IOException e) {
+            return "unable to compare them: " + e;
+        }
+    }
+
     /**
      * Searches for transfers that don't have an associated counter-part.
      *
