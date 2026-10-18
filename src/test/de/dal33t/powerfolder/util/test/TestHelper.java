@@ -311,11 +311,42 @@ public class TestHelper {
 
     private static int nextPort;
 
+    private static java.net.ServerSocket sliceClaim;
+
+    private static int claimedSliceStart;
+
     private static int sliceStart() {
+        if (sliceClaim != null) {
+            return claimedSliceStart;
+        }
         int slices = PROBE_PORT_COUNT / PORTS_PER_JVM;
-        int slice = Math.abs(Paths.get("").toAbsolutePath().toString()
+        int preferred = Math.abs(Paths.get("").toAbsolutePath().toString()
             .hashCode() % slices);
-        return FIRST_PROBE_PORT + slice * PORTS_PER_JVM;
+        for (int offset = 0; offset < slices; offset++) {
+            int start = FIRST_PROBE_PORT
+                + ((preferred + offset) % slices) * PORTS_PER_JVM;
+            java.net.ServerSocket claim = null;
+            try {
+                claim = new java.net.ServerSocket();
+                claim.setReuseAddress(false);
+                claim.bind(new InetSocketAddress(start));
+            } catch (IOException e) {
+                if (claim != null) {
+                    try {
+                        claim.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+                continue;
+            }
+            sliceClaim = claim;
+            claimedSliceStart = start;
+            return start;
+        }
+        throw new RuntimeException("Every one of the " + slices
+            + " port slices between " + FIRST_PROBE_PORT + " and "
+            + (FIRST_PROBE_PORT + PROBE_PORT_COUNT - 1)
+            + " is already claimed by another test JVM on this host");
     }
 
     public static synchronized int findFreePort() {
@@ -327,13 +358,14 @@ public class TestHelper {
     }
 
     private static int findFreePortOfProtocol(boolean udp) {
-        int start = sliceStart();
-        if (nextPort < start || nextPort >= start + PORTS_PER_JVM) {
+        int start = sliceStart() + 1;
+        int end = sliceStart() + PORTS_PER_JVM;
+        if (nextPort < start || nextPort >= end) {
             nextPort = start;
         }
-        for (int attempt = 0; attempt < PORTS_PER_JVM; attempt++) {
+        for (int attempt = 0; attempt < PORTS_PER_JVM - 1; attempt++) {
             int port = nextPort++;
-            if (nextPort >= start + PORTS_PER_JVM) {
+            if (nextPort >= end) {
                 nextPort = start;
             }
             if (udp) {
@@ -356,7 +388,7 @@ public class TestHelper {
         }
         throw new RuntimeException("Unable to find a free "
             + (udp ? "UDP" : "TCP") + " port between " + start + " and "
-            + (start + PORTS_PER_JVM - 1));
+            + (end - 1) + ", the slice this JVM holds");
     }
 
     public static Path getTestDir() {
