@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.net;
 
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,6 +40,8 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
+@Timeout(value = 300, unit = TimeUnit.SECONDS,
+    threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
 public class UDTTest {
     private class ThreadHelper<T> {
         volatile T value;
@@ -312,6 +315,14 @@ public class UDTTest {
         return -1;
     }
 
+    private static synchronized void record(ThreadHelper<Error> rethrower,
+        Error error)
+    {
+        if (rethrower.value == null) {
+            rethrower.value = error;
+        }
+    }
+
     private void connectRendezvous(final UDTSocket a, final Runnable workerA,
         final UDTSocket b, final Runnable workerB)
     {
@@ -328,21 +339,26 @@ public class UDTTest {
 
         final ThreadHelper<Error> rethrower = new ThreadHelper<Error>();
         final CyclicBarrier atConnect = new CyclicBarrier(2);
+        final CyclicBarrier bothConnected = new CyclicBarrier(2);
         Thread tA, tB;
         tA = new Thread(new Runnable() {
             public void run() {
                 try {
                     atConnect.await();
                     a.connect(new InetSocketAddress("localhost", pb));
+                    bothConnected.await();
                     workerA.run();
                 } catch (Error t) {
-                    rethrower.value = t;
+                    record(rethrower, t);
+                    bothConnected.reset();
                 } catch (IOException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
+                    bothConnected.reset();
                 } catch (InterruptedException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
+                    bothConnected.reset();
                 } catch (BrokenBarrierException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
                 }
             }
         }, "Worker A");
@@ -351,15 +367,19 @@ public class UDTTest {
                 try {
                     atConnect.await();
                     b.connect(new InetSocketAddress("localhost", pa));
+                    bothConnected.await();
                     workerB.run();
                 } catch (Error t) {
-                    rethrower.value = t;
+                    record(rethrower, t);
+                    bothConnected.reset();
                 } catch (IOException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
+                    bothConnected.reset();
                 } catch (InterruptedException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
+                    bothConnected.reset();
                 } catch (BrokenBarrierException e) {
-                    rethrower.value = new Error(e);
+                    record(rethrower, new Error(e));
                 }
             }
         }, "Worker B");
