@@ -53,7 +53,7 @@ public class Upload extends Transfer {
 
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
-    protected transient FileChannel fileChannel;
+    protected transient volatile FileChannel fileChannel;
     protected transient InputStream in;
     private long inpos;
     private String debugState;
@@ -326,14 +326,15 @@ public class Upload extends Transfer {
                 logSevere("IOException", e);
             }
         }
-        if (fileChannel != null) {
+        FileChannel channelToClose = fileChannel;
+        if (channelToClose != null) {
             try {
                 if (isFiner()) {
                     logFiner("Closing fileChannel for "
                         + getFile().toDetailString());
                 }
-                fileChannel.close();
                 fileChannel = null;
+                channelToClose.close();
             } catch (IOException e) {
                 logSevere("IOException", e);
             }
@@ -452,8 +453,9 @@ public class Upload extends Transfer {
         try {
             byte[] data = new byte[(int) pr.getRange().getLength()];
             long startOffset = pr.getRange().getStart();
-            if (fileChannel != null) {
-                fileChannel.position(startOffset);
+            FileChannel positionChannel = fileChannel;
+            if (positionChannel != null) {
+                positionChannel.position(startOffset);
             } else if (in != null) {
                 long skip = startOffset - inpos;
                 if (skip >= 0) {
@@ -480,13 +482,14 @@ public class Upload extends Transfer {
             while (pos < data.length) {
                 int read;
                 int readLen = data.length - pos;
+                FileChannel dataChannel = fileChannel;
                 if (buffer != null &&
                         buffer.length >= startOffset + pr.getRange().getLength()) {
                     data = Arrays.copyOfRange(buffer, (int) startOffset,
                             (int) (startOffset + pr.getRange().getLength()));
                     read = data.length;
-                } else if (fileChannel != null) {
-                    read = fileChannel.read(ByteBuffer.wrap(data, pos, readLen));
+                } else if (dataChannel != null) {
+                    read = dataChannel.read(ByteBuffer.wrap(data, pos, readLen));
                 } else if (in != null) {
                     read = in.read(data, pos, readLen);
                     inpos += read;
