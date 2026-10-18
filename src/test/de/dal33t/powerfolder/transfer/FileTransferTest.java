@@ -1323,7 +1323,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getFolderRepository());
         assertEquals(1, fBart.getVersion(), "File version at bart not 1: " + fBart.toDetailString());
         assertEquals(1, fLisa.getVersion(), "File version at lisa not 1: " + fLisa.toDetailString());
-        assertTrue(TestHelper.compareFiles(fileBart, fileLisa), "File content mismatch: " + fileBart + " and " + fileLisa);
+        assertTrue(TestHelper.compareFiles(fileBart, fileLisa),
+            () -> "Lisa recovered from the MD5 error but her copy is not Bart's:"
+                + " " + TestHelper.describeDifference(fileBart, fileLisa)
+                + ". Bart: " + fBart.toDetailString() + ". Lisa: "
+                + fLisa.toDetailString() + ". " + fileBart + " against "
+                + fileLisa);
     }
 
     @Test
