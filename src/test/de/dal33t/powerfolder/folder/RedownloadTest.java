@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -35,6 +37,10 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -43,12 +49,46 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class RedownloadTest extends TwoControllerTestCase {
 
+    private final List<String> rowHistory = new CopyOnWriteArrayList<>();
+
     @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+        recordRowsOf(getFolderAtBart(), "bart");
+        recordRowsOf(getFolderAtLisa(), "lisa");
+    }
+
+    private void recordRowsOf(final Folder folder, final String nick) {
+        folder.addFolderListener(new FolderAdapter() {
+            @Override
+            public void fileChanged(FolderEvent event) {
+                note(nick, "changed", event.getScannedFileInfos());
+            }
+
+            @Override
+            public void filesDeleted(FolderEvent event) {
+                note(nick, "deleted", event.getDeletedFileInfos());
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        });
+    }
+
+    private void note(String nick, String what, Collection<FileInfo> files) {
+        if (files == null) {
+            return;
+        }
+        List<String> details = new ArrayList<>();
+        for (FileInfo file : files) {
+            details.add(file.toDetailString());
+        }
+        rowHistory.add(nick + " " + what + " " + details);
     }
 
     private void waitForUploadsFinished(Controller controller) {
@@ -122,7 +162,6 @@ public class RedownloadTest extends TwoControllerTestCase {
             }
         });
         waitForUploadsFinished(getContollerBart());
-        TestHelper.waitForQuietMaintenance(folderBart, folderLisa);
 
         // Delete the file at Bart.
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();
@@ -182,6 +221,11 @@ public class RedownloadTest extends TwoControllerTestCase {
             "Bart did not take over Lisas version. Bart: "
                 + fileInfoBart.toDetailString() + ". Lisa: "
                 + sourceAtLisa.toDetailString());
-        assertEquals( 0, fileInfoBart.getVersion(),"Bart file bad version");
+        assertEquals( 0, fileInfoBart.getVersion(),
+            "Neither side ever changed the file, so the re-downloaded row must still be"
+                + " the first version. Bart: " + fileInfoBart.toDetailString()
+                + ". Lisa: " + sourceAtLisa.toDetailString()
+                + ". Lisa now: " + folderLisa.getFile(sourceAtLisa)
+                + ". Every row change either side published: " + rowHistory);
     }
 }
