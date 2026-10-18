@@ -436,10 +436,6 @@ public abstract class TwoControllerTestCase {
         // Connect
         //System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
 
-        // PFS-5561: on loaded CI runners a single connect attempt with a 10s handshake wait was
-        // flaky (intermittent "Unable to connect Bart and Lisa"). Retry the connect a few times
-        // and wait longer for the handshake. A healthy run still returns within ~1s on the first
-        // attempt, because waitForCondition returns as soon as both nodes are completely connected.
         Condition connectedCondition = new Condition() {
             @Override
             public boolean reached() {
@@ -460,21 +456,42 @@ public abstract class TwoControllerTestCase {
         };
         Exception e = null;
         for (int attempt = 1; attempt <= 3; attempt++) {
-            try {
-                cont1.connect(cont2.getConnectionListener().getAddress());
-            } catch (Exception ex) {
-                e = ex;
+            if (!hasLiveLink(cont1, cont2)) {
+                try {
+                    cont1.connect(cont2.getConnectionListener()
+                        .getAddress());
+                } catch (Exception ex) {
+                    e = ex;
+                }
             }
             try {
                 TestHelper.waitForCondition(30, connectedCondition);
                 return true;
             } catch (RuntimeException re) {
-                // Handshake not completed within the wait; retry unless this was the last attempt.
+                e = re;
             }
         }
         System.err.println("Connecting " + cont1.getMySelf().getNick() + " and "
-            + cont2.getMySelf().getNick() + " ... FAILED after 3 attempts: " + e);
+            + cont2.getMySelf().getNick() + " ... FAILED after 3 attempts. "
+            + linkState(cont1, cont2) + " " + linkState(cont2, cont1)
+            + " Last problem: " + e);
         return false;
+    }
+
+    private static boolean hasLiveLink(Controller from, Controller to) {
+        Member peer = from.getNodeManager().getNode(to.getMySelf().getId());
+        return peer != null && peer.isConnected();
+    }
+
+    private static String linkState(Controller from, Controller to) {
+        Member peer = from.getNodeManager().getNode(to.getMySelf().getId());
+        if (peer == null) {
+            return from.getMySelf().getNick() + " has no node for "
+                + to.getMySelf().getNick() + ".";
+        }
+        return from.getMySelf().getNick() + " sees "
+            + to.getMySelf().getNick() + " connected: " + peer.isConnected()
+            + ", handshake complete: " + peer.isCompletelyConnected() + ".";
     }
 
     /**
