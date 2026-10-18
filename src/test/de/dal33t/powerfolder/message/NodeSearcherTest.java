@@ -128,7 +128,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      */
     @Test
     public void testLocalSearch() {
-        List<Member> searchResultModel = new ArrayList<Member>();
+        List<Member> searchResultModel = new java.util.concurrent.CopyOnWriteArrayList<Member>();
 
         // Search for a node, which cannot be found
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "xxx",
@@ -173,7 +173,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      */
     @Test
     public void testSupernodeSearch() {
-        List<Member> searchResultModel = new ArrayList<Member>();
+        List<Member> searchResultModel = new java.util.concurrent.CopyOnWriteArrayList<Member>();
 
         // Search for "Homer" by nick
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "homer",
@@ -206,7 +206,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      */
     @Test
     public void testMixedSearch() {
-        final List<Member> searchResultModel = new ArrayList<Member>();
+        final List<Member> searchResultModel = new java.util.concurrent.CopyOnWriteArrayList<Member>();
 
         // Search for "ar"
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "ar",
