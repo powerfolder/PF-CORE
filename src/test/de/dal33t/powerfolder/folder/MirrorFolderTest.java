@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.folder;
 
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Constants;
@@ -104,11 +105,10 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
     @Test
     public void testMixedCaseSubdirs2() {
-        // Emulate Windows.
-        // FileInfo.IGNORE_CASE = true;
-        if (!OSUtil.isWindowsSystem()) {
-            return;
-        }
+        Assumptions.assumeTrue(OSUtil.isWindowsSystem(),
+            "Two directories whose names differ only in case can only exist side by side"
+                + " where the filesystem keeps them apart, and the row names this test reads"
+                + " only converge where FileInfo.IGNORE_CASE is set. Run this on Windows.");
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
@@ -248,11 +248,10 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
     @Test
     public void testMixedCaseSubdirs() throws IOException {
-        // Emulate Windows.
-        // FileInfo.IGNORE_CASE = true;
-        if (!OSUtil.isWindowsSystem()) {
-            return;
-        }
+        Assumptions.assumeTrue(OSUtil.isWindowsSystem(),
+            "Two directories whose names differ only in case can only exist side by side"
+                + " where the filesystem keeps them apart, and the row names this test reads"
+                + " only converge where FileInfo.IGNORE_CASE is set. Run this on Windows.");
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
