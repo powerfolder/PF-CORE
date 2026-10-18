@@ -23,6 +23,7 @@ package de.dal33t.powerfolder.folder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderAdapter;
@@ -65,12 +66,12 @@ public class RedownloadTest extends TwoControllerTestCase {
         folder.addFolderListener(new FolderAdapter() {
             @Override
             public void fileChanged(FolderEvent event) {
-                note(nick, "changed", event.getScannedFileInfos());
+                note(folder, nick, "changed", event.getScannedFileInfos());
             }
 
             @Override
             public void filesDeleted(FolderEvent event) {
-                note(nick, "deleted", event.getDeletedFileInfos());
+                note(folder, nick, "deleted", event.getDeletedFileInfos());
             }
 
             @Override
@@ -80,15 +81,28 @@ public class RedownloadTest extends TwoControllerTestCase {
         });
     }
 
-    private void note(String nick, String what, Collection<FileInfo> files) {
+    private void note(Folder folder, String nick, String what,
+        Collection<FileInfo> files)
+    {
         if (files == null) {
             return;
         }
         List<String> details = new ArrayList<>();
         for (FileInfo file : files) {
-            details.add(file.toDetailString());
+            details.add(file.toDetailString() + " while the peers held "
+                + peerRows(folder, file));
         }
         rowHistory.add(nick + " " + what + " " + details);
+    }
+
+    private static String peerRows(Folder folder, FileInfo file) {
+        List<String> rows = new ArrayList<>();
+        for (Member member : folder.getMembersAsCollection()) {
+            FileInfo row = member.getFile(file);
+            rows.add(member.getNick() + ": "
+                + (row == null ? "no row" : row.toDetailString()));
+        }
+        return rows.toString();
     }
 
     private void waitForUploadsFinished(Controller controller) {
