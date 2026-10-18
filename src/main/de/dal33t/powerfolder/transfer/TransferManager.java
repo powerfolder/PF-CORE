@@ -1184,7 +1184,10 @@ public class TransferManager extends PFComponent {
         }
 
         if (dlManagers.containsKey(dl.file)) {
-            logFine("Not queuing upload, active download of the file is in progress.");
+            logWarning("Refused " + from.getNick() + " the download of "
+                + dl.file.toDetailString()
+                + ": a download of that file is in progress here. No abort is sent,"
+                + " so the requester waits out its request timeout.");
             return null;
         }
 
@@ -1194,10 +1197,16 @@ public class TransferManager extends PFComponent {
             && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             if (diskFile == null) {
+                logWarning("Refused " + from.getNick() + " the download of "
+                    + dl.file.toDetailString()
+                    + ": the file has no place on this disk.");
                 return null;
             }
             // PFC-2692: Check storage before doing instant scan.
             if (folder.isDeviceDisconnected() || folder.checkIfDeviceDisconnected()) {
+                logWarning("Refused " + from.getNick() + " the download of "
+                    + dl.file.toDetailString() + ": the storage of " + folder
+                    + " is disconnected.");
                 return null;
             }
             // This should free up an otherwise waiting for download partner
@@ -1221,8 +1230,12 @@ public class TransferManager extends PFComponent {
                                 + diskFile.toAbsolutePath().toString());
                         }
                     } else {
-                        logFine("File was requested, but not found: "
-                            + dl.file.toDetailString());
+                        logWarning("Refused " + from.getNick()
+                            + " the download of " + dl.file.toDetailString()
+                            + ": it is not on this disk and a scan is not"
+                            + " allowed now, so nothing will correct it. No"
+                            + " abort is sent, so the requester waits out its"
+                            + " request timeout.");
                     }
                 }
             }
