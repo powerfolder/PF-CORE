@@ -963,10 +963,9 @@ public class TransferManager extends PFComponent {
                 uploadsLock.unlock();
             }
 
-            if (transferFound) {
-                // Fire event
-                fireUploadCompleted(new TransferManagerEvent(this, (Upload) transfer));
+            fireUploadCompleted(new TransferManagerEvent(this, (Upload) transfer));
 
+            if (transferFound) {
                 // PFS-1766
                 if (ConfigurationEntry.EVENT_API_URL_UPLOADED_FILE_CLIENT.hasNonBlankValue(getController())) {
                     new UploadedFile(getController()).of(transfer.getFile()).happened(true);
