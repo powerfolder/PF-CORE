@@ -1080,6 +1080,23 @@ public class Folder extends PFComponent {
         // version differs from the version when the download began. In that
         // case a conflict has to be raised!
 
+        try {
+            long transferred = Files.size(tempFile);
+            if (transferred != fInfo.getSize()) {
+                logWarning("Refused the completed download of "
+                    + fInfo.toDetailString() + ": the transferred file "
+                    + tempFile + " holds " + transferred
+                    + " bytes, not the " + fInfo.getSize()
+                    + " the file list promises. The download is marked broken"
+                    + " and tried again rather than taken as this file.");
+                return false;
+            }
+        } catch (IOException e) {
+            logWarning("Unable to measure the transferred file " + tempFile
+                + " of " + fInfo.toDetailString() + ": " + e);
+            return false;
+        }
+
         // rename file
         Path targetFile = fInfo.getDiskFile(getController()
             .getFolderRepository());
