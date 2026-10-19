@@ -465,6 +465,12 @@ For creation of the installer:
             <option value="-XX:MinHeapFreeRatio=5" />
             <option value="-XX:MaxHeapFreeRatio=10" />
             <option value="-Xdock:name=${dist.name}" />
+            <!-- PFI-93: restore NFD encoding when the JVM turns a path string into bytes for a
+                 file syscall. Temurin 25 (JDK-8296141) dropped macOS path normalization by
+                 default, so an NFC name from the DB/server would otherwise be handed to APFS/SMB
+                 verbatim; =true decomposes it to NFD on access, matching files created decomposed.
+                 Complements the NFC-insensitive name matching in this repo (combining-char data loss). -->
+            <option value="-Djdk.nio.path.useNormalizationFormD=true" />
         </bundleapp>
 
         <copy file="${etc.dir}/mac64libs/libosxnative.jnilib" todir="${dist.dir}/${dist.name}.app/Contents/MacOS" />
