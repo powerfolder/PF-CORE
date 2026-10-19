@@ -52,6 +52,7 @@ import java.util.logging.Level;
 public class Upload extends Transfer {
 
     private boolean aborted;
+    private volatile boolean stoppedByPartner;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
     protected transient volatile FileChannel fileChannel;
     protected transient InputStream in;
@@ -289,7 +290,7 @@ public class Upload extends Transfer {
                             getFile(), getPartner());
                     }
                     closeIO();
-                    if (!isBroken() && !aborted) {
+                    if (!aborted && (stoppedByPartner || !isBroken())) {
                         getTransferManager().setCompleted(Upload.this);
                     } else {
                         getTransferManager().uploadBroken(Upload.this, TransferProblem.TRANSFER_EXCEPTION,
@@ -426,6 +427,7 @@ public class Upload extends Transfer {
             }
             if (pendingRequests.peek() instanceof StopUpload) {
                 pendingRequests.remove();
+                stoppedByPartner = true;
                 return false;
             }
             // PFC-3644: The downloader asks for the parts record again when the file changed under it. Answered
