@@ -615,4 +615,33 @@ public class AccountTest {
         assertEquals(AccessMode.ADMIN, account.getPermissionFor(teamShared).getMode());
     }
 
+    /**
+     * PFS-5960: getAllowedAccessOwn reports only the account's OWN access (own grants incl. top-folder
+     * inheritance), excluding anything granted through a group.
+     */
+    @Test
+    public void testAllowedAccessOwnExcludesGroups() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder5960", "top5960");
+
+        Group writers = new Group("Writers5960");
+        writers.grant(FolderPermission.readWrite(top));
+
+        Account account = new Account();
+        account.grant(FolderPermission.read(top));
+        account.addGroup(writers);
+
+        // Own access is READ (the group's READ_WRITE is excluded)...
+        assertEquals(AccessMode.READ, account.getAllowedAccessOwn(top));
+        // ...while the effective access folds in the group's READ_WRITE.
+        assertEquals(AccessMode.READ_WRITE, account.getAllowedAccess(top));
+
+        // No own grant and no group -> NO_ACCESS.
+        assertEquals(AccessMode.NO_ACCESS, new Account().getAllowedAccessOwn(top));
+
+        // A higher own grant is reported as-is.
+        Account admin = new Account();
+        admin.grant(FolderPermission.admin(top));
+        assertEquals(AccessMode.ADMIN, admin.getAllowedAccessOwn(top));
+    }
+
 }

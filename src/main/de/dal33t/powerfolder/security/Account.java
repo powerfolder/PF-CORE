@@ -560,6 +560,40 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
+     * PFS-5960: like {@link #getAllowedAccess(FolderInfo)} but over this account's OWN permissions
+     * only - direct grants and grants inherited from the top folder - WITHOUT any group membership.
+     * Lets a caller tell the access a user reaches on their own apart from what a group grants them.
+     *
+     * @param folder the folder to get the own access on
+     * @return the access from the account's own permissions, {@code AccessMode.NO_ACCESS} for none
+     */
+    public AccessMode getAllowedAccessOwn(FolderInfo folder) {
+        if (impliesOwn(FolderPermission.owner(folder))) {
+            return AccessMode.OWNER;
+        } else if (impliesOwn(FolderPermission.admin(folder))) {
+            return AccessMode.ADMIN;
+        } else if (impliesOwn(FolderPermission.readWrite(folder))) {
+            return AccessMode.READ_WRITE;
+        } else if (impliesOwn(FolderPermission.read(folder))) {
+            return AccessMode.READ;
+        }
+        return AccessMode.NO_ACCESS;
+    }
+
+    /**
+     * Whether one of this account's OWN permissions grants or implies {@code wanted} - the own-only
+     * counterpart of the own-permission loop in {@link #hasPermission(Permission)} (no groups).
+     */
+    private boolean impliesOwn(Permission wanted) {
+        for (Permission p : permissions) {
+            if (p != null && (p.equals(wanted) || p.implies(wanted))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * PFS-5510: The EFFECTIVE access on the addressed location: resolves the innermost subfolder the
      * account holds a permission on - directly or through (nested) groups - that encloses
      * ({@code folder} + {@code relativeName}) and evaluates the access there. Purely structure-based
