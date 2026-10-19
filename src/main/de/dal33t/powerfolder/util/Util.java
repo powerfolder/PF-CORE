@@ -62,6 +62,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -138,10 +139,36 @@ public class Util {
     }
 
     /**
+     * PFI-93: canonicalize a relative file name to Unicode NFC (composed) form.
+     * <p>
+     * macOS (HFS+/APFS) hands back file names decomposed (NFD) - e.g. 'e' +
+     * U+0301 - while the file database and the server use the composed (NFC)
+     * form - e.g. U+00E9. Those are different code-point sequences and so
+     * unequal under {@link String#equals}/{@link String#hashCode}, which made
+     * the scanner fail to match an on-disk file to its DB row, flag the row as
+     * deleted and propagate that deletion = data loss. Canonicalizing both
+     * sides of every name comparison to NFC removes the mismatch on all
+     * platforms. The guard avoids any allocation for the common already-NFC
+     * case (virtually all names on Windows/Linux and server-originated names).
+     *
+     * @param name a relative name (may be null)
+     * @return the NFC form of {@code name}, or {@code name} unchanged if already
+     *         NFC or null
+     */
+    public static final String normalizeRelativeName(String name) {
+        if (name == null || Normalizer.isNormalized(name, Normalizer.Form.NFC)) {
+            return name;
+        }
+        return Normalizer.normalize(name, Normalizer.Form.NFC);
+    }
+
+    /**
      * @param relativeNameA
      * @param relativeNameB
      * @return true if the relative names are equals on this system. Respects
-     *         {@link FileInfo#IGNORE_CASE}
+     *         {@link FileInfo#IGNORE_CASE} and is insensitive to Unicode
+     *         NFC/NFD normalization differences (see
+     *         {@link #normalizeRelativeName(String)}).
      */
     public static final boolean equalsRelativeName(String relativeNameA,
         String relativeNameB)
@@ -157,6 +184,10 @@ public class Util {
         if (relativeNameA == relativeNameB) {
             return true;
         }
+        // PFI-93: compare in canonical NFC form so NFD names read from disk on
+        // macOS match the NFC names stored in the DB / sent by the server.
+        relativeNameA = normalizeRelativeName(relativeNameA);
+        relativeNameB = normalizeRelativeName(relativeNameB);
         if (FileInfo.IGNORE_CASE) {
             return relativeNameA.equalsIgnoreCase(relativeNameB);
         } else {

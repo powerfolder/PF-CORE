@@ -262,11 +262,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             throw new NullPointerException("diskFile is null");
         }
         String diskFileName = FileInfoFactory.decodeIllegalChars(diskFile.getFileName().toString());
-        boolean nameMatch = fileName.endsWith(diskFileName);
+        // PFI-93: compare in canonical NFC form - on macOS the disk name is NFD
+        // while fileName is NFC, so a raw endsWith/equalsIgnoreCase would wrongly
+        // reject the match and throw below.
+        String canonicalDiskFileName = Util.normalizeRelativeName(diskFileName);
+        boolean nameMatch = Util.normalizeRelativeName(fileName)
+            .endsWith(canonicalDiskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
             // Try harder if ignore case
-            nameMatch = diskFileName.equalsIgnoreCase(getFilenameOnly());
+            nameMatch = canonicalDiskFileName
+                .equalsIgnoreCase(Util.normalizeRelativeName(getFilenameOnly()));
         }
 
         // Check if files match
@@ -936,8 +942,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     private int hashCode0() {
-        int hash = IGNORE_CASE ? fileName.toLowerCase().hashCode() : fileName
-                .hashCode();
+        // PFI-93: hash on the canonical NFC form so an NFD name (read from disk
+        // on macOS) and the equivalent NFC name hash alike - keeping the
+        // hashCode/equals contract now that equals() is NFC-insensitive (see
+        // Util.equalsRelativeName).
+        String canonicalName = Util.normalizeRelativeName(fileName);
+        int hash = IGNORE_CASE ? canonicalName.toLowerCase().hashCode()
+                : canonicalName.hashCode();
         hash += folderInfo.hashCode();
         return hash;
     }
