@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -100,6 +102,29 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
 
+        transferEvents.clear();
+        getContollerBart().getTransferManager().addListener(
+            new TransferManagerAdapter() {
+                @Override
+                public void uploadCompleted(TransferManagerEvent event) {
+                    transferEvents.add("completed " + event.getUpload());
+                }
+
+                @Override
+                public void uploadBroken(TransferManagerEvent event) {
+                    transferEvents.add("broken " + event.getUpload());
+                }
+
+                @Override
+                public void uploadAborted(TransferManagerEvent event) {
+                    transferEvents.add("aborted " + event.getUpload());
+                }
+
+                @Override
+                public boolean fireInEventDispatchThread() {
+                    return false;
+                }
+            });
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(
             new TransferManagerModel(getContollerBart().getTransferManager()));
@@ -163,6 +188,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(countType(events, TableModelEvent.DELETE) >= 1,
             "completed upload should have been removed: " + events);
     }
+
+    private final List<String> transferEvents =
+        new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private Upload uploadRowOf(String fileName) {
         for (int row = 0; row < bartModel.getRowCount(); row++) {
@@ -247,7 +275,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     + " did not reach the model. Completed at bart: "
                     + getContollerBart().getTransferManager()
                         .getCompletedUploadsCollection()
-                    + ". Events: " + bartModelListener.events;
+                    + ", active: " + getContollerBart().getTransferManager()
+                        .getActiveUploads()
+                    + ", queued: " + getContollerBart().getTransferManager()
+                        .getQueuedUploads()
+                    + ". What the transfer manager announced: " + transferEvents
+                    + ". Model events: " + bartModelListener.events;
             }
         });
         TestHelper.waitForEmptyEDT();
