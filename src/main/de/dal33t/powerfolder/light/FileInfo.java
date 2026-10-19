@@ -170,11 +170,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                        String hashes, boolean deleted, String tags, FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("../")) {
+        if (relativeName.contains("../") || relativeName.contains("..\\")) {
             // The message is built ONLY on failure: String.format runs the regex engine, and this
             // constructor is on every FileInfo and DirectoryInfo the product creates (PFC-3543:
             // visible in a thread dump as Pattern.match under FolderInfo.getLocation).
-            throw new IllegalArgumentException("relativeName must not contain ../ Got: " + relativeName);
+            throw new IllegalArgumentException("relativeName must not contain a parent reference. Got: " + relativeName);
         }
 
         this.fileName = relativeName;
@@ -209,11 +209,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate, AccountInfo modifiedByAccount) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("../")) {
+        if (relativeName.contains("../") || relativeName.contains("..\\")) {
             // The message is built ONLY on failure: String.format runs the regex engine, and this
             // constructor is on every FileInfo and DirectoryInfo the product creates (PFC-3543:
             // visible in a thread dump as Pattern.match under FolderInfo.getLocation).
-            throw new IllegalArgumentException("relativeName must not contain ../ Got: " + relativeName);
+            throw new IllegalArgumentException("relativeName must not contain a parent reference. Got: " + relativeName);
         }
 
         this.fileName = relativeName;

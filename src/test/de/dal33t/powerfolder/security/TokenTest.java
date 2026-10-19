@@ -118,6 +118,72 @@ public class TokenTest {
         }
     }
 
+    @Test
+    public void testMCPAccessToken() {
+        Token token = Token.newMCPAccessToken(150000L, testAccount(), "client-abc");
+        String secret = token.generateSecret();
+
+        assertTrue(token.isMCP());
+        assertEquals("client-abc", token.getMCPClientId());
+        assertFalse(token.isMCPRefreshToken());
+        assertTrue(token.validate(secret));
+    }
+
+    @Test
+    public void testMCPRefreshToken() {
+        Token token = Token.newMCPRefreshToken(150000L, testAccount(), "client-abc");
+
+        assertTrue(token.isMCP());
+        assertEquals("client-abc", token.getMCPClientId());
+        assertTrue(token.isMCPRefreshToken());
+    }
+
+    @Test
+    public void testNonMCPTokensAreNotMCP() {
+        Token plain = Token.newAccessToken(150000L, testAccount());
+        assertFalse(plain.isMCP());
+        assertNull(plain.getMCPClientId());
+
+        Token webdav = Token.newAccessToken(150000L, testAccount());
+        webdav.setWebDAV();
+        assertTrue(webdav.isWebDAV());
+        assertFalse(webdav.isMCP());
+        assertNull(webdav.getMCPClientId());
+
+        Token oauth = Token.newOAuthAccessToken(testAccount());
+        assertFalse(oauth.isMCP());
+        assertNull(oauth.getMCPClientId());
+    }
+
+    @Test
+    public void testMCPClientIdParsing() {
+        Token token = Token.newMCPAccessToken(150000L, testAccount(), "client-abc");
+
+        token.addNotesWithDate("revoked by admin");
+        assertTrue(token.isMCP());
+        assertEquals("client-abc", token.getMCPClientId());
+
+        token.setNotes("access_token");
+        assertFalse(token.isMCP());
+        assertNull(token.getMCPClientId());
+
+        token.setNotes(Token.NOTES_MCP_PREFIX);
+        assertFalse(token.isMCP());
+        assertNull(token.getMCPClientId());
+
+        token.setNotes(Token.NOTES_MCP_PREFIX + "   ");
+        assertFalse(token.isMCP());
+
+        token.setNotes("mcp-not-a-marker");
+        assertFalse(token.isMCP());
+
+        try {
+            Token.newMCPAccessToken(150000L, testAccount(), null);
+            fail("MCP token without client id must not be generated");
+        } catch (Exception e) {
+        }
+    }
+
     private static AccountInfo testAccount() {
         return new Account().createInfo();
     }
