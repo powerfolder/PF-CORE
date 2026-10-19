@@ -195,14 +195,18 @@ public class FolderScanner extends PFComponent {
             List<FileInfo> strayFileInfos = new ArrayList<>();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
-                    remaining.put(fInfo.getRelativeName(), fInfo);
+                    // PFI-93: key by canonical NFC name so an NFD name read
+                    // from disk (macOS) matches this DB row at lookup time.
+                    remaining.put(Util.normalizeRelativeName(fInfo.getRelativeName()), fInfo);
                 } else if (topFolder && !fInfo.isDeleted()) {
                     strayFileInfos.add(fInfo);
                 }
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
-                    remaining.put(fInfo.getRelativeName(), fInfo);
+                    // PFI-93: key by canonical NFC name so an NFD name read
+                    // from disk (macOS) matches this DB row at lookup time.
+                    remaining.put(Util.normalizeRelativeName(fInfo.getRelativeName()), fInfo);
                 } else if (topFolder && !fInfo.isDeleted()) {
                     strayFileInfos.add(fInfo);
                 }
@@ -232,7 +236,8 @@ public class FolderScanner extends PFComponent {
             for (int i = 0; i < n; i++) {
                 Path file = unableToScanFiles.get(i);
                 String relativeName = FileInfoFactory.buildFileName(currentScanningFolder.getLocalBase(), file);
-                remaining.remove(relativeName);
+                // PFI-93: keys are stored NFC-normalized, so look up NFC too.
+                remaining.remove(Util.normalizeRelativeName(relativeName));
                 // TRAC #523
                 if (Files.isDirectory(file)) {
                     String dirPath = file.toAbsolutePath().toString().replace(
@@ -592,11 +597,14 @@ public class FolderScanner extends PFComponent {
             "currentScanningFolder must not be null");
 
         // #1531 / #1804
-        FileInfo exists = remaining.remove(filename);
+        // PFI-93: the disk name (filename) can be NFD on macOS while the map is
+        // keyed by canonical NFC names - normalize the lookup key so it matches.
+        FileInfo exists = remaining.remove(Util.normalizeRelativeName(filename));
         if (exists == null && FileInfo.IGNORE_CASE) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
-                if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
+                // PFI-93: Util.equalsRelativeName is NFC- and case-insensitive.
+                if (Util.equalsRelativeName(otherFInfo.getRelativeName(), filename)) {
                     if (isFiner()) {
                         logFiner("Found local diskfile with diffrent name-case in db. file: "
                             + fileToScan.toAbsolutePath().toString()
@@ -613,7 +621,8 @@ public class FolderScanner extends PFComponent {
                     // + otherFInfo.toDetailString()
                     // + " Probably FolderInfo objects are not equal?");
                     // }
-                    remaining.remove(otherFInfo.getRelativeName());
+                    // PFI-93: remove by the NFC-normalized key (keys are stored NFC).
+                    remaining.remove(Util.normalizeRelativeName(otherFInfo.getRelativeName()));
                     exists = otherFInfo;
                 }
             }
