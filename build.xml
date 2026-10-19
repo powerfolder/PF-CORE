@@ -184,8 +184,14 @@ For creation of the installer:
 			     Pure-Java (JDK unix-socket transport), no native libs. -->
 			<include name="dbus-java-core-5.2.2.jar" />
 			<include name="dbus-java-transport-native-unixsocket-5.2.2.jar" />
+			<!-- INT-1785: the only slf4j-api - an older one next to it (cryptomator brought 1.7.25) wins in the jar
+			     and leaves the 2.0 jdk14 provider unused, i.e. all SLF4J logging silent. -->
 			<include name="slf4j-api-2.0.17.jar" />
 			<include name="slf4j-jdk14-2.0.17.jar" />
+
+			<!-- INT-1785: needed by cryptofs below AND by Velocity 2 / the PF-PRO server, which take it from
+			     this jar - so it lives here, not among the cryptomator libraries. -->
+			<include name="commons-lang3-3.17.0.jar" />
 
 			<!-- ContextMenu and IconOverlay -->
 			<include name="com.liferay.nativity-1.0.6.jar" />
@@ -208,7 +214,6 @@ For creation of the installer:
 
 			<!-- Encrypted storage - cryptolib/fs -->
 			<include name="cryptomator/commons-codec-1.10.jar" />
-            <include name="cryptomator/commons-lang3-3.17.0.jar"/>
             <include name="cryptomator/cryptofs-1.4.2.jar"/>
             <include name="cryptomator/cryptolib-1.1.6.jar"/>
             <include name="cryptomator/dagger-2.11.jar"/>
@@ -217,7 +222,6 @@ For creation of the installer:
             <include name="cryptomator/guava-33.7.1-jre.jar"/>
             <include name="cryptomator/failureaccess-1.0.3.jar"/>
 			<include name="cryptomator/javax.inject-1.jar" />
-			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
             <include name="cryptomator/siv-mode-1.2.2.jar"/>
 
             <include name="quartz-2.5.2.jar"/>
@@ -335,6 +339,8 @@ For creation of the installer:
 
 		<!-- Intermediate jar, only consumed by the PF-PRO server build (jar-free): fast deflate for own
 		     classes, library entries are copied as-is instead of being re-compressed. -->
+		<!-- INT-1785: update="true" keeps entries of a replaced library version - start empty. -->
+		<delete file="${dist.dir}/PowerFolder.jar" quiet="true" />
 		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true"
 			duplicate="preserve" level="1" keepcompression="true">
 			<manifest>
@@ -354,6 +360,8 @@ For creation of the installer:
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
+		<!-- INT-1785: update="true" keeps entries of a replaced library version - start empty. -->
+		<delete file="${dist.dir}/PowerFolder.jar" quiet="true" />
 		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true" duplicate="preserve">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />

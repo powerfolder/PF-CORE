@@ -282,6 +282,15 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
+      <library name="commons-lang3-3.17.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-lang3-3.17.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
       <library name="slf4j-api-2.0.17.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/slf4j-api-2.0.17.jar!/" />
