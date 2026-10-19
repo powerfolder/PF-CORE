@@ -25,8 +25,11 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderWatcher;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -59,6 +62,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
@@ -84,6 +88,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+        rowHistory.clear();
+        recordRowsOf(getFolderAtBart(), "bart");
+        recordRowsOf(getFolderAtLisa(), "lisa");
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
@@ -1321,8 +1328,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
         Path fileLisa = fLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
-        assertEquals(1, fBart.getVersion(), "File version at bart not 1: " + fBart.toDetailString());
-        assertEquals(1, fLisa.getVersion(), "File version at lisa not 1: " + fLisa.toDetailString());
+        assertEquals(1, fBart.getVersion(),
+            () -> "File version at bart not 1: " + fBart.toDetailString()
+                + ". Every row change either side published: " + rowHistory);
+        assertEquals(1, fLisa.getVersion(),
+            () -> "File version at lisa not 1: " + fLisa.toDetailString()
+                + ". Every row change either side published: " + rowHistory);
         assertTrue(TestHelper.compareFiles(fileBart, fileLisa),
             () -> "Lisa recovered from the MD5 error but her copy is not Bart's:"
                 + " " + TestHelper.describeDifference(fileBart, fileLisa)
@@ -2431,6 +2442,48 @@ public class FileTransferTest extends TwoControllerTestCase {
     /**
      * For checking the correct events.
      */
+    private final List<String> rowHistory = new CopyOnWriteArrayList<>();
+
+    private void recordRowsOf(final Folder folder, final String nick) {
+        folder.addFolderListener(new FolderAdapter() {
+            @Override
+            public void fileChanged(FolderEvent event) {
+                note(nick, "changed", event.getScannedFileInfos());
+            }
+
+            @Override
+            public void filesDeleted(FolderEvent event) {
+                note(nick, "deleted", event.getDeletedFileInfos());
+            }
+
+            @Override
+            public void scanResultCommitted(FolderEvent event) {
+                ScanResult result = event.getScanResult();
+                if (result == null) {
+                    return;
+                }
+                note(nick, "scanned new", result.getNewFiles());
+                note(nick, "scanned changed", result.getChangedFiles());
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        });
+    }
+
+    private void note(String nick, String what, Collection<FileInfo> files) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+        List<String> details = new ArrayList<>();
+        for (FileInfo file : files) {
+            details.add(file.toDetailString());
+        }
+        rowHistory.add(nick + " " + what + " " + details);
+    }
+
     private class MyTransferManagerListener implements TransferManagerListener {
         public int downloadRequested;
         public int downloadQueued;
