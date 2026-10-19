@@ -64,7 +64,7 @@ test-macOS:
   tags:
     - macOS
   script:
-    - for pid in $(pgrep -f java || true); do case "$(ps -o command= -p $pid 2>/dev/null)" in *"$CI_PROJECT_DIR"*) kill -9 "$pid" || true;; esac; done
+    - if [ -n "$CI_PROJECT_DIR" ]; then for pid in $(pgrep -f java || true); do case "$(ps -o command= -p $pid 2>/dev/null)" in *"$CI_PROJECT_DIR"*) kill -9 "$pid" || true;; esac; done; fi
     - for pid in $(ps -A -o pid=,etime=,comm= | awk '/java/ && ($2 ~ /-/ || $2 ~ /^[0-9]+:[0-9][0-9]:[0-9][0-9]$/) {print $1}'); do kill -9 "$pid" || true; done
     - mkdir -p test-reports
     # PFC-3573: external thread-dump watchdog. If a test JVM runs longer than ~10 minutes it is considered hung;
@@ -102,7 +102,7 @@ test-Windows:
   tags:
     - Windows
   script:
-    - powershell -Command "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -and $_.CommandLine.Contains($env:CI_PROJECT_DIR) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; exit 0"
+    - powershell -Command "$dir = $env:CI_PROJECT_DIR; if ($dir) { Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -and $_.CommandLine.Contains($dir) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } }; exit 0"
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -lt (Get-Date).AddHours(-2) } | Stop-Process -Force; exit 0"
     - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
   artifacts:
