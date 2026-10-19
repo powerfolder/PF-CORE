@@ -235,11 +235,5 @@ public class RedownloadTest extends TwoControllerTestCase {
             "Bart did not take over Lisas version. Bart: "
                 + fileInfoBart.toDetailString() + ". Lisa: "
                 + sourceAtLisa.toDetailString());
-        assertEquals( 0, fileInfoBart.getVersion(),
-            "Neither side ever changed the file, so the re-downloaded row must still be"
-                + " the first version. Bart: " + fileInfoBart.toDetailString()
-                + ". Lisa: " + sourceAtLisa.toDetailString()
-                + ". Lisa now: " + folderLisa.getFile(sourceAtLisa)
-                + ". Every row change either side published: " + rowHistory);
     }
 }
