@@ -42,6 +42,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3536: Deleting a directory that holds a subfolder share.
@@ -61,6 +65,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
     /** A member with write access, and nothing beyond it. */
     private static final AccountInfo WRITE_MEMBER = new AccountInfo("oid-member", "member@powerfolder.com");
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -70,6 +75,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -80,24 +86,21 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * The whole tree goes: the share of the interrupted subfolder inside it is dissolved, its content
      * comes back to the top folder and is deleted with everything else.
      */
+    @Test
     public void testDeletingADirectoryDissolvesTheShareInsideIt() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
         Folder subFolder = subFolderAt(topFolder, "projects/reports", false);
         Path insideSub = projects.resolve("reports/Report.txt");
-        assertNotNull("Sanity: the interrupted subfolder owns the row of its file",
-            subFolder.getFileInfo("Report.txt"));
+        assertNotNull(subFolder.getFileInfo("Report.txt"), "Sanity: the interrupted subfolder owns the row of its file");
 
         topFolder.removeFilesLocal((AccountInfo) null, directory(topFolder, "projects"));
 
-        assertNull("The share is dissolved",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertFalse("The file inside the former subfolder is deleted", Files.exists(insideSub));
-        assertFalse("... and the whole directory with it", Files.exists(projects));
-        assertTrue("The top folder reports the directory as deleted",
-            topFolder.getFileInfo("projects").isDeleted());
-        assertTrue("... and the file that was the subfolder's",
-            topFolder.getFileInfo("projects/reports/Report.txt").isDeleted());
+        assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
+        assertFalse(Files.exists(insideSub), "The file inside the former subfolder is deleted");
+        assertFalse(Files.exists(projects), "... and the whole directory with it");
+        assertTrue(topFolder.getFileInfo("projects").isDeleted(), "The top folder reports the directory as deleted");
+        assertTrue(topFolder.getFileInfo("projects/reports/Report.txt").isDeleted(), "... and the file that was the subfolder's");
     }
 
     /**
@@ -110,11 +113,12 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * the direct files and the directory itself behind: nothing was marked as deleted, nothing was
      * broadcast, and the peers synchronized the content straight back.
      */
+    @Test
     public void testDeletingADirectoryTakesEverySubdirectoryAtOnce() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = Files.createDirectories(topFolder.getPhysicalDir().resolve("projects"));
         scanFolder(topFolder);
-        assertNotNull("Sanity: the directory itself is known", topFolder.getFileInfo("projects"));
+        assertNotNull(topFolder.getFileInfo("projects"), "Sanity: the directory itself is known");
 
         // Deliberately NOT scanned: unknown content is what the recursive fallback is for.
         for (String name : new String[]{"a", "b", "c"}) {
@@ -127,12 +131,11 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         topFolder.removeFilesLocal((AccountInfo) null, directory(topFolder, "projects"));
 
         for (String name : new String[]{"a", "b", "c"}) {
-            assertFalse(name + " is gone from disk", Files.exists(projects.resolve(name)));
+            assertFalse(Files.exists(projects.resolve(name)), name + " is gone from disk");
         }
-        assertFalse("The direct file of the directory is gone", Files.exists(projects.resolve("Direct.txt")));
-        assertFalse("The whole tree is gone from disk", Files.exists(projects));
-        assertTrue("The top folder reports the directory as deleted",
-            topFolder.getFileInfo("projects").isDeleted());
+        assertFalse(Files.exists(projects.resolve("Direct.txt")), "The direct file of the directory is gone");
+        assertFalse(Files.exists(projects), "The whole tree is gone from disk");
+        assertTrue(topFolder.getFileInfo("projects").isDeleted(), "The top folder reports the directory as deleted");
     }
 
     /**
@@ -140,6 +143,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * permission structure does not outlive the directory it lives in, and whoever may empty that
      * directory file by file may take the share along.
      */
+    @Test
     public void testWriteAccessIsEnoughToDeleteADirectoryHoldingAnInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
@@ -148,11 +152,9 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
 
         topFolder.removeFilesLocal(WRITE_MEMBER, directory(topFolder, "projects"));
 
-        assertNull("The share is dissolved",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertFalse("The directory is gone from disk", Files.exists(projects));
-        assertTrue("The top folder reports the directory as deleted",
-            topFolder.getFileInfo("projects").isDeleted());
+        assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
+        assertFalse(Files.exists(projects), "The directory is gone from disk");
+        assertTrue(topFolder.getFileInfo("projects").isDeleted(), "The top folder reports the directory as deleted");
     }
 
     /**
@@ -161,6 +163,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * it - otherwise it would hang in the air, with nothing above it that still knows the way. What is
      * deleted is everything else on the way, where the right to do so is there.
      */
+    @Test
     public void testReadAccessOnTheSubFolderKeepsItAndItsPathButNotTheRest() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
@@ -172,17 +175,15 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
 
         topFolder.removeFilesLocal(WRITE_MEMBER, directory(topFolder, "projects"));
 
-        assertNotNull("The share stays",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertTrue("The file inside the subfolder stays", Files.exists(insideSub));
-        assertTrue("... and the path leading down to it", Files.exists(projects));
-        assertFalse("The top folder does not report the directory as deleted",
-            topFolder.getFileInfo("projects").isDeleted());
+        assertNotNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share stays");
+        assertTrue(Files.exists(insideSub), "The file inside the subfolder stays");
+        assertTrue(Files.exists(projects), "... and the path leading down to it");
+        assertFalse(topFolder.getFileInfo("projects").isDeleted(), "The top folder does not report the directory as deleted");
 
-        assertFalse("Everything else on the way is deleted all the same", Files.exists(sibling));
-        assertFalse("... its directory with it", Files.exists(projects.resolve("archive")));
-        assertTrue("... and reported as deleted", topFolder.getFileInfo("projects/archive").isDeleted());
-        assertFalse("... and the plain file of the directory", Files.exists(projects.resolve("Plain.txt")));
+        assertFalse(Files.exists(sibling), "Everything else on the way is deleted all the same");
+        assertFalse(Files.exists(projects.resolve("archive")), "... its directory with it");
+        assertTrue(topFolder.getFileInfo("projects/archive").isDeleted(), "... and reported as deleted");
+        assertFalse(Files.exists(projects.resolve("Plain.txt")), "... and the plain file of the directory");
     }
 
     /**
@@ -191,6 +192,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * fails on the subfolder inside, the fallback only deletes what this folder's database knows, and
      * the directory stays round after round.
      */
+    @Test
     public void testADeletionFromAnotherClientDissolvesTheShareAsWell() throws IOException {
         final Folder topBart = getFolderAtBart();
         Folder topLisa = getFolderAtLisa();
@@ -226,9 +228,8 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
             }
         });
 
-        assertNull("The share is dissolved",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertTrue("The directory is reported as deleted", topBart.getFileInfo("projects").isDeleted());
+        assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
+        assertTrue(topBart.getFileInfo("projects").isDeleted(), "The directory is reported as deleted");
     }
 
     /**
@@ -237,23 +238,21 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * and until it does, the directory holds the subfolder's .PowerFolder and will not go. That is what
      * four directories on the test system reported as "Not deleted, content left behind".
      */
+    @Test
     public void testDeletingTheSubFoldersOwnDirectoryGoesThroughTheTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
         Folder subFolder = subFolderAt(topFolder, "projects/reports", false);
         Path reports = projects.resolve("reports");
-        assertTrue("Sanity: the subfolder has a system directory of its own",
-            Files.isDirectory(subFolder.getSystemSubDir()));
+        assertTrue(Files.isDirectory(subFolder.getSystemSubDir()), "Sanity: the subfolder has a system directory of its own");
 
         // As the web interface does it: the base directory of the folder the path resolved to.
         subFolder.removeFilesLocal((AccountInfo) null, subFolder.getBaseDirectoryInfo());
 
-        assertNull("The share is dissolved",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
-        assertFalse("The directory is gone from disk, .PowerFolder and all", Files.exists(reports));
-        assertTrue("The top folder reports it as deleted",
-            topFolder.getFileInfo("projects/reports").isDeleted());
-        assertTrue("The directory above it is untouched", Files.isDirectory(projects));
+        assertNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "The share is dissolved");
+        assertFalse(Files.exists(reports), "The directory is gone from disk, .PowerFolder and all");
+        assertTrue(topFolder.getFileInfo("projects/reports").isDeleted(), "The top folder reports it as deleted");
+        assertTrue(Files.isDirectory(projects), "The directory above it is untouched");
     }
 
     /**
@@ -261,13 +260,14 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * Every deletion used to be a silent no-op - the API answered "deleted" and the entry stayed in the
      * folder view, attempt after attempt, which is what five directories on the test system showed.
      */
+    @Test
     public void testADirectoryWhoseContentIsAlreadyGoneIsStillReportedDeleted() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
         Path orphan = projects.resolve("archive");
         TestHelper.createRandomFile(orphan, "Old.txt");
         scanFolder(topFolder);
-        assertFalse("Sanity: the row is alive", topFolder.getFileInfo("projects/archive").isDeleted());
+        assertFalse(topFolder.getFileInfo("projects/archive").isDeleted(), "Sanity: the row is alive");
 
         // Gone behind the folder's back - no scan, so the row still says it is there.
         PathUtils.recursiveDelete(orphan);
@@ -275,7 +275,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
 
         topFolder.removeFilesLocal((AccountInfo) null, directory(topFolder, "projects/archive"));
 
-        assertTrue("The row is reported as deleted", topFolder.getFileInfo("projects/archive").isDeleted());
+        assertTrue(topFolder.getFileInfo("projects/archive").isDeleted(), "The row is reported as deleted");
     }
 
     /**
@@ -286,28 +286,26 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
      * the deletion marker was built and then dropped, on every attempt, so nobody could delete the
      * directory. This folder was refused the write and the subfolder does not own the row.
      */
+    @Test
     public void testARowLeftBehindInsideAnInterruptedSubFolderCanBeDeleted() throws IOException {
         Folder topFolder = getFolderAtBart();
         Path projects = createTree(topFolder);
         Folder subFolder = subFolderAt(topFolder, "projects/reports", false);
-        assertTrue("Sanity: the subfolder owns its subtree",
-            topFolder.isInInterruptedSubFolder(projects.resolve("reports")));
+        assertTrue(topFolder.isInInterruptedSubFolder(projects.resolve("reports")), "Sanity: the subfolder owns its subtree");
 
         // A row of the top folder inside that subtree, as the migration left them behind.
         FileInfo leftBehind = FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(),
             "reports/Leftover.txt", null, 12, getContollerBart().getMySelf().getInfo(), null,
             new Date(), 1, null, false, null);
         topFolder.getDAO().store(null, leftBehind);
-        assertNotNull("Sanity: the row is in the top folder's database",
-            topFolder.getFileInfo("reports/Leftover.txt"));
+        assertNotNull(topFolder.getFileInfo("reports/Leftover.txt"), "Sanity: the row is in the top folder's database");
 
         topFolder.removeFilesLocal((AccountInfo) null, topFolder.getFileInfo("reports/Leftover.txt"));
 
         FileInfo after = topFolder.getFileInfo("reports/Leftover.txt");
         assertNotNull(after);
-        assertTrue("The row left behind is reported as deleted", after.isDeleted());
-        assertNotNull("Sanity: the subfolder keeps its share",
-            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
+        assertTrue(after.isDeleted(), "The row left behind is reported as deleted");
+        assertNotNull(getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()), "Sanity: the subfolder keeps its share");
     }
 
     /** "projects" with a file of its own and a "reports" subdirectory holding one, scanned. */
@@ -328,15 +326,14 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         if (!inherits) {
             subFolder.setInheritsPermissions(false);
         }
-        assertEquals("Sanity: the subfolder's inheritance", inherits,
-            subFolder.getInfo().inheritsPermissions());
+        assertEquals(inherits, subFolder.getInfo().inheritsPermissions(), "Sanity: the subfolder's inheritance");
         return subFolder;
     }
 
     private static DirectoryInfo directory(Folder folder, String relativeName) {
         FileInfo fInfo = folder.getFileInfo(relativeName);
-        assertNotNull(folder + ": no row for " + relativeName, fInfo);
-        assertTrue(relativeName + " is no directory", fInfo.isDiretory());
+        assertNotNull(fInfo, folder + ": no row for " + relativeName);
+        assertTrue(fInfo.isDiretory(), relativeName + " is no directory");
         return (DirectoryInfo) fInfo;
     }
 

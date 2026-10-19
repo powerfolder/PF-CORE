@@ -198,6 +198,16 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
+     * PFC-3641: Drops the seeds of a tree whose top folder is unmounted - a barrier only holds back the
+     * scan of a mounted top folder. The next mount of the tree seeds it again from the database.
+     *
+     * @param topFolder the unmounted top folder
+     */
+    void dropSeedsOf(FolderInfo topFolder) {
+        seeds.keySet().removeIf(subFolder -> topFolder.equals(subFolder.getTopFolder()));
+    }
+
+    /**
      * PFC-3543: Drops the seed of a subfolder that is GONE - deleted, not merely unmounted
      * <p>
      * {@link #refresh0} retires a seed when its folder mounts, and that is the only way out it has:
@@ -420,6 +430,22 @@ public class InterruptedSubFolderIndex {
             return false;
         }
         FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(ownInfo, fInfo.getRelativeName());
-        return innermost != null && !innermost.equals(ownInfo);
+        if (innermost == null || innermost.equals(ownInfo)) {
+            return false;
+        }
+        /* The same rule the path variant above was given by PFC-3634, which this check was not: the
+         * querying folder owns the path where it lies INSIDE that subfolder, not only where it IS the
+         * subfolder. A subfolder that inherits its permissions and sits below an interrupted one was
+         * told its own content belongs to somebody else - so it stored nothing, the interrupted folder
+         * above is barred from the subtree by this very rule, and the top folder even more so. Nobody
+         * was left to store it: a new directory existed on disk and in no database, invisible to every
+         * listing, and the next attempt answered "already exists" from the disk check (PFS-5881). */
+        String barrier = innermost.locationPath();
+        String own = ownInfo.locationPath();
+        if (barrier == null || own == null) {
+            // No location to compare - the barrier decides, as before.
+            return true;
+        }
+        return !own.equals(barrier) && !own.startsWith(barrier + '/');
     }
 }

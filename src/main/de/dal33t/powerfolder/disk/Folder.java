@@ -919,8 +919,8 @@ public class Folder extends PFComponent {
      * <ul>
      *   <li>If the folder is located inside another top folder, it is corrected
      *       to be a subfolder of that top folder.</li>
-     *   <li>If the folder is no longer located inside any top folder but is marked
-     *       as a subfolder, it is promoted to a top folder.</li>
+     *   <li>A subfolder found inside no mounted top folder is left unchanged - PFC-3649: its top folder may simply
+     *       not be mounted yet.</li>
      *   <li>The correct parent directory inside the top folder is derived from the
      *       filesystem path.</li>
      * </ul>
@@ -951,30 +951,16 @@ public class Folder extends PFComponent {
             path = path.getParent();
         }
 
-        if (foundTopFolder == null && isTopFolder()) {
-            // Regular case for top folders
-            return false;
-        }
-
-        if (foundTopFolder == null && isSubFolder()) {
-            // PFC-3543: NEVER auto-promote a subfolder with interrupted inheritance. Its whole point
-            // is data isolation below a parent: dropping the parent silently discards the permission
-            // barrier, the location and the index entry - and the version-bumped change replicates.
-            // An empty ancestor chain is no proof of relocation either (mount order, disconnected
-            // device, a path bug - the storage-path check was one and promoted 150 of them). Log
-            // SEVERE and keep the hierarchy for a human to inspect.
-            if (!currentInfo.inheritsPermissions()) {
+        if (foundTopFolder == null) {
+            // PFC-3543, PFC-3649: never promote a subfolder - no mounted folder above is no proof of a relocation, its
+            // top folder may just not be mounted yet. Losing the permission barrier of an interrupted one is SEVERE.
+            if (isSubFolder() && !currentInfo.inheritsPermissions()) {
                 logSevere(this + ": NOT promoting to topfolder - permission inheritance is interrupted."
                     + " No mounted folder found above " + getLocalBase() + ", hierarchy left unchanged");
-                return false;
+            } else if (isSubFolder()) {
+                logInfo(this + ": NOT promoting to topfolder - no mounted folder found above " + getLocalBase()
+                    + ", hierarchy left unchanged");
             }
-            logWarning(this + ": Promoting folder to topfolder based on filesystem location");
-            FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
-            updateInfo(corrected);
-            return true;
-        }
-
-        if (foundTopFolder == null) {
             return false;
         }
 
@@ -987,7 +973,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        if (getTopFolder().equals(foundTopFolder)) {
+        // PFC-3649: own top folder not mounted - it is not another one's subfolder just because it lies in its tree
+        if (getTopFolder() == null || getTopFolder().equals(foundTopFolder)) {
             return false;
         }
 
@@ -1354,13 +1341,22 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
         }
-        if (isSubFolder()) {
-            Folder topFolder = getTopFolder();
-            if (topFolder != null) {
+        /* PFS-5884: only a folder that BORROWS its database leaves the scan to somebody else - the
+         * holder, whose scan walks this subtree and stores into the very database this folder reads.
+         * A subfolder with a database of its own (interrupted) has to scan itself: the folder around it
+         * refuses its subtree, so nobody else ever reached it - neither at maintenance nor on "scan
+         * file system", and a directory that existed on disk without a row stayed invisible for good. */
+        if (dao instanceof SubFolderFileInfoDAOProxy) {
+            FolderInfo holderInfo = daoHolder;
+            Folder holder = holderInfo != null ? holderInfo.getFolder(getController()) : null;
+            if (holder == null || holder == this) {
+                holder = getTopFolder();
+            }
+            if (holder != null && holder != this) {
                 if (isFiner()) {
-                    logFiner(this + ": Skipping scan of local filesystem. is handled by top folder " + topFolder);
+                    logFiner(this + ": Scan of local filesystem is done by " + holder + ", whose database holds the rows");
                 }
-                return false;
+                return holder.scanLocalFiles();
             }
         }
         checkIfDeviceDisconnected();
@@ -1933,6 +1929,8 @@ public class Folder extends PFComponent {
             return;
         }
         if (isDeviceDisconnected()) {
+            // Said out loud: this returns without storing anything, and every other exit above says so.
+            logWarning(dirInfo + ": Not scanning directory, the device is disconnected: " + dir);
             return;
         }
 
@@ -2107,10 +2105,14 @@ public class Folder extends PFComponent {
     public List<FolderInfo> interruptedSubFoldersIn(String location) {
         List<FolderInfo> inside = new ArrayList<>();
         FolderInfo top = currentInfo.isSubFolder() ? currentInfo.getTopFolder() : currentInfo;
+        // A blank location is the whole folder - every barrier of the tree lies inside a top folder.
+        // It used to match nothing at all, since no location starts with a lone '/'.
+        boolean everything = StringUtils.isBlank(location);
         for (FolderInfo barrier : InterruptedSubFolderIndex.barriersOf(top)) {
             String barrierLocation = barrier.locationPath();
             if (barrierLocation != null
-                && (barrierLocation.equals(location) || barrierLocation.startsWith(location + '/')))
+                && (everything || barrierLocation.equals(location)
+                    || barrierLocation.startsWith(location + '/')))
             {
                 inside.add(barrier);
             }
@@ -2303,22 +2305,31 @@ public class Folder extends PFComponent {
              * So the whole deletion is handed up, in the top folder's coordinates: it dissolves the
              * share - which hands the rows, the index and the archived versions back - and then deletes
              * an ordinary directory of its own. */
-            if (isSubFolder() && containsOwnBaseDirectory(fInfos)) {
-                Folder topFolder = getTopFolder();
-                if (topFolder != null && topFolder != this) {
-                    List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
-                    for (FileInfo fInfo : fInfos) {
-                        inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
-                    }
+            Folder topFolder = isSubFolder() ? getTopFolder() : null;
+            if (topFolder != null && topFolder != this) {
+                List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
+                for (FileInfo fInfo : fInfos) {
+                    inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
+                }
+                if (containsOwnBaseDirectory(fInfos)) {
                     logFine(this + ": Deleting the directory of this subfolder through " + topFolder);
                     topFolder.removeFilesLocal(deletingAccount, inTopCoordinates);
                     return;
                 }
+                // PFC-3646: the shares below the deleted directories - only the top folder dissolves them
+                topFolder.unshareSubFoldersIn(inTopCoordinates, deletingAccount);
+            } else {
+                /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
+                 * to be done before anything is read from the database - the content of an interrupted
+                 * subfolder only becomes ours again with the restore inside unshare. */
+                unshareSubFoldersIn(fInfos, deletingAccount);
+                if (isTopFolder()) {
+                    fInfos = handOverToOwners(fInfos, deletingAccount);
+                    if (fInfos.isEmpty()) {
+                        return;
+                    }
+                }
             }
-            /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
-             * to be done before anything is read from the database - the content of an interrupted
-             * subfolder only becomes ours again with the restore inside unshare. */
-            unshareSubFoldersIn(fInfos, deletingAccount);
         }
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
@@ -2410,19 +2421,58 @@ public class Folder extends PFComponent {
         setDBDirty();
     }
 
+    /**
+     * PFS-5881: the folder whose database holds this subfolder's rows.
+     * <p>
+     * A subfolder that inherits its permissions has no database of its own and borrows one. That used
+     * to be the top folder unconditionally - but an interrupted subfolder above owns its whole subtree
+     * (PFC-3571), and everything reading that subtree goes to the interrupted folder. Writing to the
+     * top folder instead put the rows in the one database that may not hand them out, and the readers
+     * looked in another that never had them: a new directory answered 201, appeared in no listing, and
+     * "already exists" on the next attempt.
+     *
+     * @return the innermost interrupted subfolder above this one, or the top folder when there is none
+     */
+    private Folder databaseHolder() {
+        FolderInfo interrupted = FolderInfo.findEnclosingInterruptedSubFolder(currentInfo, "");
+        if (interrupted != null && !interrupted.equals(currentInfo)) {
+            Folder holder = interrupted.getFolder(getController());
+            if (holder != null) {
+                return holder;
+            }
+            /* Not an error: subfolders mount side by side, so the holder may simply not be there
+               yet. Remembered, so getDAO() can wire the proxy to it once it is - before this, the
+               fallback lasted for the life of the mount and every reader of the subtree looked in a
+               database that was never written to. */
+            daoHolderPending = interrupted;
+            logFine(this + ": " + interrupted.getLocalizedName() + " holds this subfolder's rows and is"
+                + " not mounted yet - using the top folder until it is");
+        }
+        return getTopFolder();
+    }
+
+    /**
+     * The interrupted subfolder that should hold this one's rows but was not mounted when the DAO was
+     * built. Null once it has been picked up, and for every folder that never needed one.
+     */
+    private volatile FolderInfo daoHolderPending;
+
     private void initFileInfoDAO() {
         if (dao != null) {
             // Stop old DAO
             dao.stop();
         }
+        daoHolderPending = null;
+        daoHolder = null;
         if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
-            Folder topFolder = getTopFolder();
-            if (topFolder != null) {
-                FileInfoDAO parentDAO = topFolder.getDAO();
-                logFine(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
-                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
+            Folder holder = databaseHolder();
+            if (holder != null) {
+                FileInfoDAO parentDAO = holder.getDAO();
+                logFine(this + ": Using DAO of " + holder + " at " + currentInfo.getLocation());
+                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo, holder.getInfo());
+                daoHolder = holder.getInfo();
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
             } else {
@@ -2431,6 +2481,12 @@ public class Folder extends PFComponent {
             }
         }
     }
+
+    /**
+     * PFS-5884: the folder whose database carries this one's rows, while {@link #dao} is a
+     * {@link SubFolderFileInfoDAOProxy} onto it. Null for every folder that keeps its own.
+     */
+    private volatile FolderInfo daoHolder;
 
     /**
      * PFC-3543: Whether the given path belongs to an interrupted subfolder (its base
@@ -2456,6 +2512,35 @@ public class Folder extends PFComponent {
      */
     public boolean isInInterruptedSubFolder(FileInfo fInfo) {
         return getController().getFolderRepository().getInterruptedSubFolders().contains(fInfo, getInfo());
+    }
+
+    /**
+     * PFC-3641: Erases the FileInfos of this top folder from its database that lie inside an interrupted
+     * subfolder - recorded while the barrier was missing on this node. Raw, like the interrupt itself,
+     * nothing is propagated: that content, the root directory included (PFC-3575), belongs to the
+     * subfolder's own database.
+     *
+     * @param fileInfos FileInfos of this folder the scan left out because of a barrier
+     */
+    void eraseFileInfosInInterruptedSubFolders(Collection<FileInfo> fileInfos) {
+        List<FileInfo> erased = new ArrayList<>();
+        for (FileInfo fInfo : fileInfos) {
+            // Asked again: the scan ran in between, and the barrier may be gone by now
+            if (!isInInterruptedSubFolder(fInfo)) {
+                continue;
+            }
+            getDAO().delete(null, fInfo);
+            erased.add(fInfo);
+        }
+        if (erased.isEmpty()) {
+            return;
+        }
+        setDBDirty();
+        if (searchIndexManager != null) {
+            searchIndexManager.purgeFiles(erased);
+        }
+        logInfo(this + ": Erased " + erased.size() + " FileInfo(s) inside interrupted subfolders"
+            + " - recorded while their barrier was missing");
     }
 
     /**
@@ -2612,6 +2697,11 @@ public class Folder extends PFComponent {
                     logSevere(this + ": Move to " + newBase + " failed, restoring " + oldLocation);
                     restoreLocation(topFolder, oldLocation, nestedBefore);
                     return null;
+                }
+                // PFS-5926: the nested ones moved with the directory, their base still names the old place
+                for (Folder child : nested.keySet()) {
+                    Path childBase = topFolder.getLocalBase().resolve(child.getInfo().locationPath());
+                    repository.rebaseLocalFolder(child, childBase);
                 }
                 logInfo(moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
                     + movedRows.size() + " rows re-addressed, " + nested.size() + " nested subfolder(s)");
@@ -2810,11 +2900,11 @@ public class Folder extends PFComponent {
                 /* PFS-5306: last chance to save the tags of the directory this folder occupies - its
                  * row is about to leave the top folder and is not representable in this folder's own
                  * coordinates (blank name), so nothing would carry them. Tagging travels onto the
-                 * FolderInfo, where the tags of a subfolder belong anyway; a directory tagged before
-                 * it was shared brought them along already (FolderInfoFactory#newFolder). */
-                String rootTags = tagsOfRootRow(toMigrate);
-                if (StringUtils.isNotBlank(rootTags) && StringUtils.isBlank(newInfo.getTags())) {
-                    newInfo = FolderInfoFactory.changeTags(newInfo, rootTags);
+                 * FolderInfo, where the tags of an interrupted subfolder belong. */
+                // PFS-5911: always - the copy the FolderInfo got when shared is stale, the directory led until now
+                FileInfo baseDirectory = baseDirectoryIn(toMigrate);
+                if (baseDirectory != null) {
+                    newInfo = FolderInfoFactory.changeTags(newInfo, baseDirectory.getTags());
                 }
             }
 
@@ -2859,7 +2949,7 @@ public class Folder extends PFComponent {
                  * without it the parent has no row for that directory until the next scan, and
                  * everything that resolves a directory by its row (unshare, versions, links) fails in
                  * the meantime. */
-                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion()));
+                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion(), currentInfo.getTags()));
 
                 List<FileInfo> ownerInfos = topInfos;
                 if (owner != topFolder) {
@@ -2930,7 +3020,43 @@ public class Folder extends PFComponent {
                 recalculateStatisticsAfterMigration(source);
             }
         }
+        /* After the rows have moved, not before: the subfolders below borrow the database this folder
+           just gained or gave up, and they were wired to the one it had when they were built. */
+        rewireInheritingSubFoldersBelow();
         } // scanLockOfTopFolder
+    }
+
+    /**
+     * PFS-5881: points the subfolders below this one at the database they now borrow.
+     * <p>
+     * A subfolder that inherits has none of its own and borrows the one of the innermost interrupted
+     * folder above it, chosen when it was built. Interrupting or restoring this folder changes who
+     * that is for everything below - and nothing looked again, so those subfolders kept writing to the
+     * database they were wired to while every reader of their paths asked the new one.
+     */
+    private void rewireInheritingSubFoldersBelow() {
+        String barrier = currentInfo.locationPath();
+        FolderInfo top = currentInfo.isSubFolder() ? currentInfo.getTopFolder() : currentInfo;
+
+        if (barrier == null || top == null) {
+            return;
+        }
+        for (Folder candidate : getController().getFolderRepository().getFolders()) {
+            FolderInfo info = candidate.getInfo();
+
+            if (candidate == this || !info.isSubFolder() || !info.inheritsPermissions()
+                || !top.equals(info.getTopFolder()))
+            {
+                continue;
+            }
+            String location = info.locationPath();
+
+            if (location != null && location.startsWith(barrier + '/')) {
+                logFine(candidate + ": re-reading which database holds its rows, " + this
+                    + " changed its inheritance");
+                candidate.initFileInfoDAO();
+            }
+        }
     }
 
     /**
@@ -3003,8 +3129,9 @@ public class Folder extends PFComponent {
      * @param topFolder  the top folder the row belongs into
      * @param minVersion the version this step justifies - the result is at least this, and at least
      *                   the version of a row already present
+     * @param tags       the tags of the directory - PFS-5911: from wherever they led until now
      */
-    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion) {
+    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion, String tags) {
         DirectoryInfo location = currentInfo.getLocation();
         FileInfo present = topFolder.getFile(
             FileInfoFactory.lookupDirectory(topFolder.getInfo(), location.getRelativeName()));
@@ -3015,8 +3142,6 @@ public class Folder extends PFComponent {
             logFine(this + ": Unable to read the modification date of " + getLocalBase()
                 + " - writing its directory row with the epoch. " + e);
         }
-        String tags = StringUtils.isNotBlank(currentInfo.getTags())
-            ? currentInfo.getTags() : (present != null ? present.getTags() : null);
         return FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), location.getRelativeName(),
             present != null ? present.getOID() : null, 0L, getMySelf().getInfo(),
             getController().getMySelf().getAccountInfo(), modified,
@@ -3024,20 +3149,19 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * PFS-5306: The tags of the row that IS this subfolder - the directory it occupies in the top
-     * folder, named by its location.
+     * PFS-5306: The directory that IS this subfolder - the one it occupies in the top folder, named by its location.
      *
      * @param topRows the rows about to be migrated out of the top folder, in top coordinates
-     * @return the tags as a raw JSON array string, {@code null} when the row is untagged or absent
+     * @return the directory, {@code null} when absent
      */
-    private String tagsOfRootRow(Collection<FileInfo> topRows) {
+    private FileInfo baseDirectoryIn(Collection<FileInfo> topRows) {
         DirectoryInfo location = currentInfo.getLocation();
         if (location == null) {
             return null;
         }
         for (FileInfo row : topRows) {
             if (row.isDiretory() && location.getRelativeName().equals(row.getRelativeName())) {
-                return row.getTags();
+                return row;
             }
         }
         return null;
@@ -3070,17 +3194,46 @@ public class Folder extends PFComponent {
         List<FileInfo> rows = new ArrayList<>();
         for (FileInfo fInfo : source.getDAO().findAllFiles(null)) {
             FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(fInfo) : fInfo;
-            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+            if ((!onlySubtree || row.isInsideSubFolder(currentInfo)) && !namesASystemDirectory(row)) {
                 rows.add(row);
             }
         }
         for (DirectoryInfo dInfo : source.getDAO().findAllDirectories(null)) {
             FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(dInfo) : dInfo;
-            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+            if ((!onlySubtree || row.isInsideSubFolder(currentInfo)) && !namesASystemDirectory(row)) {
                 rows.add(row);
             }
         }
         return rows;
+    }
+
+    /**
+     * Whether a row names something inside a folder's own system directory, and is therefore not
+     * content that a migration may carry anywhere.
+     * <p>
+     * No scan produces such a row: {@link PathUtils#isScannable} refuses every path holding
+     * {@link Constants#POWERFOLDER_SYSTEM_SUBDIR}, and it is asked in the scanner, in the watcher and
+     * here in this class. A row that is there all the same came in past those gates, and handing it
+     * over made it the content of the receiving folder - a customer's subfolder took its own search
+     * index and the database of its meta folder over as files when its inheritance was interrupted,
+     * and archived all fourteen of them once the next scan found them missing.
+     *
+     * @param row the row about to be migrated
+     *
+     * @return true when one of its path segments is the system directory
+     */
+    private static boolean namesASystemDirectory(FileInfo row) {
+        String relativeName = row.getRelativeName();
+        if (relativeName == null || relativeName.indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR) < 0) {
+            // The free check: only a name carrying it at all can have it as a segment.
+            return false;
+        }
+        for (String segment : relativeName.split("/")) {
+            if (Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(segment)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void initFileArchiver(int versions) {
@@ -3508,8 +3661,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
-                // Don't remove. We have archived files.
-                if (archiver.hasArchivedFileInfo(file)) {
+                // Don't remove. We have archived files - below a directory, or of the file itself.
+                if (file.isDiretory() ? archiver.hasArchivedFilesBelow(file.getRelativeName())
+                    : archiver.hasArchivedFileInfo(file))
+                {
                     continue;
                 }
                 expired++;
@@ -3910,6 +4065,43 @@ public class Folder extends PFComponent {
         watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
         fireSyncProfileChanged();
+        propagateSyncProfileToSubFolders();
+    }
+
+    /**
+     * PFS-5889: the subfolders of a tree follow its top folder. A subfolder is given the top folder's
+     * profile when it is shared and kept it from then on - so the thousands of subfolders the migration
+     * created while it had the workspace on the manual profile stayed manual for good, and nothing ever
+     * scanned them again: 9450 of them on the customer's cluster, next to top folders that all scan.
+     * Whatever changes the top folder's profile - the migration restoring it, the storage setting in the
+     * administration - now reaches the subfolders mounted here as well. The stores collapse into one.
+     */
+    private void propagateSyncProfileToSubFolders() {
+        if (!isTopFolder() || currentInfo.isMetaFolder()) {
+            return;
+        }
+        FolderRepository repository = getController().getFolderRepository();
+        List<Folder> behind = new ArrayList<>();
+        for (Folder candidate : repository.getFolders()) {
+            FolderInfo info = candidate.getInfo();
+            if (info.isSubFolder() && currentInfo.equals(info.getTopFolder())
+                && !syncProfile.equals(candidate.getSyncProfile()))
+            {
+                behind.add(candidate);
+            }
+        }
+        if (behind.isEmpty()) {
+            return;
+        }
+        logInfo(this + ": " + behind.size() + " subfolder(s) follow to " + syncProfile.getName());
+        repository.setSuspendConfigSave(true);
+        try {
+            for (Folder subFolder : behind) {
+                subFolder.setSyncProfile(syncProfile);
+            }
+        } finally {
+            repository.setSuspendConfigSave(false);
+        }
     }
 
     /**
@@ -4809,7 +5001,13 @@ public class Folder extends PFComponent {
             msg += oldFileInfo.toDetailString();
         }
 
-        if (currentInfo.isMetaFolder()) {
+        /* The maintenance folder is the server talking to itself, and it is loud: creating a support
+         * package copies the recorded thread dumps into it, so one package wrote 9 988 of these lines
+         * into the very log it was collecting - 10 190 of the 92 545 item lines of that day. The item
+         * log of a real folder is what reconstructs where a file went and stays at INFO. */
+        if (currentInfo.isMetaFolder()
+            || Constants.FOLDER_SERVER_MAINTENANCE.equals(currentInfo.getName()))
+        {
             logFine(msg);
         } else {
             logInfo(msg);
@@ -5367,6 +5565,17 @@ public class Folder extends PFComponent {
      * persisting run.
      */
     private void setDBDirty() {
+        /* PFS-5884: a subfolder that borrows another folder's database has to mark THAT one. Marking
+         * itself left the holder unaware that it had anything new, and only a dirty folder is ever
+         * written - so the row lived in memory until the tree was unmounted and was then gone. */
+        FolderInfo holderInfo = daoHolder;
+        if (holderInfo != null) {
+            Folder holder = holderInfo.getFolder(getController());
+            if (holder != null && holder != this) {
+                holder.setDBDirty();
+                return;
+            }
+        }
         dirty = true;
     }
 
@@ -5381,6 +5590,13 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
+        /* PFS-5884: a subfolder that borrows another folder's database has none of its own to write.
+         * loadFolderDB() skips it for that reason, and writing anyway produced a file nobody reads -
+         * with nothing in it, since the rows live in the holder's database. */
+        if (dao instanceof SubFolderFileInfoDAOProxy) {
+            dirty = false;
+            return;
+        }
         if (checkIfDeviceDisconnected()) {
             if (!currentInfo.isMetaFolder()) {
                 logWarning("Unable to persist database. Storage/Device disconnected: "
@@ -5714,6 +5930,12 @@ public class Folder extends PFComponent {
      * @return {@code true} if {@code file} is gone; {@code false} if content had to be left behind -
      *         then the directory itself stays as well, and the caller must not report it as deleted
      */
+    /** PFC-3646: a .PowerFolder, not this folder's own, in a directory no mounted folder sits on. */
+    private boolean isLeftoverSystemSubDir(Path dir) {
+        return Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(dir.getFileName().toString()) && !isSystemSubDir(dir)
+            && getController().getFolderRepository().findExistingFolder(dir.getParent(), false) == null;
+    }
+
     private boolean deleteFileRecursive(FileInfo newFileInfo, Path file) throws IOException {
         if (newFileInfo.isDiretory() || Files.isDirectory(file)) {
             boolean emptied = true;
@@ -5724,6 +5946,11 @@ public class Folder extends PFComponent {
                      * the scanner skips it for the same reason (FolderScanner, isSystemSubDir). Left in,
                      * the deletion tried to archive and delete the running database. */
                     if (isSystemSubDir(path) || !PathUtils.isScannable(path, this)) {
+                        // PFC-3646: unless no mounted folder owns it - a share dissolved after its directory moved
+                        if (isLeftoverSystemSubDir(path)) {
+                            logInfo(path + ": Deleting the .PowerFolder of a folder no longer mounted here");
+                            PathUtils.recursiveDelete(path);
+                        }
                         continue;
                     }
                     /* PFC-3543: never touch an interrupted subfolder - that subtree is owned by its own
@@ -6374,6 +6601,21 @@ public class Folder extends PFComponent {
      * @return the {@link FileInfoDAO}. TRAC #1422
      */
     public FileInfoDAO getDAO() {
+        /* PFS-5881: the holder may have arrived since. Subfolders mount side by side, so an inheriting
+           one is regularly built before the interrupted folder whose database it borrows, and it then
+           borrowed the top folder's instead - for good, because nothing looked again. One reference
+           read per access while that is pending, nothing at all once it is settled. */
+        FolderInfo pending = daoHolderPending;
+
+        if (pending != null && getController().getFolderRepository().getFolder(pending) != null) {
+            synchronized (this) {
+                if (daoHolderPending != null) {
+                    logInfo(this + ": " + pending.getLocalizedName() + " is mounted now - its database"
+                        + " takes over the rows of this subfolder");
+                    initFileInfoDAO();
+                }
+            }
+        }
         return dao;
     }
 
@@ -6921,10 +7163,23 @@ public class Folder extends PFComponent {
         /* The folder carried the directory's tags and version while it WAS that directory - hand them
          * back, advanced by this step, so the directory continues where the folder left off instead of
          * falling back to whatever its old row said (PFS-5306). */
-        synchronized (dbAccessLock) {
-            getDAO().store(null, subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1));
+        // PFC-3646: into the folder that owns the place - inside an interrupted subfolder that is not this one
+        Folder owner = ownerOfPlace(subFolder.getInfo().locationPath());
+        // PFS-5911: the directory's own tags - the restore above handed back those of an interrupted folder
+        FileInfo place = FileInfoFactory.lookupDirectory(getInfo(), subFolder.getInfo().locationPath());
+        if (owner != this) {
+            place = FileInfoFactory.mapToSubFolder(place, owner.getInfo());
         }
-        setDBDirty();
+        FileInfo directory = owner.getFile(place);
+        FileInfo baseDirectory = subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1,
+            directory != null ? directory.getTags() : null);
+        if (owner != this) {
+            baseDirectory = FileInfoFactory.mapToSubFolder(baseDirectory, owner.getInfo());
+        }
+        synchronized (owner.dbAccessLock) {
+            owner.getDAO().store(null, baseDirectory);
+        }
+        owner.setDBDirty();
 
         /* PFC-3536: the subfolder's own .PowerFolder directory goes with it - index, meta folder and the
          * database it owned while interrupted are stale copies now that the directory is the top folder's
@@ -7010,6 +7265,44 @@ public class Folder extends PFComponent {
                 break;
             }
         }
+    }
+
+    /**
+     * PFC-3646: the folder that owns the place {@code relativeName} of this top folder - the innermost interrupted
+     * subfolder around it, otherwise this one.
+     */
+    private Folder ownerOfPlace(String relativeName) {
+        String parent = FileInfo.parentOfRelativeName(relativeName);
+        FolderInfo enclosing = parent.isEmpty() ? null
+            : FolderInfo.findEnclosingInterruptedSubFolder(currentInfo, parent);
+        Folder owner = enclosing != null ? getController().getFolderRepository().getFolder(enclosing) : null;
+        return owner != null ? owner : this;
+    }
+
+    /**
+     * PFC-3646: An entry of this top folder that lies inside an interrupted subfolder belongs to that subfolder -
+     * this folder may not touch it there. A share dissolved just before is one. Only what this folder does not know
+     * itself is handed over; a row it still holds there is its own to delete.
+     *
+     * @return the entries this folder deletes itself
+     */
+    private Collection<FileInfo> handOverToOwners(Collection<FileInfo> fInfos, AccountInfo deletingAccount) {
+        List<FileInfo> own = new ArrayList<>(fInfos.size());
+        Map<Folder, List<FileInfo>> handedOver = new LinkedHashMap<>(0);
+        for (FileInfo fInfo : fInfos) {
+            Folder owner = ownerOfPlace(fInfo.getRelativeName());
+            if (owner == this || getFile(fInfo) != null) {
+                own.add(fInfo);
+                continue;
+            }
+            handedOver.computeIfAbsent(owner, o -> new ArrayList<>())
+                .add(FileInfoFactory.mapToSubFolder(fInfo, owner.getInfo()));
+        }
+        for (Map.Entry<Folder, List<FileInfo>> entry : handedOver.entrySet()) {
+            logFine(this + ": Deleting " + entry.getValue() + " through " + entry.getKey());
+            entry.getKey().removeFilesLocal(deletingAccount, entry.getValue(), false);
+        }
+        return own;
     }
 
     /** @return whether one of the given files is the base directory of this folder */

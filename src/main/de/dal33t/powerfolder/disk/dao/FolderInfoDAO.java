@@ -118,6 +118,28 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     Collection<FolderInfo> getSubFolders(FolderInfo topFolderInfo);
 
     /**
+     * PFS-5912: The subfolder at a location of the tree, from the database - the same answer on every
+     * cluster node, mounted here or not. A permission change names its subfolder by workspace and path
+     * and arrives on whichever node the load balancer picks; asking the repository there refused every
+     * change on a node that did not have the subfolder mounted.
+     *
+     * @param topFolderInfo the top folder of the tree
+     * @param location      the location inside it, as {@link FolderInfo#locationPath()} writes it
+     * @return the subfolder there, or {@code null} if no row names that location
+     */
+    default FolderInfo findSubFolder(FolderInfo topFolderInfo, String location) {
+        if (topFolderInfo == null || location == null || location.isEmpty()) {
+            return null;
+        }
+        for (FolderInfo subFolder : getSubFolders(topFolderInfo)) {
+            if (location.equals(subFolder.locationPath())) {
+                return subFolder;
+            }
+        }
+        return null;
+    }
+
+    /**
      * PFS-5858: The other rows that stand for the same directory as this subfolder - same top folder,
      * same location, a different id.
      * <p>

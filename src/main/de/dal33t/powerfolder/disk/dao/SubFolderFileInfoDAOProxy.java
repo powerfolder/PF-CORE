@@ -36,27 +36,47 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     private final FileInfoDAO delegate;
     private final FolderInfo subfolderInfo;
+    /** The folder whose database the delegate is: the top folder, or an interrupted subfolder above. */
+    private final FolderInfo holderInfo;
+    /** Where this subfolder sits inside {@link #holderInfo} - the coordinates the delegate speaks. */
     private final String subfolderPath;
 
-    public SubFolderFileInfoDAOProxy(FileInfoDAO delegate, FolderInfo subfolderInfo) {
+    public SubFolderFileInfoDAOProxy(FileInfoDAO delegate, FolderInfo subfolderInfo,
+        FolderInfo holderInfo)
+    {
         Reject.ifNull(delegate, "delegate");
         Reject.ifNull(subfolderInfo, "subfolderInfo");
+        Reject.ifNull(holderInfo, "holderInfo");
         Reject.ifFalse(subfolderInfo.isSubFolder(), "Must be subfolder");
 
         this.delegate = delegate;
         this.subfolderInfo = subfolderInfo;
-        this.subfolderPath =  subfolderInfo.getLocation().getRelativeName();
-        logFine(subfolderInfo + " initialized at subfolderPath=" + subfolderPath);
+        this.holderInfo = holderInfo;
+        String location = subfolderInfo.getLocation().getRelativeName();
+        /* PFS-5881: relative to the HOLDER, not to the top folder. An inheriting subfolder inside an
+           interrupted one is stored by that interrupted folder - whose database names everything
+           relative to itself - and a path in top-folder coordinates would miss it every time. */
+        this.subfolderPath = holderInfo.isSubFolder()
+            ? FolderInfo.relativeNameIn(holderInfo, subfolderInfo.getTopFolder(), location)
+            : location;
+        logFine(subfolderInfo + " initialized at subfolderPath=" + subfolderPath + " of " + holderInfo);
     }
 
-    private FileInfo toTop(FileInfo f) {
-        return FileInfoFactory.mapToTopFolder(f);
+    /** This subfolder's coordinates into the holder's. */
+    private FileInfo toHolder(FileInfo f) {
+        FileInfo top = FileInfoFactory.mapToTopFolder(f);
+        return holderInfo.isSubFolder() ? FileInfoFactory.mapToSubFolder(top, holderInfo) : top;
+    }
+
+    /** The holder's coordinates back into top-folder ones, which {@link #toSub} maps from. */
+    private FileInfo fromHolder(FileInfo f) {
+        return holderInfo.isSubFolder() ? FileInfoFactory.mapToTopFolder(f) : f;
     }
 
     private FileInfo toSub(FileInfo f) {
         Reject.ifNull(f, "FileInfo");
         if (f.isInSubFolder(subfolderPath)) {
-            FileInfo mapped = FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            FileInfo mapped = FileInfoFactory.mapToSubFolder(fromHolder(f), subfolderInfo);
             if (mapped.isBaseDirectory()) {
                 return null;
             }
@@ -68,7 +88,8 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     private DirectoryInfo toSub(DirectoryInfo f) {
         Reject.ifNull(f, "FileInfo");
         if (f.isInSubFolder(subfolderPath)) {
-            DirectoryInfo mapped = (DirectoryInfo) FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            DirectoryInfo mapped = (DirectoryInfo) FileInfoFactory.mapToSubFolder(fromHolder(f),
+                subfolderInfo);
             if (mapped.isBaseDirectory()) {
                 return null;
             }
@@ -94,7 +115,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     @Override
     public void store(String domain, FileInfo... fInfos) {
         List<FileInfo> mapped = Arrays.stream(fInfos)
-                .map(this::validateAndMapToTop)
+                .map(this::validateAndMapToHolder)
                 .collect(Collectors.toList());
         delegate.store(domain, mapped);
     }
@@ -103,11 +124,11 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     public void store(String domain, Collection<FileInfo> fInfos) {
         delegate.store(domain,
                 fInfos.stream()
-                        .map(this::validateAndMapToTop)
+                        .map(this::validateAndMapToHolder)
                         .collect(Collectors.toList()));
     }
 
-    private FileInfo validateAndMapToTop(FileInfo f) {
+    private FileInfo validateAndMapToHolder(FileInfo f) {
         Reject.ifNull(f, "FileInfo");
         FolderInfo fi = f.getFolderInfo();
         if (!subfolderInfo.equals(fi)) {
@@ -115,12 +136,12 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
                     "FileInfo does not belong to subfolder " + subfolderInfo.getName()
                             + ": " + f.getRelativeName() + " (folder: " + fi.getName() + ")");
         }
-        return toTop(f);
+        return toHolder(f);
     }
 
     @Override
     public FileInfo find(FileInfo fInfo, String domain) {
-        FileInfo topFInfo = delegate.find(toTop(fInfo), domain);
+        FileInfo topFInfo = delegate.find(toHolder(fInfo), domain);
         if (topFInfo == null) {
             if (isFiner()) {
                 logFiner(subfolderInfo.getName() + ": find " + fInfo.getRelativeName() + ": not found");
@@ -148,7 +169,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     @Override
     public void delete(String domain, FileInfo fInfo) {
-        delegate.delete(domain, toTop(fInfo));
+        delegate.delete(domain, toHolder(fInfo));
     }
 
     @Override
@@ -224,7 +245,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     @Override
     public FileHistory getFileHistory(FileInfo fileInfo) {
-        return delegate.getFileHistory(toTop(fileInfo));
+        return delegate.getFileHistory(toHolder(fileInfo));
     }
 
     @Override

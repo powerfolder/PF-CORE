@@ -190,14 +190,21 @@ public class FolderScanner extends PFComponent {
              * deleted - which the store then refuses, so the next scan flags it again. */
             boolean anyInterrupted = !getController().getFolderRepository()
                 .getInterruptedSubFolders().isEmpty();
+            // PFC-3641: FileInfos the barrier keeps out, but that a top folder recorded while it was missing
+            boolean topFolder = !currentScanningFolder.getInfo().isSubFolder();
+            List<FileInfo> strayFileInfos = new ArrayList<>();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
                     remaining.put(fInfo.getRelativeName(), fInfo);
+                } else if (topFolder && !fInfo.isDeleted()) {
+                    strayFileInfos.add(fInfo);
                 }
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
                     remaining.put(fInfo.getRelativeName(), fInfo);
+                } else if (topFolder && !fInfo.isDeleted()) {
+                    strayFileInfos.add(fInfo);
                 }
             }
             if (isFiner()) {
@@ -211,6 +218,9 @@ public class FolderScanner extends PFComponent {
             if (abort) {
                 reset();
                 return new ScanResult(ScanResult.ResultState.USER_ABORT);
+            }
+            if (!strayFileInfos.isEmpty()) {
+                currentScanningFolder.eraseFileInfosInInterruptedSubFolders(strayFileInfos);
             }
             // from , to
             tryFindMovementsInCurrentScan();

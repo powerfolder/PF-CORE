@@ -150,8 +150,15 @@ For creation of the installer:
 			<include name="validation-2.0.1.jar" />
 			<!--<include name="h2-1.1.109.jar" />-->
 			<include name="jcalendar.jar" />
-			<include name="ejb3-persistence.jar" />
-      		<include name="hibernate3-stripped.jar" />
+			<include name="hibernate-core-5.6.15.Final.jar" />
+			<include name="jakarta.persistence-api-2.2.3.jar" />
+			<include name="jboss-logging-3.4.3.Final.jar" />
+			<include name="hibernate-commons-annotations-5.1.2.Final.jar" />
+			<include name="byte-buddy-1.15.4.jar" />
+			<include name="jandex-2.4.2.Final.jar" />
+			<include name="classmate-1.5.1.jar" />
+			<include name="dom4j-2.1.3.jar" />
+			<include name="antlr-2.7.7.jar" />
 
 			<include name="annotations-16.0.1.jar" />
 
@@ -173,6 +180,13 @@ For creation of the installer:
             <include name="commons-logging-1.1.3.jar" />
 			<include name="json-20250517.jar" />
 
+			<!-- PFC-3096: StatusNotifierItem (D-Bus) tray for GNOME/KDE.
+			     Pure-Java (JDK unix-socket transport), no native libs. -->
+			<include name="dbus-java-core-5.2.2.jar" />
+			<include name="dbus-java-transport-native-unixsocket-5.2.2.jar" />
+			<include name="slf4j-api-2.0.17.jar" />
+			<include name="slf4j-jdk14-2.0.17.jar" />
+
 			<!-- ContextMenu and IconOverlay -->
 			<include name="com.liferay.nativity-1.0.6.jar" />
 			<include name="jackson-databind-2.21.6.jar" />
@@ -186,7 +200,7 @@ For creation of the installer:
 			<include name="netty-resolver-4.1.137.Final.jar" />
 
 			<!-- Protobuf -->
-            <include name="protobuf-java-3.5.0.jar"/>
+            <include name="protobuf-java-4.36.2.jar"/>
 			<include name="powerfolder-protobuf-0.1.jar"/>
 
 			<!-- Squirrel -->
@@ -246,18 +260,11 @@ For creation of the installer:
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
-            <include name="junit.jar"/>
-			<include name="jmock/cglib-nodep-2.1_3.jar" />
-			<include name="jmock/hamcrest-core-1.3.jar" />
-			<include name="jmock/hamcrest-library-1.3.jar" />
-			<include name="jmock/jmock-2.4.0.jar" />
-			<include name="jmock/jmock-junit3-2.4.0.jar" />
-			<include name="jmock/jmock-junit4-2.4.0.jar" />
-			<include name="jmock/jmock-legacy-2.4.0.jar" />
-			<include name="mockito/byte-buddy-1.10.13.jar"/>
-			<include name="mockito/byte-buddy-agent-1.10.13.jar"/>
-			<include name="mockito/mockito-core-3.4.6.jar"/>
-			<include name="mockito/objenesis-2.6.jar"/>
+			<include name="mockito/byte-buddy-1.15.4.jar"/>
+			<include name="mockito/byte-buddy-agent-1.15.4.jar"/>
+			<include name="mockito/mockito-core-5.14.2.jar"/>
+			<include name="mockito/objenesis-3.3.jar"/>
+			<include name="junit5/*.jar"/>
 		</fileset>
 
 		<!-- Output dirs -->
@@ -554,7 +561,101 @@ For creation of the installer:
 	
 	<!-- Setup for test ******************************************************-->
 
-	<target name="run-tests" depends="debug, compile" description="Runs all JUnit tests">
+	<target name="provision-toolchain">
+		<ant antfile="toolchain.xml" target="provision" inheritall="false" inheritrefs="false" />
+		<property file="${basedir}/.toolchain/paths.properties" />
+		<fail unless="java.bin" message="toolchain.xml did not report a java binary" />
+		<fail unless="ant.launcher" message="toolchain.xml did not report an ant launcher" />
+	</target>
+
+	<target name="verify-toolchain">
+		<property file="${basedir}/.toolchain/paths.properties" />
+		<fail unless="jdk.version.expected" message="No .toolchain/paths.properties - run this through run-tests, not run-tests-pinned" />
+		<fail message="Expected JDK ${jdk.version.expected} but these tests are running on ${java.version} (${java.home})">
+			<condition><not><equals arg1="${java.version}" arg2="${jdk.version.expected}" /></not></condition>
+		</fail>
+		<fail message="Expected Ant ${ant.version.expected} but this build is running on ${ant.version}">
+			<condition><not><contains string="${ant.version}" substring="version ${ant.version.expected} " /></not></condition>
+		</fail>
+		<echo>Toolchain: JDK ${java.version} (${java.vendor}) at ${java.home}</echo>
+		<echo>Toolchain: ${ant.version}</echo>
+	</target>
+
+	<target name="-relaunch-pinned" depends="provision-toolchain">
+		<property name="test" value="" />
+		<property name="test.threads" value="4" />
+		<property name="test.work.keep" value="false" />
+		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" jvm="${java.bin}"
+		      failonerror="true" dir="${basedir}">
+			<!-- PFS-5561: without -Xmx this JVM defaults to 1/4 of physical RAM. With
+			     PF-CORE and PF-PRO CI jobs sharing a runner, two of these plus the 2g
+			     test forks exhausted the machine and the OOM killer took out javac. -->
+			<jvmarg value="-Xmx1g" />
+			<classpath><pathelement location="${ant.launcher}" /></classpath>
+			<arg value="-f" />
+			<arg file="${ant.file}" />
+			<arg value="-Dtest=${test}" />
+			<arg value="-Dtest.threads=${test.threads}" />
+			<arg value="-Dtest.work.keep=${test.work.keep}" />
+			<arg value="${pinned.target}" />
+		</java>
+	</target>
+
+	<target name="run-single-test" description="Runs a single test class. Usage: ant run-single-test -Dtest=ClassName">
+		<fail unless="test" message="Specify the test class with -Dtest=ClassName (simple name, no package, no .java)" />
+		<antcall target="-relaunch-pinned">
+			<param name="pinned.target" value="run-single-test-pinned" />
+		</antcall>
+	</target>
+
+	<target name="run-single-test-pinned" depends="debug, verify-toolchain, compile">
+		<fail message="Specify the test class with -Dtest=ClassName (simple name, no package, no .java)">
+			<condition><equals arg1="${test}" arg2="" /></condition>
+		</fail>
+		<mkdir dir="${build.reports.dir}" />
+		<javac destdir="${build.dir}" debug="true" debuglevel="lines,vars,source" deprecation="off" failonerror="true" encoding="UTF-8">
+			<src path="${test.src.dir}" />
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<fileset refid="libs" />
+				<fileset refid="testlibs" />
+			</classpath>
+		</javac>
+		<mkdir dir="${build.reports.dir}/raw" />
+		<mkdir dir="${build.reports.dir}/html" />
+		<mkdir dir="${build.reports.dir}/htmlnoframes" />
+		<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<fileset refid="libs" />
+				<fileset refid="testlibs" />
+			</classpath>
+			<testclasses outputDir="${build.reports.dir}/raw">
+				<fork dir="${basedir}" forkMode="perTestClass" timeout="1800000">
+					<sysproperty key="file.encoding" value="UTF-8"/>
+					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+				</fork>
+				<fileset dir="${build.dir}">
+					<include name="**/${test}.class"/>
+					<exclude name="**/*$*.class"/>
+				</fileset>
+				<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+			</testclasses>
+		</junitlauncher>
+
+		<fail if="tests.failed" message="Test ${test} failed. See ${build.reports.dir}/raw for the report." />
+	</target>
+
+	<target name="run-tests" description="Runs all JUnit tests">
+		<antcall target="-relaunch-pinned">
+			<param name="pinned.target" value="run-tests-pinned" />
+		</antcall>
+	</target>
+
+	<target name="run-tests-pinned" depends="debug, verify-toolchain, compile">
 		<mkdir dir="${build.reports.dir}" />
 
 		<!-- Compile tests -->
@@ -569,33 +670,79 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
-		<!-- Batchrun all tests. timeout: kill a hanging test class fork after 30 minutes instead of blocking
-		     the runner until the 2h job timeout -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes" timeout="1800000">
-			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
-			<sysproperty key="file.encoding" value="UTF-8"/>
-			<classpath>
-				<pathelement location="${build.dir}" />
-				<fileset refid="libs" />
-				<fileset refid="testlibs" />
-			</classpath>
-
-			<jvmarg value="--add-opens" />
-			<jvmarg value="java.base/java.lang=ALL-UNNAMED" />
-			<jvmarg value="--add-opens" />
-			<jvmarg value="java.base/java.util=ALL-UNNAMED" />
-			<!-- Fix IllegalAccessException for MacUtils / com.apple.eawt -->
-			<jvmarg value="--add-exports"/>
-			<jvmarg value="java.desktop/com.apple.eawt=ALL-UNNAMED"/>
-
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${build.reports.dir}/raw">
-				<fileset dir="${test.src.dir}">
-					<include name="**/*Test.java" />
-					<exclude name="**/BandwidthLimitTest.java" />
-				</fileset>
-			</batchtest>
-		</junit>
+		<!-- PFS-5561: test classes run in parallel (-Dtest.threads=N, 1 = one after another), each in its own working
+		     directory build/test-work/<class> with a private copy of src/test-resources, so the build/test trees of
+		     concurrent classes never meet. Listener ports come from TestHelper.copyConfigWithFreePort. -->
+		<property name="test.threads" value="4"/>
+		<property name="test.work.keep" value="false"/>
+		<property name="test.work.dir" location="${basedir}/build/test-work"/>
+		<delete dir="${test.work.dir}" quiet="true"/>
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${basedir}/lib-build/ant-contrib-1.0b3.jar"/>
+		<for param="testfile" parallel="true" threadCount="${test.threads}">
+			<fileset dir="${build.dir}">
+				<include name="**/*Test.class"/>
+				<exclude name="**/*$*.class"/>
+				<exclude name="**/BandwidthLimitTest.class"/>
+			</fileset>
+			<sequential>
+				<local name="testclass"/>
+				<pathconvert property="testclass">
+					<path location="@{testfile}"/>
+					<chainedmapper>
+						<globmapper from="${build.dir}${file.separator}*" to="*"/>
+						<regexpmapper from="^(.*)\.class$$" to="\1"/>
+						<filtermapper>
+							<replacestring from="${file.separator}" to="."/>
+						</filtermapper>
+					</chainedmapper>
+				</pathconvert>
+				<local name="testfilerel"/>
+				<pathconvert property="testfilerel" dirsep="/">
+					<path location="@{testfile}"/>
+					<globmapper from="${build.dir}${file.separator}*" to="*"/>
+				</pathconvert>
+				<local name="workdir"/>
+				<property name="workdir" location="${test.work.dir}/${testclass}"/>
+				<mkdir dir="${workdir}/build/test"/>
+				<copy todir="${workdir}/src/test-resources">
+					<fileset dir="${basedir}/src/test-resources"/>
+				</copy>
+				<trycatch>
+				  <try>
+				<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
+					<classpath>
+						<pathelement location="${build.dir}" />
+						<fileset refid="libs" />
+						<fileset refid="testlibs" />
+					</classpath>
+					<testclasses outputDir="${build.reports.dir}/raw">
+						<fork dir="${workdir}" timeout="1800000">
+							<sysproperty key="file.encoding" value="UTF-8"/>
+							<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
+							<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+							<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+							<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+						</fork>
+						<fileset dir="${build.dir}">
+							<include name="${testfilerel}"/>
+						</fileset>
+						<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+					</testclasses>
+				</junitlauncher>
+				  </try>
+				  <catch>
+				    <echo level="warning">Test JVM for ${testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
+				    <property name="tests.crashed" value="${testclass}"/>
+				  </catch>
+				  <finally>
+				    <!-- -Dtest.work.keep=true leaves the working directories (controller logs, databases) for a look -->
+				    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
+				      <delete dir="${workdir}" quiet="true"/>
+				    </then></if>
+				  </finally>
+				</trycatch>
+			</sequential>
+		</for>
 
 		<junitreport todir="${build.reports.dir}">
 			<fileset dir="${build.reports.dir}/raw/">
@@ -610,6 +757,9 @@ For creation of the installer:
 			</fileset>
 			<report format="noframes" todir="${build.reports.dir}/htmlnoframes/" />
 		</junitreport>
+
+		<fail if="tests.failed" message="Tests failed. See ${build.reports.dir}/raw for the per-class reports." />
+		<fail if="tests.crashed" message="A test JVM crashed (first: ${tests.crashed}) - its class produced no report. See the warnings above." />
 	</target>
 
 	<!-- API Docs generation -->

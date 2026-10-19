@@ -27,14 +27,14 @@ import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AccountTest {
 
@@ -91,6 +91,45 @@ public class AccountTest {
 
         assertEquals(AccessMode.READ_WRITE,
             boss.getAllowedAccess(top, "structure/deep/shared/file.txt"));
+    }
+
+    /**
+     * PFS-5722: {@link Account#hasAdminPermission(FolderInfo, String)} answers at the ADDRESSED
+     * location, like the read and write checks since PFS-5510. An account invited to a subfolder
+     * alone is admin inside it although it holds nothing on the folder above - which is how a
+     * request addresses a file: top folder plus a path.
+     */
+    @Test
+    public void testAdminCountsAtTheAddressedLocation() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "structure/SubA", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo subA = FolderInfoFactory.newFolder(location);
+
+        // Invited to SubA as its admin, nothing at all on the folder above.
+        Account subAdmin = new Account();
+        subAdmin.grant(FolderPermission.admin(subA));
+
+        assertFalse(subAdmin.hasAdminPermission(top), "Not admin of the folder above");
+        assertFalse(subAdmin.hasAdminPermission(top, "elsewhere/file.txt"), "... and not by an unrelated path either");
+        assertTrue(subAdmin.hasAdminPermission(top, "structure/SubA"), "Admin at the addressed location");
+        assertTrue(subAdmin.hasAdminPermission(top, "structure/SubA/deeper/file.txt"), "... and deeper inside it");
+        assertTrue(subAdmin.hasAdminPermission(subA, "deeper/file.txt"),
+            "... also when the subfolder itself is addressed");
+        assertTrue(subAdmin.hasAdminPermission(FileInfoFactory.unmarshallExistingFile(top,
+            "structure/SubA/deeper/file.txt", null, 0, null, null, new Date(), 1, null, false, null)),
+            "... addressed by the file");
+
+        // Write access is not admin, however deep it is granted.
+        Account writer = new Account();
+        writer.grant(FolderPermission.readWrite(subA));
+        assertFalse(writer.hasAdminPermission(top, "structure/SubA/file.txt"),
+            "Read/write in the subfolder is not admin of it");
+
+        // And an admin of the top folder stays admin below it - inheritance is not touched.
+        Account topAdmin = new Account();
+        topAdmin.grant(FolderPermission.admin(top));
+        assertTrue(topAdmin.hasAdminPermission(top, "structure/SubA/file.txt"), "The admin above is admin below");
     }
 
     /**
@@ -539,7 +578,7 @@ public class AccountTest {
         account.addGroup(owners);
 
         Collection<FolderInfo> charged = account.getFoldersCharged();
-        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertEquals(1, charged.size(), "Only the owned folder is charged: " + charged);
         assertTrue(charged.contains(owned));
         assertFalse(charged.contains(viaGroup));
         assertFalse(charged.contains(justAdmin));

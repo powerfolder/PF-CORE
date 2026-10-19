@@ -18,11 +18,11 @@
  */
 package de.dal33t.powerfolder.domain;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.PathUtils;
-import junit.framework.TestCase;
-
-
-public class FileLinkPathNormalizationTest extends TestCase {
+public class FileLinkPathNormalizationTest {
 
     // ========================================================================
     // BASIC PATH NORMALIZATION TESTS
@@ -33,6 +33,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/c"
      * Expected: "a/b/c"
      */
+    @Test
     public void testSimplePath() {
         assertEquals("a/b/c", PathUtils.normalizePath("a/b/c"));
     }
@@ -42,6 +43,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: ""
      * Expected: ""
      */
+    @Test
     public void testEmptyString() {
         assertEquals("", PathUtils.normalizePath(""));
     }
@@ -51,6 +53,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: null
      * Expected: ""
      */
+    @Test
     public void testNullString() {
         assertEquals("", PathUtils.normalizePath(null));
     }
@@ -60,6 +63,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "folder"
      * Expected: "folder"
      */
+    @Test
     public void testSingleDirectory() {
         assertEquals("folder", PathUtils.normalizePath("folder"));
     }
@@ -73,6 +77,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "./a/b"
      * Expected: "a/b"
      */
+    @Test
     public void testCurrentDirectoryAtStart() {
         assertEquals("a/b", PathUtils.normalizePath("./a/b"));
     }
@@ -82,6 +87,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/./b"
      * Expected: "a/b"
      */
+    @Test
     public void testCurrentDirectoryInMiddle() {
         assertEquals("a/b", PathUtils.normalizePath("a/./b"));
     }
@@ -91,6 +97,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/."
      * Expected: "a/b"
      */
+    @Test
     public void testCurrentDirectoryAtEnd() {
         assertEquals("a/b", PathUtils.normalizePath("a/b/."));
     }
@@ -100,6 +107,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "./a/././b/."
      * Expected: "a/b"
      */
+    @Test
     public void testMultipleCurrentDirectories() {
         assertEquals("a/b", PathUtils.normalizePath("./a/././b/."));
     }
@@ -109,6 +117,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "."
      * Expected: ""
      */
+    @Test
     public void testOnlyCurrentDirectory() {
         assertEquals("", PathUtils.normalizePath("."));
     }
@@ -122,6 +131,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/../c"
      * Expected: "a/c"
      */
+    @Test
     public void testParentDirectoryValidInMiddle() {
         assertEquals("a/c", PathUtils.normalizePath("a/b/../c"));
     }
@@ -131,6 +141,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/.."
      * Expected: "a"
      */
+    @Test
     public void testParentDirectoryValidAtEnd() {
         assertEquals("a", PathUtils.normalizePath("a/b/.."));
     }
@@ -140,6 +151,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/c/../../d"
      * Expected: "a/d"
      */
+    @Test
     public void testMultipleParentDirectoriesValid() {
         assertEquals("a/d", PathUtils.normalizePath("a/b/c/../../d"));
     }
@@ -149,6 +161,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/c/../d/../e"
      * Expected: "a/b/e"
      */
+    @Test
     public void testComplexTraversalWithinBounds() {
         assertEquals("a/b/e", PathUtils.normalizePath("a/b/c/../d/../e"));
     }
@@ -162,8 +175,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "../a"
      * Expected: null (escape attempt)
      */
+    @Test
     public void testParentDirectoryEscapesRootAtStart() {
-        assertNull("Should reject path escaping root", PathUtils.normalizePath("../a"));
+        assertNull( PathUtils.normalizePath("../a"),"Should reject path escaping root");
     }
 
     /**
@@ -171,8 +185,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "../../a"
      * Expected: null (escape attempt)
      */
+    @Test
     public void testMultipleEscapesAtStart() {
-        assertNull("Should reject multiple escapes", PathUtils.normalizePath("../../a"));
+        assertNull( PathUtils.normalizePath("../../a"),"Should reject multiple escapes");
     }
 
     /**
@@ -180,8 +195,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: ".."
      * Expected: null (escape attempt)
      */
+    @Test
     public void testOnlyParentDirectory() {
-        assertNull("Should reject single ..", PathUtils.normalizePath(".."));
+        assertNull( PathUtils.normalizePath(".."),"Should reject single ..");
     }
 
     /**
@@ -189,8 +205,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "../.."
      * Expected: null (escape attempt)
      */
+    @Test
     public void testOnlyMultipleParentDirectories() {
-        assertNull("Should reject multiple ..", PathUtils.normalizePath("../.."));
+        assertNull( PathUtils.normalizePath("../.."),"Should reject multiple ..");
     }
 
     /**
@@ -198,8 +215,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/../.."
      * Expected: null (escape attempt)
      */
+    @Test
     public void testEscapeAfterValidPath() {
-        assertNull("Should reject escape after valid path", PathUtils.normalizePath("a/../.."));
+        assertNull( PathUtils.normalizePath("a/../.."),"Should reject escape after valid path");
     }
 
     /**
@@ -207,8 +225,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "../../../../etc/passwd"
      * Expected: null (escape attempt)
      */
+    @Test
     public void testDeepEscapeAttempt() {
-        assertNull("Should reject deep escape", PathUtils.normalizePath("../../../../etc/passwd"));
+        assertNull( PathUtils.normalizePath("../../../../etc/passwd"),"Should reject deep escape");
     }
 
     // ========================================================================
@@ -220,6 +239,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "//a/b"
      * Expected: "a/b"
      */
+    @Test
     public void testDoubleSlashAtStart() {
         assertEquals("a/b", PathUtils.normalizePath("//a/b"));
     }
@@ -229,6 +249,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a//b"
      * Expected: "a/b"
      */
+    @Test
     public void testDoubleSlashInMiddle() {
         assertEquals("a/b", PathUtils.normalizePath("a//b"));
     }
@@ -238,6 +259,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a///b////c"
      * Expected: "a/b/c"
      */
+    @Test
     public void testMultipleSlashes() {
         assertEquals("a/b/c", PathUtils.normalizePath("a///b////c"));
     }
@@ -247,6 +269,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/"
      * Expected: "a/b"
      */
+    @Test
     public void testTrailingSlash() {
         assertEquals("a/b", PathUtils.normalizePath("a/b/"));
     }
@@ -260,6 +283,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a\\b\\c"
      * Expected: "a/b/c"
      */
+    @Test
     public void testBackslashToForwardSlash() {
         assertEquals("a/b/c", PathUtils.normalizePath("a\\b\\c"));
     }
@@ -269,6 +293,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b\\c"
      * Expected: "a/b/c"
      */
+    @Test
     public void testMixedSlashes() {
         assertEquals("a/b/c", PathUtils.normalizePath("a/b\\c"));
     }
@@ -278,6 +303,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a\\b\\..\\c"
      * Expected: "a/c"
      */
+    @Test
     public void testBackslashWithParentDirectory() {
         assertEquals("a/c", PathUtils.normalizePath("a\\b\\..\\c"));
     }
@@ -291,6 +317,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "sharedDir/../siblingDir/secret.txt"
      * Expected: "siblingDir/secret.txt" (will be blocked by check)
      */
+    @Test
     public void testClassicSiblingFolderAttack() {
         assertEquals("siblingDir/secret.txt", PathUtils.normalizePath("sharedDir/../siblingDir/secret.txt"));
     }
@@ -300,8 +327,9 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "sharedDir/../../rootFile.txt"
      * Expected: null (trying to go above root - sharedDir/../.. means up 2 levels from only 1 level deep)
      */
+    @Test
     public void testParentDirectoryEscape() {
-        assertNull("Should reject path escaping root", PathUtils.normalizePath("sharedDir/../../rootFile.txt"));
+        assertNull( PathUtils.normalizePath("sharedDir/../../rootFile.txt"),"Should reject path escaping root");
     }
 
     /**
@@ -309,6 +337,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/./c/../d/../e"
      * Expected: "a/b/e"
      */
+    @Test
     public void testComplexMixedTraversal() {
         assertEquals("a/b/e", PathUtils.normalizePath("a/b/./c/../d/../e"));
     }
@@ -318,6 +347,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b/c/d/e/../../f"
      * Expected: "a/b/c/f"
      */
+    @Test
     public void testDeepNestingWithTraversal() {
         assertEquals("a/b/c/f", PathUtils.normalizePath("a/b/c/d/e/../../f"));
     }
@@ -332,6 +362,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Attack: "test/mehrtest/../asd.docx"
      * Expected: "test/asd.docx" (will fail containment: not startsWith("test/mehrtest/"))
      */
+    @Test
     public void testPentestScenario1() {
         assertEquals("test/asd.docx", PathUtils.normalizePath("test/mehrtest/../asd.docx"));
     }
@@ -342,6 +373,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Attack: "test/mehrtest/../../geheimesdokument.txt"
      * Expected: "geheimesdokument.txt" (will fail containment)
      */
+    @Test
     public void testPentestScenario2() {
         assertEquals("geheimesdokument.txt", PathUtils.normalizePath("test/mehrtest/../../geheimesdokument.txt"));
     }
@@ -352,6 +384,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Request: "b/test01_/../prices.csv"
      * Expected: "b/prices.csv" (valid - within b/)
      */
+    @Test
     public void testLegitimateTraversalWithinSharedFolder() {
         assertEquals("b/prices.csv", PathUtils.normalizePath("b/test01_/../prices.csv"));
     }
@@ -361,6 +394,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "b/../c/d.docx" (already URL decoded)
      * Expected: "c/d.docx" (will fail containment)
      */
+    @Test
     public void testURLDecodedTraversal() {
         assertEquals("c/d.docx", PathUtils.normalizePath("b/../c/d.docx"));
     }
@@ -374,6 +408,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b c/d"
      * Expected: "a/b c/d"
      */
+    @Test
     public void testPathWithSpaces() {
         assertEquals("a/b c/d", PathUtils.normalizePath("a/b c/d"));
     }
@@ -383,6 +418,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/b-test_123/c"
      * Expected: "a/b-test_123/c"
      */
+    @Test
     public void testPathWithSpecialCharacters() {
         assertEquals("a/b-test_123/c", PathUtils.normalizePath("a/b-test_123/c"));
     }
@@ -392,6 +428,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a//b///c"
      * Expected: "a/b/c"
      */
+    @Test
     public void testEmptyComponents() {
         assertEquals("a/b/c", PathUtils.normalizePath("a//b///c"));
     }
@@ -401,6 +438,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "   "
      * Expected: ""
      */
+    @Test
     public void testWhitespaceOnlyString() {
         assertEquals("", PathUtils.normalizePath("   "));
     }
@@ -410,6 +448,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "a/.."
      * Expected: ""
      */
+    @Test
     public void testAllResolvedToEmpty() {
         assertEquals("", PathUtils.normalizePath("a/.."));
     }
@@ -419,6 +458,7 @@ public class FileLinkPathNormalizationTest extends TestCase {
      * Input: "shared/documents/./2024/../2025/reports/./Q1/../Q2/file.pdf"
      * Expected: "shared/documents/2025/reports/Q2/file.pdf"
      */
+    @Test
     public void testComplexRealWorldPath() {
         assertEquals("shared/documents/2025/reports/Q2/file.pdf",
                 PathUtils.normalizePath("shared/documents/./2024/../2025/reports/./Q1/../Q2/file.pdf"));

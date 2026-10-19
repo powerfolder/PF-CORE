@@ -26,22 +26,30 @@ import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Date;
 
 /**
- * PFC-3543: {@code Folder.correctTopAndSubfolderRelation()} promotes a subfolder to a top folder when
- * it finds no mounted folder above its local base. For a subfolder with INTERRUPTED permission
+ * PFC-3543: {@code Folder.correctTopAndSubfolderRelation()} promoted a subfolder to a top folder when
+ * it found no mounted folder above its local base. For a subfolder with INTERRUPTED permission
  * inheritance that auto-correction is destructive: dropping the parent silently discards the
  * permission barrier, the location and the index entry - and the version-bumped change replicates.
  * An empty ancestor chain is no proof of relocation either: the method runs in the Folder
  * CONSTRUCTOR, i.e. during mounting, before the top folder has to be registered (mount order), and
  * any path bug looks the same - the storage-path check was one and promoted 150 of them.
  * <p>
- * The guard keeps the hierarchy of an interrupted subfolder unchanged and logs SEVERE instead;
- * inheriting subfolders keep the promotion behavior.
+ * The guard keeps the hierarchy of an interrupted subfolder unchanged and logs SEVERE instead.
+ * <p>
+ * PFC-3649: the same holds for an inheriting subfolder - mounted before its top folder while a whole tree mounted,
+ * 58 of them became top folders, and the promoted copy replaced theirs on every node.
  */
 public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -50,6 +58,7 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -61,6 +70,7 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
      * order, or the data was moved by a bug). The constructor runs the correction - it must NOT
      * promote, the hierarchy stays for a human to inspect.
      */
+    @Test
     public void testDoesNotPromoteInterruptedSubFolderWithoutMountedTop() {
         FolderInfo unmountedTop = FolderInfoFactory.newTopFolderForTest("topFolder");
         FolderInfo interrupted = newSubFolderInfo(unmountedTop, "secret", false);
@@ -69,45 +79,54 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
         Folder mounted = joinFolder(interrupted, testFolderBaseDir("orphan-interrupted"),
             SyncProfile.HOST_FILES);
 
-        assertTrue("Interrupted subfolder must NOT be promoted to a top folder",
-            mounted.getInfo().isSubFolder());
-        assertFalse("Interruption flag must survive", mounted.getInfo().inheritsPermissions());
-        assertEquals("No version bump - nothing may have changed",
-            versionBefore, mounted.getInfo().getVersion());
+        assertTrue(mounted.getInfo().isSubFolder(),
+            "Interrupted subfolder must NOT be promoted to a top folder");
+        assertFalse(mounted.getInfo().inheritsPermissions(), "Interruption flag must survive");
+        assertEquals(versionBefore, mounted.getInfo().getVersion(),
+            "No version bump - nothing may have changed");
 
         // Repeated correction runs (repository startup path) must stay a no-op as well.
         assertFalse(mounted.correctTopAndSubfolderRelation());
         assertTrue(mounted.getInfo().isSubFolder());
     }
 
-    /**
-     * Unchanged behavior for an INHERITING subfolder: without a mounted folder above it, the
-     * correction still promotes it to a top folder. Mounted below its top first, then the top is
-     * removed and the correction re-run - the same sequence the repository startup path takes.
-     */
-    public void testStillPromotesInheritingSubFolderWithoutMountedTop() {
+    /** PFC-3649: an inheriting subfolder mounted before its top folder stays a subfolder. */
+    @Test
+    public void testDoesNotPromoteInheritingSubFolderWithoutMountedTop() {
+        FolderInfo unmountedTop = FolderInfoFactory.newTopFolderForTest("topFolder");
+        FolderInfo inheriting = newSubFolderInfo(unmountedTop, "plain", true);
+        int versionBefore = inheriting.getVersion();
+
+        Folder mounted = joinFolder(inheriting, testFolderBaseDir("orphan-inheriting"), SyncProfile.HOST_FILES);
+
+        assertTrue(mounted.getInfo().isSubFolder(), "Inheriting subfolder must NOT be promoted to a top folder");
+        assertEquals(versionBefore, mounted.getInfo().getVersion(), "No version bump - nothing may have changed");
+        assertFalse(mounted.correctTopAndSubfolderRelation());
+    }
+
+    /** PFC-3649: the same when its top folder goes away while it stays mounted. */
+    @Test
+    public void testKeepsInheritingSubFolderWhenTopIsRemoved() {
         setupTestFolder(SyncProfile.HOST_FILES);
         Folder topFolder = getFolder();
 
         FolderInfo inheriting = newSubFolderInfo(topFolder.getInfo(), "plain", true);
-        Folder mounted = joinFolder(inheriting, topFolder.getLocalBase().resolve("plain"),
-            SyncProfile.HOST_FILES);
+        Folder mounted = joinFolder(inheriting, topFolder.getLocalBase().resolve("plain"), SyncProfile.HOST_FILES);
         assertTrue(mounted.getInfo().isSubFolder());
         int versionBefore = mounted.getInfo().getVersion();
 
         getController().getFolderRepository().removeFolder(topFolder, false);
 
-        assertTrue("Inheriting subfolder without a mounted folder above is still promoted",
-            mounted.correctTopAndSubfolderRelation());
-        assertTrue(mounted.getInfo().isTopFolder());
-        assertEquals("Promotion is a version-bumped change", versionBefore + 1,
-            mounted.getInfo().getVersion());
+        assertFalse(mounted.correctTopAndSubfolderRelation(), "Inheriting subfolder must NOT be promoted");
+        assertTrue(mounted.getInfo().isSubFolder());
+        assertEquals(versionBefore, mounted.getInfo().getVersion());
     }
 
     /**
      * The counterpart with interruption: same sequence, but the interrupted subfolder must survive
      * the removal of its top folder unchanged.
      */
+    @Test
     public void testKeepsInterruptedSubFolderWhenTopIsRemoved() {
         setupTestFolder(SyncProfile.HOST_FILES);
         Folder topFolder = getFolder();
@@ -123,11 +142,47 @@ public class InterruptedSubFolderPromotionTest extends ControllerTestCase {
 
         getController().getFolderRepository().removeFolder(topFolder, false);
 
-        assertFalse("Interrupted subfolder must NOT be promoted when its top folder vanishes",
-            mounted.correctTopAndSubfolderRelation());
+        assertFalse(mounted.correctTopAndSubfolderRelation(),
+            "Interrupted subfolder must NOT be promoted when its top folder vanishes");
         assertTrue(mounted.getInfo().isSubFolder());
         assertFalse(mounted.getInfo().inheritsPermissions());
         assertEquals(versionBefore, mounted.getInfo().getVersion());
+    }
+
+    /** PFC-3649: QA step 2 - its top folder mounted afterwards, the subfolder stays what it was. */
+    @Test
+    public void testStaysSubFolderOfItsTopMountedAfterIt() {
+        FolderInfo topInfo = FolderInfoFactory.newTopFolderForTest("laterTop");
+        java.nio.file.Path topBase = testFolderBaseDir("later-top");
+        FolderInfo inheriting = newSubFolderInfo(topInfo, "plain", true);
+        Folder sub = joinFolder(inheriting, topBase.resolve("plain"), SyncProfile.HOST_FILES);
+        int versionBefore = sub.getInfo().getVersion();
+
+        Folder top = joinFolder(topInfo, topBase, SyncProfile.HOST_FILES);
+
+        assertFalse(sub.correctTopAndSubfolderRelation());
+        assertTrue(sub.getInfo().isSubFolder());
+        assertEquals(top, sub.getTopFolder(), "The subfolder belongs to the top folder mounted after it");
+        assertEquals(versionBefore, sub.getInfo().getVersion());
+    }
+
+    /**
+     * PFC-3649: a subfolder whose own top folder is not mounted, inside the tree of another mounted folder, is neither
+     * moved under that folder nor fails the correction.
+     */
+    @Test
+    public void testKeepsOrphanInsideAnotherMountedFolder() {
+        setupTestFolder(SyncProfile.HOST_FILES);
+        Folder other = getFolder();
+        FolderInfo unmountedTop = FolderInfoFactory.newTopFolderForTest("ownTop");
+        FolderInfo inheriting = newSubFolderInfo(unmountedTop, "plain", true);
+
+        Folder sub = joinFolder(inheriting, other.getLocalBase().resolve("plain"), SyncProfile.HOST_FILES);
+        int versionBefore = sub.getInfo().getVersion();
+
+        assertFalse(sub.correctTopAndSubfolderRelation());
+        assertEquals(unmountedTop, sub.getInfo().getTopFolder(), "Stays a subfolder of its own top folder");
+        assertEquals(versionBefore, sub.getInfo().getVersion());
     }
 
     /**

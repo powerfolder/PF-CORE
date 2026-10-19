@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -38,28 +39,40 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.SwingWorker;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The institution (IdP) chooser of the login wizard. The list comes from the Shibboleth discovery feed of the
+ * server.
+ * <p>
+ * PFC-3451: The feed is fetched with the shared HTTP client (proxy settings, timeouts) instead of a bare
+ * connection that could hang for minutes right after system start. A failed fetch no longer leaves the box
+ * silently disabled: it says so, retries on its own while the wizard is open and on every click into the box.
+ * All changes to the combo box model happen on the EDT.
+ */
 public class IdPSelectionBox extends StyledComboBox<String> {
     private static final Logger LOG = Logger.getLogger(IdPSelectionBox.class.getName());
+    private static final int HTTP_TIMEOUT_MS = 10 * 1000;
+    private static final int RETRIEVE_ATTEMPTS = 3;
+    private static final int AUTO_RETRY_DELAY_MS = 5 * 1000;
+
     private final Controller controller;
+    /** Entity ids, index-aligned with the items of the box. Only touched on the EDT. */
     private final List<String> idPList;
     private final List<String> samlIdPList;
     private boolean listLoaded;
+    private boolean loading;
     private boolean browserLoginOpened;
 
     public IdPSelectionBox(Controller controller) {
@@ -71,113 +84,18 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         this.samlIdPList = new ArrayList<>();
         this.listLoaded = false;
         setEnabled(false);
-        new Initializer().execute();
+        addActionListener(new IdPSelectionAction());
+        addPopupMenuListener(new RetryOnOpen());
+        load();
     }
 
     public boolean isSAMLIDPSelected() {
         int index = getSelectedIndex();
+        if (index < 0 || index >= idPList.size()) {
+            return false;
+        }
         String entityID = idPList.get(index);
         return entityID != null && samlIdPList.contains(entityID);
-    }
-
-    private class Initializer extends SwingWorker<Void, Void> {
-        private JSONArray retrieve0() throws IOException, JSONException {
-            URL url = new URL(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller));
-
-            HttpURLConnection con;
-            if (url.toString().startsWith("https")) {
-                con = (HttpsURLConnection) url.openConnection();
-            } else {
-                con = (HttpURLConnection) url.openConnection();
-            }
-
-            BufferedReader is = new BufferedReader(new InputStreamReader(con.getInputStream(), Convert.UTF8));
-            String line = is.readLine();
-            StringBuilder body = new StringBuilder();
-
-            while (line != null) {
-                body.append(line);
-                line = is.readLine();
-            }
-
-            return new JSONArray(body.toString());
-        }
-
-        private JSONArray retrieve() {
-            Exception lastException = null;
-            for (int i = 0; i < 10; i++) {
-                try {
-                    return retrieve0();
-                } catch (Exception e) {
-                    lastException = e;
-                }
-                Waiter.waitRandom(500);
-            }
-            throw new RuntimeException(lastException);
-        }
-
-        public void addEntry(String item) {
-            SwingUtilities.invokeLater(() -> addItem(item));
-        }
-
-        public void setSelectedIndex(int i) {
-            SwingUtilities.invokeLater(() -> setSelectedIndex(i));
-        }
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            JSONArray idps = retrieve();
-            removeAllItems();
-
-            // PFS-2006
-            addEntry(Translation.get("wizard.login_online_storage.pre_selection_entry"));
-            idPList.add(0, "");
-
-            if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.hasNonBlankValue(controller)) {
-                String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller).split(",");
-
-                for (String name : extNames) {
-                    if (StringUtils.isNotBlank(name)) {
-
-                        if (name.startsWith("!")) {
-                            name = name.substring(1);
-                        }
-
-                        addEntry(name.trim());
-                        idPList.add(name.trim());
-                    }
-                }
-            } else {
-                addEntry(Translation.get("wizard.login.external_users"));
-                idPList.add(ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-            }
-
-            for (int i = 0; i < idps.length(); i++) {
-                JSONObject obj = idps.getJSONObject(i);
-
-                String entity = obj.getString("entityID");
-                String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
-
-                addEntry(name);
-                idPList.add(entity);
-                samlIdPList.add(entity);
-            }
-
-            setSelectedIndex(0);
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-
-            addActionListener(new IdPSelectionAction());
-            listLoaded = true;
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            if (listLoaded) {
-                setEnabled(true);
-            }
-        }
     }
 
     public boolean isListLoaded() {
@@ -188,20 +106,197 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         return browserLoginOpened;
     }
 
+    /**
+     * Fetches the list in the background. Does nothing while a fetch is running or once the list is there.
+     */
+    private void load() {
+        if (loading || listLoaded) {
+            return;
+        }
+        loading = true;
+        new Initializer().execute();
+    }
+
+    private void showLoadFailed() {
+        removeAllItems();
+        idPList.clear();
+        samlIdPList.clear();
+        addItem(Translation.get("login.saml.idp_list_failed"));
+        setSelectedIndex(0);
+        // Enabled, so that a click into the box can start the next attempt
+        setEnabled(true);
+        if (isShowing()) {
+            Timer retry = new Timer(AUTO_RETRY_DELAY_MS, e -> {
+                if (isShowing()) {
+                    load();
+                }
+            });
+            retry.setRepeats(false);
+            retry.start();
+        }
+    }
+
+    private void showList(List<String> names, List<String> entityIDs, List<String> samlEntityIDs) {
+        removeAllItems();
+        idPList.clear();
+        samlIdPList.clear();
+        idPList.addAll(entityIDs);
+        samlIdPList.addAll(samlEntityIDs);
+        for (String name : names) {
+            addItem(name);
+        }
+        setSelectedIndex(0);
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+        listLoaded = true;
+        setEnabled(true);
+    }
+
+    /**
+     * A click into the box while the list is missing starts the next attempt.
+     */
+    private class RetryOnOpen implements PopupMenuListener {
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            if (!listLoaded) {
+                load();
+            }
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+        }
+    }
+
+    /**
+     * The fetched list, built in the background and handed to the EDT in one piece.
+     */
+    private static class IdPEntries {
+        final List<String> names = new ArrayList<>();
+        final List<String> entityIDs = new ArrayList<>();
+        final List<String> samlEntityIDs = new ArrayList<>();
+
+        void add(String name, String entityID, boolean saml) {
+            names.add(name);
+            entityIDs.add(entityID);
+            if (saml) {
+                samlEntityIDs.add(entityID);
+            }
+        }
+    }
+
+    private class Initializer extends SwingWorker<IdPEntries, Void> {
+
+        private JSONArray retrieve0() throws IOException, JSONException {
+            String url = ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller);
+            RequestConfig timeouts = RequestConfig.custom().setConnectTimeout(HTTP_TIMEOUT_MS)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT_MS).setSocketTimeout(HTTP_TIMEOUT_MS).build();
+            // PFC-2669: The shared builder knows the proxy settings
+            HttpClientBuilder builder = Util.createHttpClientBuilder(controller).setDefaultRequestConfig(timeouts);
+            HttpClient client = builder.build();
+            HttpResponse response = client.execute(new HttpGet(url));
+            int status = response.getStatusLine().getStatusCode();
+            String body = EntityUtils.toString(response.getEntity(), Convert.UTF8);
+            if (status != 200) {
+                throw new IOException("HTTP " + status + " from " + url);
+            }
+            return new JSONArray(body);
+        }
+
+        private JSONArray retrieve() throws IOException, JSONException {
+            Exception lastException = null;
+            for (int i = 0; i < RETRIEVE_ATTEMPTS; i++) {
+                try {
+                    return retrieve0();
+                } catch (IOException | JSONException e) {
+                    lastException = e;
+                    LOG.fine("IdP list: attempt " + (i + 1) + " failed. " + e);
+                }
+                Waiter.waitRandom(1000);
+            }
+            if (lastException instanceof IOException) {
+                throw (IOException) lastException;
+            }
+            throw (JSONException) lastException;
+        }
+
+        @Override
+        protected IdPEntries doInBackground() throws Exception {
+            JSONArray idps = retrieve();
+            IdPEntries entries = new IdPEntries();
+
+            // PFS-2006
+            entries.add(Translation.get("wizard.login_online_storage.pre_selection_entry"), "", false);
+
+            if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.hasNonBlankValue(controller)) {
+                String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller).split(",");
+                for (String name : extNames) {
+                    if (StringUtils.isBlank(name)) {
+                        continue;
+                    }
+                    if (name.startsWith("!")) {
+                        name = name.substring(1);
+                    }
+                    entries.add(name.trim(), name.trim(), false);
+                }
+            } else {
+                entries.add(Translation.get("wizard.login.external_users"), ServerClient.SAML_EXTERNAL_NON_SAML_USERS,
+                    false);
+            }
+
+            for (int i = 0; i < idps.length(); i++) {
+                JSONObject obj = idps.getJSONObject(i);
+                String entity = obj.getString("entityID");
+                String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
+                entries.add(name, entity, true);
+            }
+            return entries;
+        }
+
+        @Override
+        protected void done() {
+            loading = false;
+            IdPEntries entries;
+            try {
+                entries = get();
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, "IdP list: unable to load "
+                    + ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller) + ". " + e.getCause());
+                showLoadFailed();
+                return;
+            }
+            showList(entries.names, entries.entityIDs, entries.samlEntityIDs);
+        }
+    }
+
     private class IdPSelectionAction implements ActionListener {
 
         @Override
         public void actionPerformed(final ActionEvent e) {
-            SwingWorker<Void, Void> worker = new IdPSelectionWorker();
-            worker.execute();
+            if (!listLoaded) {
+                return;
+            }
+            int index = getSelectedIndex();
+            if (index < 0 || index >= idPList.size()) {
+                return;
+            }
+            String entityID = idPList.get(index);
+            new IdPSelectionWorker(entityID).execute();
         }
 
         private class IdPSelectionWorker extends SwingWorker<Void, Void> {
+            private final String entityID;
+
+            private IdPSelectionWorker(String entityID) {
+                this.entityID = entityID;
+            }
+
             @Override
             protected Void doInBackground() {
-                int index = getSelectedIndex();
-                String entityID = idPList.get(index);
-
                 ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, entityID);
                 String externalNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller);
 

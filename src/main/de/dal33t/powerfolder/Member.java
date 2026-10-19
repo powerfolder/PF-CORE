@@ -1097,6 +1097,15 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param folders
      * @return true if the filelists of those folders received successfully.
      */
+    /**
+     * How long a handshake waits without a single further file list before it gives up.
+     * <p>
+     * The overall timeout is two hours and stays that way as a backstop; this is what ends a handshake
+     * that is not going anywhere. A peer that is still sending resets it with every folder it completes,
+     * so a genuinely slow transfer of thousands of lists is not affected.
+     */
+    private static final long FILELIST_NO_PROGRESS_TIMEOUT_MS = 1000L * 60 * 5;
+
     private boolean waitForFileLists(List<Folder> folders) {
         if (isFiner()) {
             logFiner("Waiting for complete fileslists...");
@@ -1105,16 +1114,33 @@ public class Member extends PFComponent implements Comparable<Member> {
         Waiter waiter = new Waiter(1000L * 60 * 120);
         boolean fileListsCompleted = false;
         Date lastMessageReceived = null;
+        /* What is still outstanding, and when it last got smaller. The check below measures the LINE -
+         * any keepalive resets it - so between two healthy servers it never fires, and a handshake that
+         * will never complete sat out the full two hours. Both sides do, each holding the other: on the
+         * customer's cluster one node had no connection to its peer for eight hours, four of these in a
+         * row, and every timeout throws away the peer's whole file database before trying again. What
+         * has to advance here is the file lists, so that is what is watched. */
+        int fewestMissing = Integer.MAX_VALUE;
+        long lastProgress = System.currentTimeMillis();
         while (!waiter.isTimeout() && isConnected()) {
-            fileListsCompleted = true;
+            int missing = 0;
             for (Folder folder : folders) {
                 if (!hasCompleteFileListFor(folder.getInfo())) {
-                    fileListsCompleted = false;
-                    break;
+                    missing++;
                 }
             }
+            fileListsCompleted = missing == 0;
             if (fileListsCompleted) {
                 break;
+            }
+            if (missing < fewestMissing) {
+                fewestMissing = missing;
+                lastProgress = System.currentTimeMillis();
+            } else if (System.currentTimeMillis() - lastProgress > FILELIST_NO_PROGRESS_TIMEOUT_MS) {
+                logWarning("No file list arrived for " + (FILELIST_NO_PROGRESS_TIMEOUT_MS / 1000)
+                    + "s, " + missing + " of " + folders.size() + " folder(s) still outstanding -"
+                    + " giving up on this handshake instead of waiting out the full timeout");
+                return false;
             }
 
             lastMessageReceived = peer != null ? peer
