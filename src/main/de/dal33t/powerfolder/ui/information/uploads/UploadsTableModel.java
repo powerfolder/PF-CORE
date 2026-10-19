@@ -516,8 +516,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
             if (index >= 0) {
                 rowsUpdated(index, index);
             } else {
-                logSevere("Upload not found in model: " + event.getUpload());
-                rowsUpdatedAll();
+                addOrUpdateUpload(event.getUpload());
             }
         }
 
