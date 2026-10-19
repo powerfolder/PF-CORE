@@ -4907,9 +4907,10 @@ public class Folder extends PFComponent {
                                     }
                                 }
                             } catch (IOException e) {
-                                logFine(
+                                logWarning(
                                         "Unable to delete files in deleted directory "
-                                                + localCopy + ": " + e.getMessage());
+                                                + localCopy + ": " + e.getMessage()
+                                                + ", attempt " + (nTried + 1));
                                 return;
                             }
 
@@ -4934,14 +4935,13 @@ public class Folder extends PFComponent {
                                     String contentStr = count > 0
                                             ? sb.toString()
                                             : "(unable to access)";
-                                    logFine("Unable to delete directory locally: "
+                                    logWarning("Unable to delete directory locally: "
                                             + localCopy
                                             + ". Info: "
                                             + localFile.toDetailString()
-                                            + ". contents: " + contentStr);
+                                            + ". contents: " + contentStr
+                                            + ". Attempt " + (nTried + 1));
                                 }
-                                // Skip. Dir was not actually deleted /
-                                // could not sync
                                 return;
                             }
                         } finally {
