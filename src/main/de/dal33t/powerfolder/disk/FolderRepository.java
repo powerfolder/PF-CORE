@@ -2124,6 +2124,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Remove internal
                 folders.remove(folder.getInfo());
                 existingFolderCache.invalidate(folder.getLocalBase());
+                /* PFC-3641: a tree unmounts its subfolders first, and the top folder scanned on in between -
+                 * without the barriers, into their subtrees. The barrier stays while the top folder is
+                 * mounted and goes with it. */
+                FolderInfo foInfo = folder.getInfo();
+                if (foInfo.isSubFolder()) {
+                    if (!deleteSystemSubDir && !foInfo.inheritsPermissions() && folder.getLocalBase() != null
+                        && folders.containsKey(foInfo.getTopFolder()))
+                    {
+                        interruptedSubFolders.seed(foInfo, folder.getLocalBase());
+                    }
+                } else {
+                    interruptedSubFolders.dropSeedsOf(foInfo);
+                }
                 // PFC-3543: keep the interrupted-subfolder index in sync.
                 refreshInterruptedSubFolders();
                 folder.removeProblemListener(valveProblemListenerSupport);
@@ -2155,6 +2168,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     try {
                         PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
+                    } catch (NoSuchFileException e) {
+                        // PFC-3536: gone with the directory that held it - nothing left to delete.
+                        logFine(folder + ": System directory already gone: " + folder.getSystemSubDir());
                     } catch (IOException e) {
                         logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
                     }
@@ -3491,6 +3507,32 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public Folder moveLocalFolder(Folder folder, Path targetPath) {
         return moveLocalFolder(folder, targetPath, false);
+    }
+
+    /**
+     * PFS-5926: mounts a folder anew at the place its data already is - nothing on disk moves. A subfolder nested in
+     * a moved one travelled with the parent directory while its base kept naming the old place.
+     *
+     * @return the folder mounted at {@code newBase}, or the folder as it is when there is nothing to rebase
+     */
+    public Folder rebaseLocalFolder(Folder folder, Path newBase) {
+        if (folder.getLocalBase().equals(newBase) || !Files.isDirectory(newBase)) {
+            return folder;
+        }
+        basedirScanLock.readLock().lock();
+        try {
+            FolderSettings fs = FolderSettings.load(getController(), folder.getConfigEntryId()).changeBaseDir(newBase);
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
+            removeFolder(folder, false, false);
+            Folder rebased = createFolder(folder.getInfo().intern(), fs, false);
+            for (String pattern : patterns) {
+                rebased.addPattern(pattern);
+            }
+            fireFolderMoved(rebased, folder);
+            return rebased;
+        } finally {
+            basedirScanLock.readLock().unlock();
+        }
     }
 
     public Folder moveLocalFolder(Folder folder, Path targetPath, boolean atomic) {

@@ -19,6 +19,9 @@
 */
 package de.dal33t.powerfolder.ui;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the node table model.
@@ -47,7 +51,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
     private Member moe;
     private Member homer;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception
     {
         super.setUp();
@@ -66,6 +70,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
      * Tests the direct mutation of the node table model via its own
      * modification methods.
      */
+    @Test
     public void testDirectChanges() {
         // Test = No users found
         assertEquals(1, model.getRowCount());
@@ -74,7 +79,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.add(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(0));
         assertEquals(1, listener.events.size());
@@ -82,7 +87,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.add(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(2, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(1));
         assertEquals(2, listener.events.size());
@@ -90,7 +95,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.add(moe);
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(3, model.getRowCount());
         assertEquals(moe, model.getValueAt(2, 1));
         assertEquals(3, listener.events.size());
@@ -99,7 +104,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.remove(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(2, model.getRowCount());
         assertEquals(moe, model.getValueAt(1, 2));
         assertEquals(moe, model.getDataAt(1));
@@ -109,7 +114,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.clear();
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertTrue(model.getDataAt(0) instanceof String);
         assertEquals(5, listener.events.size());
@@ -118,7 +123,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         model.add(homer);
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertEquals(homer, model.getValueAt(0, 0));
         assertEquals(6, listener.events.size());
@@ -128,6 +133,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
     /**
      * Tests the mutation of the node table model via its listmodel.
      */
+    @Test
     public void testListModelChanges() {
         ObservableList<Member> list = model.getListModel();
         // Test = No users found
@@ -137,7 +143,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.add(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(0));
         assertEquals(1, listener.events.size());
@@ -145,7 +151,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.add(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(2, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(1));
         assertEquals(2, listener.events.size());
@@ -153,7 +159,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.add(moe);
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(3, model.getRowCount());
         assertEquals(moe, model.getValueAt(2, 1));
         assertEquals(3, listener.events.size());
@@ -162,7 +168,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.remove(getController().getMySelf());
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(2, model.getRowCount());
         assertEquals(moe, model.getValueAt(1, 2));
         assertEquals(moe, model.getDataAt(1));
@@ -172,7 +178,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.clear();
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertTrue(model.getDataAt(0) instanceof String);
         assertEquals(5, listener.events.size());
@@ -181,7 +187,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
         list.add(homer);
         // Give time for the listner event to be fired, which gets executed in
         // event dispatching thread.
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, model.getRowCount());
         assertEquals(homer, model.getValueAt(0, 0));
         assertEquals(6, listener.events.size());

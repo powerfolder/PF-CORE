@@ -18,14 +18,16 @@
  */
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
 
 
-public class FolderInfoFactoryTest extends TestCase {
+public class FolderInfoFactoryTest {
 
 
+    @Test
     public void testParentFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         DirectoryInfo subDir = FileInfoFactory.lookupDirectory(top, "subDirect");
@@ -56,6 +58,7 @@ public class FolderInfoFactoryTest extends TestCase {
      * owning the row); taking it unchanged would make the middle folder the top folder of the new one,
      * and the chain then holds itself in place through fk_fi_topfolder.
      */
+    @Test
     public void testSubFolderOfSubFolderStillPointsAtTheTopFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         FolderInfo outer = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "outer"));
@@ -65,9 +68,9 @@ public class FolderInfoFactoryTest extends TestCase {
         DirectoryInfo innerInOuter = FileInfoFactory.lookupDirectory(outer, "inner");
         FolderInfo inner = FolderInfoFactory.newFolder(innerInOuter);
 
-        assertEquals("The top folder is the root, not the enclosing subfolder", top, inner.getTopFolder());
-        assertFalse("The top folder must not itself be a subfolder", inner.getTopFolder().isSubFolder());
-        assertEquals("The nesting shows in the path", "outer", inner.getTopPath());
+        assertEquals(top, inner.getTopFolder(), "The top folder is the root, not the enclosing subfolder");
+        assertFalse(inner.getTopFolder().isSubFolder(), "The top folder must not itself be a subfolder");
+        assertEquals("outer", inner.getTopPath(), "The nesting shows in the path");
         assertEquals("outer/inner", inner.getLocation().getRelativeName());
         assertEquals("outer/inner", inner.locationPath());
     }
@@ -77,6 +80,7 @@ public class FolderInfoFactoryTest extends TestCase {
      * PFC-3543: the same holds for a parent that was not computed here but read - from a stored row or
      * from a peer that sent the folder as it had it. Both come through FolderInfo#setParent.
      */
+    @Test
     public void testReadParentInSubFolderCoordinatesIsLifted() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         FolderInfo outer = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "outer"));
@@ -94,6 +98,7 @@ public class FolderInfoFactoryTest extends TestCase {
      * location change, and everything derived from the location (base dir, barrier, row prefix) moves
      * with it. This pins the property the relocation relies on.
      */
+    @Test
     public void testTheNameIsTheLastSegmentOfTheLocation() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/b/name"));
@@ -102,7 +107,7 @@ public class FolderInfoFactoryTest extends TestCase {
         FolderInfo renamed = FolderInfoFactory.rename(sub, "other");
         assertEquals("a/b", renamed.getTopPath());
         assertEquals("a/b/other", renamed.locationPath());
-        assertEquals("A rename is a new version of the same folder", sub.getId(), renamed.getId());
+        assertEquals(sub.getId(), renamed.getId(), "A rename is a new version of the same folder");
     }
 
     /**
@@ -110,6 +115,7 @@ public class FolderInfoFactoryTest extends TestCase {
      * intermediate FolderInfo naming a location that never existed on disk. Tags and the inheritance
      * flag travel with it, like on a rename, and the identity does not change at all.
      */
+    @Test
     public void testMoveCarriesEverythingButTheLocation() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/b/name"));
@@ -120,16 +126,17 @@ public class FolderInfoFactoryTest extends TestCase {
         FolderInfo moved = FolderInfoFactory.move(sub, FileInfoFactory.lookupDirectory(top, "c"), "other");
 
         assertEquals("c/other", moved.locationPath());
-        assertEquals("One bump for parent and name together", versionBefore + 1, moved.getVersion());
-        assertEquals("The identity is what makes permissions survive", sub.getId(), moved.getId());
-        assertEquals("The tags travel", sub.getTags(), moved.getTags());
+        assertEquals(versionBefore + 1, moved.getVersion(), "One bump for parent and name together");
+        assertEquals(sub.getId(), moved.getId(), "The identity is what makes permissions survive");
+        assertEquals(sub.getTags(), moved.getTags(), "The tags travel");
         // The getter answers "inherits" while the feature is off, so the stored flag is what is asserted
         // here - that is the value the factory has to carry.
-        assertFalse("The interruption travels", moved.storedInheritsPermissions());
-        assertEquals("The top folder is unchanged", top, moved.getTopFolder());
+        assertFalse(moved.storedInheritsPermissions(), "The interruption travels");
+        assertEquals(top, moved.getTopFolder(), "The top folder is unchanged");
     }
 
     /** A move to the place it already sits changes nothing - not even the version. */
+    @Test
     public void testMoveToTheSamePlaceIsNoChange() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/name"));

@@ -19,7 +19,8 @@
  */
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * PFS-5306: Deterministic tests for folder tags on {@link FolderInfo}: the
  * factory mutation (version bump, no-op detection), carry-over through the other
@@ -35,16 +38,15 @@ import java.util.Arrays;
  * compatibility (tags only serialize at FolderInfo protocol 103, older peers
  * keep receiving &lt;= 102 streams).
  */
-public class FolderInfoTagsTest extends TestCase {
+public class FolderInfoTagsTest {
 
     private static final String TAGS_JSON = "[\"Projekt\",\"2026\"]";
 
     private FolderInfo topFolder;
     private FolderInfo subFolder;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() throws Exception {
         topFolder = FolderInfoFactory.newTopFolderForTest("TopFolder", "TAG-TOP-1");
         subFolder = FolderInfoFactory.newFolder(
             FileInfoFactory.lookupDirectory(topFolder, "sub"));
@@ -52,115 +54,129 @@ public class FolderInfoTagsTest extends TestCase {
 
     // --- Factory: changing the tags bumps the folder version -----------------
 
+    @Test
     public void testFactoryChangeBumpsVersionAndStoresTags() {
         int versionBefore = subFolder.getVersion();
 
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
 
-        assertEquals("Version must be bumped when the tags change",
-            versionBefore + 1, tagged.getVersion());
-        assertEquals("Tags must be stored on the new instance",
-            TAGS_JSON, tagged.getTags());
-        assertEquals("Folder identity (id) must be preserved",
-            subFolder.getId(), tagged.getId());
+        assertEquals(versionBefore + 1, tagged.getVersion(),
+            "Version must be bumped when the tags change");
+        assertEquals(TAGS_JSON, tagged.getTags(),
+            "Tags must be stored on the new instance");
+        assertEquals(subFolder.getId(), tagged.getId(),
+            "Folder identity (id) must be preserved");
     }
 
+    @Test
     public void testFactoryChangeIsNoOpWhenTagsUnchanged() {
         // Untagged (null) -> null must be a no-op.
         FolderInfo same = FolderInfoFactory.changeTags(subFolder, null);
-        assertSame("Unchanged (null) tags must return the same instance", subFolder, same);
+        assertSame(subFolder, same, "Unchanged (null) tags must return the same instance");
 
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo sameTagged = FolderInfoFactory.changeTags(tagged, TAGS_JSON);
-        assertSame("Unchanged tags must return the same instance", tagged, sameTagged);
-        assertEquals("Version must not change on a no-op",
-            tagged.getVersion(), sameTagged.getVersion());
+        assertSame(tagged, sameTagged, "Unchanged tags must return the same instance");
+        assertEquals(tagged.getVersion(), sameTagged.getVersion(),
+            "Version must not change on a no-op");
     }
 
+    @Test
     public void testFactoryUntagBumpsVersionAndClearsTags() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo untagged = FolderInfoFactory.changeTags(tagged, null);
-        assertEquals("Version must be bumped when untagging",
-            tagged.getVersion() + 1, untagged.getVersion());
-        assertNull("Tags must be cleared", untagged.getTags());
-        assertTrue("Tag list must be empty when untagged", untagged.getTagsList().isEmpty());
+        assertEquals(tagged.getVersion() + 1, untagged.getVersion(),
+            "Version must be bumped when untagging");
+        assertNull(untagged.getTags(), "Tags must be cleared");
+        assertTrue(untagged.getTagsList().isEmpty(), "Tag list must be empty when untagged");
     }
 
     // --- Carry-over through the other factory mutators -----------------------
 
+    @Test
     public void testTagsSurviveRename() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo renamed = FolderInfoFactory.rename(tagged, "RenamedSub");
-        assertEquals("Rename must not drop the tags", TAGS_JSON, renamed.getTags());
+        assertEquals(TAGS_JSON, renamed.getTags(), "Rename must not drop the tags");
     }
 
+    @Test
     public void testTagsSurviveChangeParent() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo moved = FolderInfoFactory.changeParent(tagged,
             FileInfoFactory.lookupDirectory(topFolder, "other/place"));
-        assertEquals("Changing the parent must not drop the tags", TAGS_JSON, moved.getTags());
+        assertEquals(TAGS_JSON, moved.getTags(), "Changing the parent must not drop the tags");
     }
 
+    @Test
     public void testTagsSurviveResolveConflict() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo resolved = FolderInfoFactory.resolveConflict(tagged);
-        assertEquals("Resolving a conflict must not drop the tags", TAGS_JSON, resolved.getTags());
+        assertEquals(TAGS_JSON, resolved.getTags(), "Resolving a conflict must not drop the tags");
     }
 
+    @Test
     public void testTagsSurviveChangeInheritsPermissions() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo interrupted = FolderInfoFactory.changeInheritsPermissions(tagged, false);
-        assertEquals("Changing inheritsPermissions must not drop the tags",
-            TAGS_JSON, interrupted.getTags());
+        assertEquals(TAGS_JSON, interrupted.getTags(),
+            "Changing inheritsPermissions must not drop the tags");
     }
 
     // --- Parsing --------------------------------------------------------------
 
+    @Test
     public void testGetTagsListParsesJson() {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         assertEquals(Arrays.asList("Projekt", "2026"), tagged.getTagsList());
     }
 
+    @Test
     public void testGetTagsListNeverNull() {
-        assertNotNull("Tag list must never be null", subFolder.getTagsList());
-        assertTrue("Tag list must be empty when untagged", subFolder.getTagsList().isEmpty());
+        assertNotNull(subFolder.getTagsList(), "Tag list must never be null");
+        assertTrue(subFolder.getTagsList().isEmpty(), "Tag list must be empty when untagged");
     }
 
     // --- Wire protocol escalation & backward compatibility --------------------
 
+    @Test
     public void testUntaggedFolderStaysAtOldProtocol() throws Exception {
         // No tags -> no need for 103 even towards a new peer.
         assertEquals(101L, writtenProtocolVersion(subFolder, true, false, true));
     }
 
+    @Test
     public void testOldPeerNeverReceivesNewProtocol() throws Exception {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         // Peer negotiated < 116: tags must never escalate the protocol.
         assertEquals(101L, writtenProtocolVersion(tagged, true, false, false));
     }
 
+    @Test
     public void testNewPeerReceivesTags() throws Exception {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         // Peer negotiated >= 116 and the folder is tagged: escalate to 103.
         assertEquals(103L, writtenProtocolVersion(tagged, true, false, true));
     }
 
+    @Test
     public void testTagsRoundTripToNewPeer() throws Exception {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         FolderInfo read = roundTrip(tagged, true, false, true);
-        assertEquals("Tags must survive the wire to a new peer", TAGS_JSON, read.getTags());
+        assertEquals(TAGS_JSON, read.getTags(), "Tags must survive the wire to a new peer");
         assertEquals(Arrays.asList("Projekt", "2026"), read.getTagsList());
-        assertTrue("Absent interruption flag must be read as inheriting (default)",
-            read.inheritsPermissions());
+        assertTrue(read.inheritsPermissions(),
+            "Absent interruption flag must be read as inheriting (default)");
     }
 
+    @Test
     public void testOldPeerReadsTaggedFolderAsUntagged() throws Exception {
         FolderInfo tagged = FolderInfoFactory.changeTags(subFolder, TAGS_JSON);
         // Written for an old peer (no tags) and read back: must default to
         // untagged - the safe default, no garbage in the stream.
         FolderInfo read = roundTrip(tagged, true, false, false);
-        assertNull("Absent tags must be read as untagged", read.getTags());
-        assertTrue("Tag list must be empty when untagged", read.getTagsList().isEmpty());
+        assertNull(read.getTags(), "Absent tags must be read as untagged");
+        assertTrue(read.getTagsList().isEmpty(), "Tag list must be empty when untagged");
     }
 
     // --- helpers ---------------------------------------------------------------

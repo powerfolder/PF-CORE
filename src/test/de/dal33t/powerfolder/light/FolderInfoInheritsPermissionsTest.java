@@ -22,13 +22,17 @@ package de.dal33t.powerfolder.light;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3543: Deterministic tests for the "interruption of permission inheritance"
@@ -40,14 +44,13 @@ import java.io.ObjectOutputStream;
  * remote version of 114 (old) versus &gt;= 115 (new) - no network needed and
  * fully deterministic.
  */
-public class FolderInfoInheritsPermissionsTest extends TestCase {
+public class FolderInfoInheritsPermissionsTest {
 
     private FolderInfo topFolder;
     private FolderInfo subFolder;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() throws Exception {
         topFolder = FolderInfoFactory.newTopFolderForTest("TopFolder", "INH-TOP-1");
         subFolder = FolderInfoFactory.newFolder(
             FileInfoFactory.lookupDirectory(topFolder, "sub"));
@@ -55,51 +58,54 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         // The feature flag is process-wide - never leak it into other tests.
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
-        super.tearDown();
     }
 
     // --- Feature gate & permission evaluation --------------------------------
 
+    @Test
     public void testFeatureDisabledAlwaysInherits() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         // Stored as interrupted, but the disabled feature must ignore it.
         subFolder = withInheritsPermissions(subFolder, false);
-        assertTrue("Feature off: subfolder must still inherit",
-            subFolder.inheritsPermissions());
+        assertTrue(subFolder.inheritsPermissions(),
+            "Feature off: subfolder must still inherit");
 
         // Top-folder permission still reaches the subfolder.
         Permission topAdmin = FolderPermission.admin(topFolder);
-        assertTrue("Feature off: inheritance must not be broken",
-            topAdmin.implies(FolderPermission.read(subFolder)));
+        assertTrue(topAdmin.implies(FolderPermission.read(subFolder)),
+            "Feature off: inheritance must not be broken");
     }
 
+    @Test
     public void testFeatureEnabledHonorsInterruption() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        assertTrue("Default is inheriting", subFolder.inheritsPermissions());
+        assertTrue(subFolder.inheritsPermissions(), "Default is inheriting");
 
         subFolder = withInheritsPermissions(subFolder, false);
-        assertFalse("Feature on: interruption must be honored",
-            subFolder.inheritsPermissions());
+        assertFalse(subFolder.inheritsPermissions(),
+            "Feature on: interruption must be honored");
 
         // Inheritance broken -> top-folder permission no longer reaches subfolder.
         Permission topAdmin = FolderPermission.admin(topFolder);
-        assertFalse("Interrupted subfolder must not inherit top permission",
-            topAdmin.implies(FolderPermission.read(subFolder)));
+        assertFalse(topAdmin.implies(FolderPermission.read(subFolder)),
+            "Interrupted subfolder must not inherit top permission");
     }
 
+    @Test
     public void testTopFolderAlwaysInherits() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         topFolder = withInheritsPermissions(topFolder, false);
-        assertTrue("Top folders are the root of inheritance and never interrupted",
-            topFolder.inheritsPermissions());
+        assertTrue(topFolder.inheritsPermissions(),
+            "Top folders are the root of inheritance and never interrupted");
     }
 
     // --- Factory: changing the flag bumps the folder version ------------------
 
+    @Test
     public void testFactoryChangeBumpsVersionAndAppliesFlag() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         int versionBefore = subFolder.getVersion();
@@ -107,25 +113,27 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         FolderInfo interrupted =
             FolderInfoFactory.changeInheritsPermissions(subFolder, false);
 
-        assertEquals("Version must be bumped when the flag changes",
-            versionBefore + 1, interrupted.getVersion());
-        assertFalse("Flag must be applied on the new instance",
-            interrupted.inheritsPermissions());
-        assertEquals("Folder identity (id) must be preserved",
-            subFolder.getId(), interrupted.getId());
+        assertEquals(versionBefore + 1, interrupted.getVersion(),
+            "Version must be bumped when the flag changes");
+        assertFalse(interrupted.inheritsPermissions(),
+            "Flag must be applied on the new instance");
+        assertEquals(subFolder.getId(), interrupted.getId(),
+            "Folder identity (id) must be preserved");
     }
 
+    @Test
     public void testFactoryChangeIsNoOpWhenFlagUnchanged() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         // subFolder inherits by default -> asking for the same must be a no-op.
         FolderInfo same = FolderInfoFactory.changeInheritsPermissions(subFolder, true);
-        assertSame("Unchanged flag must return the same instance", subFolder, same);
-        assertEquals("Version must not change on a no-op",
-            subFolder.getVersion(), same.getVersion());
+        assertSame(subFolder, same, "Unchanged flag must return the same instance");
+        assertEquals(subFolder.getVersion(), same.getVersion(),
+            "Version must not change on a no-op");
     }
 
     // --- Wire protocol negotiation & backward compatibility ------------------
 
+    @Test
     public void testFeatureOffKeepsOldProtocol() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         subFolder = withInheritsPermissions(subFolder, false);
@@ -133,6 +141,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         assertEquals(101L, writtenProtocolVersion(subFolder, true, true));
     }
 
+    @Test
     public void testOldPeerNeverReceivesNewProtocol() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         subFolder = withInheritsPermissions(subFolder, false);
@@ -140,6 +149,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         assertEquals(101L, writtenProtocolVersion(subFolder, true, false));
     }
 
+    @Test
     public void testNewPeerReceivesInterruptionFlag() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         subFolder = withInheritsPermissions(subFolder, false);
@@ -147,28 +157,31 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         assertEquals(102L, writtenProtocolVersion(subFolder, true, true));
     }
 
+    @Test
     public void testNonInterruptedFolderStaysAtOldProtocol() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         // Not interrupted -> no need for 102 even towards a new peer.
         assertEquals(101L, writtenProtocolVersion(subFolder, true, true));
     }
 
+    @Test
     public void testInterruptionRoundTripsToNewPeer() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         subFolder = withInheritsPermissions(subFolder, false);
         FolderInfo read = roundTrip(subFolder, true, true);
-        assertFalse("Interruption must survive the wire to a new peer",
-            read.inheritsPermissions());
+        assertFalse(read.inheritsPermissions(),
+            "Interruption must survive the wire to a new peer");
     }
 
+    @Test
     public void testOldPeerReadsInterruptedFolderAsInheriting() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         subFolder = withInheritsPermissions(subFolder, false);
         // Written for an old peer (no flag) and read back: must default to
         // inheriting, i.e. the safe default - no silent wrong interruption.
         FolderInfo read = roundTrip(subFolder, true, false);
-        assertTrue("Absent flag must be read as inheriting",
-            read.inheritsPermissions());
+        assertTrue(read.inheritsPermissions(),
+            "Absent flag must be read as inheriting");
     }
 
     // --- helpers -------------------------------------------------------------

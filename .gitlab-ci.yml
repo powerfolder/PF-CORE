@@ -4,8 +4,23 @@ stages:
 variables:
   GIT_DEPTH: "1"
 
+# On a Dev build tag (Dev_<kind>_<name>, as in PF-PRO) the PF-CORE tests are started manually
+# (a Dev client build does not need to re-run the full suite). Unlike the PF-PRO builds they are
+# non-blocking: nothing waits for them, so an unstarted test must not leave the pipeline blocked.
+# Every other branch or tag keeps running them automatically; merge requests get no pipeline of
+# their own, as before the rules existed (the branch pipeline covers them).
+.rules-test:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_REF_NAME =~ /^Dev_/'
+      when: manual
+      allow_failure: true
+    - when: on_success
+
 security-java-scan:
   stage: test
+  extends: .rules-test
   tags:
     - Linux
     - Development
@@ -25,7 +40,12 @@ security-java-scan:
 
 test-Linux:
   stage: test
+  extends: .rules-test
   resource_group: tests-Linux
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Linux
   script:
@@ -36,10 +56,16 @@ test-Linux:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always
 
 test-macOS:
   stage: test
+  extends: .rules-test
   resource_group: tests-macOS
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - macOS
   script:
@@ -71,7 +97,12 @@ test-macOS:
 
 test-Windows:
   stage: test
+  extends: .rules-test
   resource_group: tests-Windows
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Windows
   script:
@@ -82,3 +113,4 @@ test-Windows:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always

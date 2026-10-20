@@ -2391,7 +2391,10 @@ public class LuceneIndexManager extends PFComponent {
          * overwrite - the same reasoning the discard path already follows. narvi holds 7 425
          * interrupted subfolders after a migration, each of them an index of its own, and closing
          * them took 63 of the 70 seconds its shutdown lasted. */
-        boolean throwingAway = discard || rebuildScheduled;
+        /* PFC-3536: the directory may be gone - deleted with the share it belonged to - and then there is
+         * nothing to commit into and no lock file left that anyone could wait for. */
+        boolean directoryGone = Files.notExists(indexPath);
+        boolean throwingAway = discard || rebuildScheduled || directoryGone;
 
         if (!throwingAway) {
             commitAndRefresh();
@@ -2411,8 +2414,12 @@ public class LuceneIndexManager extends PFComponent {
              * swallowed here, which is why that state had no explanation. */
             try { if (throwingAway) { w.rollback(); } else { w.close(); } }
             catch (Exception e) {
-                logWarning(folder + ": Unable to release the index writer at " + indexPath
-                    + " - the lock stays held until this process ends. " + e);
+                if (directoryGone) {
+                    logFine(folder + ": Index directory gone before the writer was released: " + indexPath);
+                } else {
+                    logWarning(folder + ": Unable to release the index writer at " + indexPath
+                        + " - the lock stays held until this process ends. " + e);
+                }
             }
         }
 
