@@ -31,10 +31,14 @@ import de.dal33t.powerfolder.util.Util;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -72,7 +76,12 @@ public class ServerInfo implements Serializable, D2DObject {
     private MemberInfo node;
     private String webUrl;
     private String httpTunnelUrl;
-    private String validationCode;
+    /**
+     * INT-1801: Federation handshake secret - never leaves the server. Persisted through the getter (property access),
+     * because a transient field is not mapped. Guarded by ServerInfoDAOsqlImplTest (PF-PRO).
+     */
+    @Transient
+    private transient String validationCode;
     private Date validationReceived;
     private Date validationSend;
     private String federationVersion;
@@ -304,6 +313,8 @@ public class ServerInfo implements Serializable, D2DObject {
         this.validationSend = validationSend;
     }
 
+    @Access(AccessType.PROPERTY)
+    @Column(name = "validationCode")
     public String getValidationCode() {
         return validationCode;
     }
