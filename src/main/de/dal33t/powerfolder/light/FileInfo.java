@@ -596,6 +596,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return controller.getFolderRepository().getLocking().unlock(this);
     }
 
+    /** PFS-5842: removes the lock and records {@code by} as the one who removed it. */
+    public boolean unlock(Controller controller, AccountInfo by) {
+        return controller.getFolderRepository().getLocking().unlock(this, by);
+    }
+
     public boolean isLocked(Controller controller) {
         return controller.getFolderRepository().getLocking().isLocked(this);
     }

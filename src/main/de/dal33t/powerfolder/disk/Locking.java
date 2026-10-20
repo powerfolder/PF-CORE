@@ -132,6 +132,16 @@ public class Locking extends PFComponent {
      *         while unlocking
      */
     public boolean unlock(FileInfo fInfo) {
+        return unlock(fInfo, null);
+    }
+
+    /**
+     * PFS-5842: like {@link #unlock(FileInfo)}, but the removal is recorded as made by {@code by}: the
+     * deleted lock file carries that account, and the device that held the lock shows it.
+     *
+     * @param by the account removing the lock, or {@code null} for the file's last editor (as before)
+     */
+    public boolean unlock(FileInfo fInfo, AccountInfo by) {
         Reject.ifNull(fInfo, "FileInfo");
         Path lockFile = getLockFile(fInfo);
         if (lockFile == null) {
@@ -140,7 +150,7 @@ public class Locking extends PFComponent {
         try {
             boolean deleted = Files.deleteIfExists(lockFile);
             if (deleted) {
-                scanLockFile(fInfo, lockFile);
+                scanLockFile(fInfo, lockFile, by);
                 fireUnlocked(fInfo);
                 setWritableIfFromOtherMember(fInfo, null, true);
                 logInfo("File un-locked: " + fInfo.toDetailString());
@@ -152,7 +162,7 @@ public class Locking extends PFComponent {
                 Thread.sleep(200);
                 boolean deleted = Files.deleteIfExists(lockFile);
                 if (deleted) {
-                    scanLockFile(fInfo, lockFile);
+                    scanLockFile(fInfo, lockFile, by);
                     fireUnlocked(fInfo);
                     setWritableIfFromOtherMember(fInfo, null, true);
                     logInfo("File un-locked: " + fInfo.toDetailString());
@@ -546,6 +556,11 @@ public class Locking extends PFComponent {
     }
 
     private void scanLockFile(FileInfo fileInfo, Path lockFile) {
+        scanLockFile(fileInfo, lockFile, null);
+    }
+
+    /** @param by the account the change is recorded for, {@code null} for the file's last editor */
+    private void scanLockFile(FileInfo fileInfo, Path lockFile, AccountInfo by) {
         fileInfo = FileInfoFactory.mapToTopFolder(fileInfo);
         Folder metaFolder = getController().getFolderRepository()
             .getMetaFolder(fileInfo.getFolderInfo());
@@ -554,7 +569,8 @@ public class Locking extends PFComponent {
             return;
         }
         FileInfo lockFileInfo = FileInfoFactory.lookupInstance(metaFolder, lockFile);
-        lockFileInfo = FileInfoFactory.changeModifiedAccount(lockFileInfo, fileInfo.getModifiedByAccount());
+        lockFileInfo = FileInfoFactory.changeModifiedAccount(lockFileInfo,
+            by != null ? by : fileInfo.getModifiedByAccount());
         if (metaFolder.scanChangedFile(lockFileInfo) == null) {
             logFine("Scanning of lock file not necessary: " + lockFileInfo);
         }
