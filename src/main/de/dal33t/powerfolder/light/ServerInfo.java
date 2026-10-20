@@ -78,7 +78,7 @@ public class ServerInfo implements Serializable, D2DObject {
     private String httpTunnelUrl;
     /**
      * INT-1801: Federation handshake secret - never leaves the server. Persisted through the getter (property access),
-     * because a transient field is not mapped.
+     * because a transient field is not mapped. Guarded by ServerInfoDAOsqlImplTest (PF-PRO).
      */
     @Transient
     private transient String validationCode;
