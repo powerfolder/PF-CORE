@@ -187,12 +187,12 @@ public class FolderInfoInheritsPermissionsTest {
     // --- helpers -------------------------------------------------------------
 
     /**
-     * Test replacement for the removed in-place setter: same-version copy with the
-     * flag applied (FolderInfo is immutable, package-private constructor).
+     * The flag applied the way production does it: a version-bumped instance that replaces the pooled
+     * one. FolderPermission#implies judges the folder as the pool holds it (PFS-5904, FolderInfo#latest) -
+     * a same-version copy outside the pool would be overruled by the pooled original.
      */
     private static FolderInfo withInheritsPermissions(FolderInfo fi, boolean inherits) {
-        return new FolderInfo(fi.getName(), fi.getId(), fi.getVersion(), fi.getParent(),
-            fi.storedTags(), inherits);
+        return FolderInfoFactory.changeInheritsPermissions(fi, inherits);
     }
 
     private byte[] serialize(FolderInfo fi, boolean inclVersionAndParent,
