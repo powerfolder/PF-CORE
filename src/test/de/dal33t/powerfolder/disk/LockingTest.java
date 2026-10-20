@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
  import de.dal33t.powerfolder.Constants;
  import de.dal33t.powerfolder.event.LockingEvent;
  import de.dal33t.powerfolder.event.LockingListener;
+ import de.dal33t.powerfolder.light.AccountInfo;
  import de.dal33t.powerfolder.light.DirectoryInfo;
  import de.dal33t.powerfolder.light.FileInfo;
  import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -190,6 +191,33 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.locked.size());
     }
     
+    /**
+     * PFS-5842: a lock removed on behalf of somebody else - the web interface on the server - names that account
+     * in the deleted lock file, so the device that held the lock can tell its user who removed it.
+     */
+    @Test
+    public void testRemovalNamesWhoRemovedTheLock() {
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 1);
+        scanFolder(getFolderAtBart());
+        final FileInfo testFInfo = FileInfoFactory.lookupInstance(getFolderAtBart(), testFile);
+
+        assertTrue(lockingBart.lock(testFInfo));
+        TestHelper.waitForCondition(10, () -> lockingLisa.isLocked(testFInfo));
+
+        final AccountInfo remover = new AccountInfo("OID_remover", "remover", "The Remover");
+        assertTrue(lockingLisa.unlock(testFInfo, remover));
+        TestHelper.waitForCondition(10, () -> !lockingBart.isLocked(testFInfo));
+
+        Folder metaAtBart = getContollerBart().getFolderRepository().getMetaFolder(testFInfo.getFolderInfo());
+        Path lockPath = metaAtBart.getLocalBase().resolve(Folder.METAFOLDER_LOCKS_DIR)
+            .resolve(FileInfoFactory.encodeIllegalChars(testFInfo.getRelativeName() + ".lck"));
+        FileInfo removal = FileInfoFactory.lookupInstance(metaAtBart, lockPath)
+            .getLocalFileInfo(getContollerBart().getFolderRepository());
+        assertNotNull(removal, "Bart knows the removed lock file");
+        assertTrue(removal.isDeleted(), "The lock file is a deletion at bart: " + removal.toDetailString());
+        assertEquals(remover, removal.getModifiedByAccount(), "The removal names the remover, not the last editor");
+    }
+
     @Test
     public void testAutoLockMSOffice() throws IOException {
         lockingListenerLisa.locked.clear();
