@@ -754,22 +754,33 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
-        assertEquals(0, lisasListener.uploadAborted);
-        assertEquals(0, lisasListener.uploadBroken);
-        assertEquals(nFiles, lisasListener.uploadRequested);
-        assertEquals(nFiles, lisasListener.uploadStarted);
-        assertEquals(nFiles, lisasListener.uploadCompleted);
+        assertEquals(0, lisasListener.uploadAborted,
+            "Lisa's uploadAborted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.uploadBroken,
+            "Lisa's uploadBroken is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.uploadRequested,
+            "Lisa's uploadRequested is not " + (nFiles) + ". " + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.uploadStarted,
+            "Lisa's uploadStarted is not " + (nFiles) + ". " + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.uploadCompleted,
+            "Lisa's uploadCompleted is not " + (nFiles) + ". " + lisasListener.summary());
 
         // Check correct event fireing
-        assertEquals(nFiles, bartsListener.downloadRequested);
+        assertEquals(nFiles, bartsListener.downloadRequested,
+            "Bart's downloadRequested is not " + (nFiles) + ". " + bartsListener.summary());
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
         // assertEquals(nFiles, lisasListener.downloadQueued);
-        assertEquals(nFiles, bartsListener.downloadStarted);
-        assertEquals(nFiles, bartsListener.downloadCompleted);
-        assertEquals(0, bartsListener.downloadAborted);
-        assertEquals(0, bartsListener.downloadBroken);
-        assertEquals(0, bartsListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, bartsListener.downloadStarted,
+            "Bart's downloadStarted is not " + (nFiles) + ". " + bartsListener.summary());
+        assertEquals(nFiles, bartsListener.downloadCompleted,
+            "Bart's downloadCompleted is not " + (nFiles) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.downloadAborted,
+            "Bart's downloadAborted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.downloadBroken,
+            "Bart's downloadBroken is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.downloadsCompletedRemoved,
+            "Bart's downloadsCompletedRemoved is not " + (0) + ". " + bartsListener.summary());
 
         // Test ;)
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
@@ -782,7 +793,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             .countActiveDownloads());
 
         clearCompletedDownloadsAtBart();
-        assertEquals(nFiles, bartsListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, bartsListener.downloadsCompletedRemoved,
+            "Bart's downloadsCompletedRemoved is not " + (nFiles) + ". " + bartsListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
@@ -1039,7 +1051,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (nFiles) + ". " + lisasListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
@@ -1096,28 +1109,41 @@ public class FileTransferTest extends TwoControllerTestCase {
             .list().length);
 
         // Check correct event fireing
-        assertEquals(0, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
-        assertEquals(0, bartsListener.uploadRequested);
-        assertEquals(0, bartsListener.uploadStarted);
-        assertEquals(0, bartsListener.uploadCompleted);
+        assertEquals(0, bartsListener.uploadAborted,
+            "Bart's uploadAborted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadBroken,
+            "Bart's uploadBroken is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadRequested,
+            "Bart's uploadRequested is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadStarted,
+            "Bart's uploadStarted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadCompleted,
+            "Bart's uploadCompleted is not " + (0) + ". " + bartsListener.summary());
 
         // Check correct event fireing
-        assertEquals(0, lisasListener.downloadAborted);
-        assertEquals(0, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+        assertEquals(0, lisasListener.downloadAborted,
+            "Lisa's downloadAborted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadBroken,
+            "Lisa's downloadBroken is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (0) + ". " + lisasListener.summary());
         // 0 bytes downloads never get requested, nor queued or started.
-        assertEquals(0, lisasListener.downloadRequested);
-        assertEquals(0, lisasListener.downloadQueued);
-        assertEquals(0, lisasListener.downloadStarted);
-        assertEquals(nFiles, lisasListener.downloadCompleted);
+        assertEquals(0, lisasListener.downloadRequested,
+            "Lisa's downloadRequested is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadQueued,
+            "Lisa's downloadQueued is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadStarted,
+            "Lisa's downloadStarted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.downloadCompleted,
+            "Lisa's downloadCompleted is not " + (nFiles) + ". " + lisasListener.summary());
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
             .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (nFiles) + ". " + lisasListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
@@ -1166,29 +1192,43 @@ public class FileTransferTest extends TwoControllerTestCase {
             .list().length);
 
         // Check correct event fireing
-        assertEquals(0, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
-        assertEquals(0, bartsListener.uploadRequested);
-        assertEquals(0, bartsListener.uploadStarted);
-        assertEquals(0, bartsListener.uploadCompleted);
+        assertEquals(0, bartsListener.uploadAborted,
+            "Bart's uploadAborted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadBroken,
+            "Bart's uploadBroken is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadRequested,
+            "Bart's uploadRequested is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadStarted,
+            "Bart's uploadStarted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadCompleted,
+            "Bart's uploadCompleted is not " + (0) + ". " + bartsListener.summary());
 
         // Check correct event fireing
-        assertEquals(0, lisasListener.downloadAborted);
-        assertEquals(0, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
-        assertEquals(0, lisasListener.downloadRequested);
+        assertEquals(0, lisasListener.downloadAborted,
+            "Lisa's downloadAborted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadBroken,
+            "Lisa's downloadBroken is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadRequested,
+            "Lisa's downloadRequested is not " + (0) + ". " + lisasListener.summary());
         // 0 bytes downloads never get requested, nor queued or started.
-        assertEquals(0, lisasListener.downloadRequested);
-        assertEquals(0, lisasListener.downloadQueued);
-        assertEquals(0, lisasListener.downloadStarted);
-        assertEquals(nFiles, lisasListener.downloadCompleted);
+        assertEquals(0, lisasListener.downloadRequested,
+            "Lisa's downloadRequested is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadQueued,
+            "Lisa's downloadQueued is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadStarted,
+            "Lisa's downloadStarted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.downloadCompleted,
+            "Lisa's downloadCompleted is not " + (nFiles) + ". " + lisasListener.summary());
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
             .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (nFiles) + ". " + lisasListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
@@ -1651,7 +1691,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getContollerLisa().getTransferManager()
             .getActiveDownload(fInfo).getSources().size());
 
-        assertEquals(0, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadBroken,
+            "Lisa's downloadBroken is not " + (0) + ". " + lisasListener.summary());
 
         // Disconnected
         disconnectBartAndLisa();
@@ -1665,18 +1706,28 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(Files.size(incompleteFile) < Files.size(fileBart), "Size inc. file: " + Files.size(incompleteFile)
             + ", size testfile: " + Files.size(fileBart));
 
-        assertEquals(1, bartsListener.uploadRequested);
-        assertEquals(1, bartsListener.uploadStarted);
-        assertEquals(0, bartsListener.uploadCompleted);
-        assertEquals(1, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
+        assertEquals(1, bartsListener.uploadRequested,
+            "Bart's uploadRequested is not " + (1) + ". " + bartsListener.summary());
+        assertEquals(1, bartsListener.uploadStarted,
+            "Bart's uploadStarted is not " + (1) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadCompleted,
+            "Bart's uploadCompleted is not " + (0) + ". " + bartsListener.summary());
+        assertEquals(1, bartsListener.uploadAborted,
+            "Bart's uploadAborted is not " + (1) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadBroken,
+            "Bart's uploadBroken is not " + (0) + ". " + bartsListener.summary());
 
-        assertEquals(1, lisasListener.downloadRequested);
-        assertEquals(1, lisasListener.downloadStarted);
+        assertEquals(1, lisasListener.downloadRequested,
+            "Lisa's downloadRequested is not " + (1) + ". " + lisasListener.summary());
+        assertEquals(1, lisasListener.downloadStarted,
+            "Lisa's downloadStarted is not " + (1) + ". " + lisasListener.summary());
         final int completedBefore = lisasListener.downloadCompleted;
-        assertEquals(0, lisasListener.downloadAborted);
-        assertEquals(1, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+        assertEquals(0, lisasListener.downloadAborted,
+            "Lisa's downloadAborted is not " + (0) + ". " + lisasListener.summary());
+        assertEquals(1, lisasListener.downloadBroken,
+            "Lisa's downloadBroken is not " + (1) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (0) + ". " + lisasListener.summary());
 
         assertFalse(Files.exists(fileLisa));
         assertTrue(Files.exists(incompleteFile));
@@ -1765,21 +1816,31 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
-        assertEquals(2, bartsListener.uploadRequested);
-        assertEquals(2, bartsListener.uploadStarted);
-        assertEquals(1, bartsListener.uploadCompleted);
-        assertEquals(1, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
+        assertEquals(2, bartsListener.uploadRequested,
+            "Bart's uploadRequested is not " + (2) + ". " + bartsListener.summary());
+        assertEquals(2, bartsListener.uploadStarted,
+            "Bart's uploadStarted is not " + (2) + ". " + bartsListener.summary());
+        assertEquals(1, bartsListener.uploadCompleted,
+            "Bart's uploadCompleted is not " + (1) + ". " + bartsListener.summary());
+        assertEquals(1, bartsListener.uploadAborted,
+            "Bart's uploadAborted is not " + (1) + ". " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadBroken,
+            "Bart's uploadBroken is not " + (0) + ". " + bartsListener.summary());
 
         // Check correct event fireing
-        assertEquals(2, lisasListener.downloadRequested);
+        assertEquals(2, lisasListener.downloadRequested,
+            "Lisa's downloadRequested is not " + (2) + ". " + lisasListener.summary());
         // assertEquals(2, lisasListener.downloadQueued);
-        assertEquals(2, lisasListener.downloadStarted);
-        assertEquals(1, lisasListener.downloadCompleted);
+        assertEquals(2, lisasListener.downloadStarted,
+            "Lisa's downloadStarted is not " + (2) + ". " + lisasListener.summary());
+        assertEquals(1, lisasListener.downloadCompleted,
+            "Lisa's downloadCompleted is not " + (1) + ". " + lisasListener.summary());
         assertEquals(0, lisasListener.downloadAborted, "Aborted dl found! broken: "
             + lisasListener.downloadBroken);
-        assertEquals(1, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+        assertEquals(1, lisasListener.downloadBroken,
+            "Lisa's downloadBroken is not " + (1) + ". " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (0) + ". " + lisasListener.summary());
 
         assertTrue(Files.exists(fileLisa));
         // Total bytes downloaded should be == file size
@@ -1802,7 +1863,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(1, lisasListener.downloadsCompletedRemoved);
+        assertEquals(1, lisasListener.downloadsCompletedRemoved,
+            "Lisa's downloadsCompletedRemoved is not " + (1) + ". " + lisasListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
