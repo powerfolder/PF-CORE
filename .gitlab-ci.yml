@@ -82,8 +82,7 @@ test-macOS:
         done
       ) &
       WATCHDOG_PID=$!
-    - ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
-    - kill $WATCHDOG_PID 2>/dev/null || true
+    - rc=0; ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g || rc=$?; kill $WATCHDOG_PID 2>/dev/null || true; exit $rc
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
