@@ -3505,6 +3505,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    private static final int MOVE_SKELETON_ATTEMPTS = 5;
+
     public Folder moveLocalFolder(Folder folder, Path targetPath) {
         return moveLocalFolder(folder, targetPath, false);
     }
@@ -3532,6 +3534,35 @@ public class FolderRepository extends PFComponent implements Runnable {
             return rebased;
         } finally {
             basedirScanLock.readLock().unlock();
+        }
+    }
+
+    private void moveAtomically(Folder folder, Path sourceDirectory, Path targetPath)
+        throws IOException
+    {
+        for (int attempt = 1;; attempt++) {
+            try {
+                Files.move(sourceDirectory, targetPath);
+                return;
+            } catch (FileAlreadyExistsException e) {
+                if (!Files.isDirectory(targetPath)
+                    || PathUtils.hasContents(targetPath))
+                {
+                    throw e;
+                }
+                if (attempt > MOVE_SKELETON_ATTEMPTS) {
+                    logWarning(folder + ": " + targetPath + " keeps being recreated with"
+                        + " nothing but a " + Constants.POWERFOLDER_SYSTEM_SUBDIR
+                        + " skeleton while the move is being prepared, giving up after "
+                        + MOVE_SKELETON_ATTEMPTS + " attempts. " + e);
+                    throw e;
+                }
+                logFine(folder + ": " + targetPath + " holds nothing but a "
+                    + Constants.POWERFOLDER_SYSTEM_SUBDIR + " skeleton that appeared while"
+                    + " the move was being prepared; removing it and moving again, attempt "
+                    + attempt + ".");
+                PathUtils.recursiveDelete(targetPath);
+            }
         }
     }
 
@@ -3599,17 +3630,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 if (atomic) {
-                    try {
-                        Files.move(sourceDirectory, targetPath);
-                    } catch (FileAlreadyExistsException e) {
-                        if (!PathUtils.isEmptyDir(targetPath)) {
-                            throw e;
-                        }
-                        logFine(folder + ": " + targetPath + " appeared empty while the"
-                            + " move was being prepared; removing it and moving again.");
-                        PathUtils.recursiveDelete(targetPath);
-                        Files.move(sourceDirectory, targetPath);
-                    }
+                    moveAtomically(folder, sourceDirectory, targetPath);
                 } else {
                     PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
                 }
