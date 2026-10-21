@@ -165,6 +165,14 @@ public class Icons {
     public static final String FACEBOOK_BUTTON = "facebook.icon";
     public static final String LINKEDIN_BUTTON = "linkedin.icon";
     public static final String EMAIL_BUTTON = "email.icon";
+    public static final String OPEN_INVITATIONS = "open_invitations.icon";
+    public static final String OPEN_INVITATIONS_WHITE = "open_invitations_white.icon";
+    public static final String INVITATION_ACCEPT = "invitation_accept.icon";
+    public static final String INVITATION_ACCEPT_WHITE = "invitation_accept_white.icon";
+    public static final String INVITATION_DECLINE = "invitation_decline.icon";
+    public static final String INVITATION_DECLINE_WHITE = "invitation_decline_white.icon";
+    public static final String INVITATION_MANAGE = "invitation_manage.icon";
+    public static final String INVITATION_MANAGE_WHITE = "invitation_manage_white.icon";
 
     // Sync icons
     public static final String SYNC_COMPLETE = "sync_complete.icon";
