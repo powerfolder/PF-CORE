@@ -22,8 +22,12 @@ package de.dal33t.powerfolder.transfer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -47,11 +51,59 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
      * Transfer a file from Bart to Lisa.
      */
     private void transferFile() {
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        final Path created = TestHelper
+            .createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
-        // Give it a couple of seconds to settle.
-        TestHelper.waitMilliSeconds(2000);
+        final FileInfo expected = FileInfoFactory
+            .lookupInstance(getFolderAtBart(), created);
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo atLisa = getFolderAtLisa().getFile(expected);
+                return atLisa != null && !atLisa.isDeleted()
+                    && atLisa.inSyncWithDisk(atLisa.getDiskFile(
+                        getContollerLisa().getFolderRepository()))
+                    && getContollerLisa().getTransferManager()
+                        .getActiveDownload(expected) == null;
+            }
+
+            @Override
+            public String message() {
+                return "Lisa did not finish downloading "
+                    + expected.toDetailString() + ". Known at lisa: "
+                    + getFolderAtLisa().getKnownFiles()
+                    + ", active download of it: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownload(expected)
+                    + ", completed downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection();
+            }
+        });
+    }
+
+    private void assertCompletedDownloads(final int wanted, final String what) {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return completedDownloads() == wanted;
+            }
+
+            @Override
+            public String message() {
+                return what + ": Lisa holds " + completedDownloads()
+                    + " completed download(s), not " + wanted + ": "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection();
+            }
+        });
+        assertEquals(wanted, completedDownloads(), what);
+    }
+
+    private int completedDownloads() {
+        return getContollerLisa().getTransferManager()
+            .getCompletedDownloadsCollection().size();
     }
 
 
@@ -66,9 +118,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true); // Expert
         transferFile();
 
-        // Lisa's download should NOT have been cleaned up.
-        int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
-        assertEquals( 1, downloadsSize,"Expert No Cleanup");
+        assertCompletedDownloads(1, "Expert No Cleanup");
     }
 
     /**
@@ -82,9 +132,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true); // Expert
         transferFile();
 
-        // Lisa's download should have been cleaned up.
-        int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
-        assertEquals( 0, downloadsSize,"Expert Immediate Cleanup");
+        assertCompletedDownloads(0, "Expert Immediate Cleanup");
     }
 
     /**
@@ -100,10 +148,7 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), false);
         transferFile();
 
-        // Lisa's download should have been cleaned up.
-        int downloadsSize = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection().size();
-        assertEquals( 0, downloadsSize,"Novice No Cleanup");
+        assertCompletedDownloads(0, "Novice No Cleanup");
     }
 
 }
