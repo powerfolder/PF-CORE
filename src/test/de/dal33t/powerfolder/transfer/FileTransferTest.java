@@ -854,35 +854,62 @@ public class FileTransferTest extends TwoControllerTestCase {
             + took + "ms");
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
+        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount(),
+            "Lisa's database holds a different number of items than Bart created. "
+                + "Known at lisa: " + getFolderAtLisa().getKnownFiles());
         // test physical files (1 + 1 system dir)
         assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
-            .list().length);
+            .list().length,
+            "Lisa's folder on disk holds a different number of entries than the "
+                + nFiles + " files plus the system directory: "
+                + java.util.Arrays.toString(getFolderAtLisa().getLocalBase()
+                    .toFile().list()));
 
         // Check correct event fireing
-        assertEquals(0, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
-        assertEquals(nFiles, bartsListener.uploadRequested);
-        assertEquals(nFiles, bartsListener.uploadStarted);
-        assertEquals(nFiles, bartsListener.uploadCompleted);
+        assertEquals(0, bartsListener.uploadAborted,
+            "Bart aborted an upload. " + bartsListener.summary());
+        assertEquals(0, bartsListener.uploadBroken,
+            "Bart reported an upload broken. " + bartsListener.summary());
+        assertEquals(nFiles, bartsListener.uploadRequested,
+            "Bart saw a different number of upload requests than files created. "
+                + bartsListener.summary());
+        assertEquals(nFiles, bartsListener.uploadStarted,
+            "Bart started a different number of uploads than files created. "
+                + bartsListener.summary());
+        assertEquals(nFiles, bartsListener.uploadCompleted,
+            "Bart completed a different number of uploads than files created. "
+                + bartsListener.summary());
 
         // Check correct event fireing
         //assertEquals(0, lisasListener.downloadAborted);
-        assertEquals(0, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
-        assertEquals(nFiles, lisasListener.downloadRequested);
+        assertEquals(0, lisasListener.downloadBroken,
+            "Lisa reported a download broken. " + lisasListener.summary());
+        assertEquals(0, lisasListener.downloadsCompletedRemoved,
+            "Lisa removed a completed download before the test cleared them. "
+                + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.downloadRequested,
+            "Lisa requested a different number of downloads than files created. "
+                + lisasListener.summary());
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
         // assertEquals(nFiles, lisasListener.downloadQueued);
-        assertEquals(nFiles, lisasListener.downloadStarted);
-        assertEquals(nFiles, lisasListener.downloadCompleted);
+        assertEquals(nFiles, lisasListener.downloadStarted,
+            "Lisa started a different number of downloads than files created. "
+                + lisasListener.summary());
+        assertEquals(nFiles, lisasListener.downloadCompleted,
+            "Lisa completed a different number of downloads than files created. "
+                + lisasListener.summary());
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
-            .countActiveDownloads());
+            .countActiveDownloads(),
+            "Lisa still has an active download after every file arrived: "
+                + getContollerLisa().getTransferManager().getActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved,
+            "Clearing Lisa's completed downloads removed a different number than "
+                + "were completed. " + lisasListener.summary());
 
         TestHelper.assertIncompleteFilesGone(this);
     }
@@ -2486,6 +2513,31 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     private class MyTransferManagerListener implements TransferManagerListener {
         public int downloadRequested;
+
+        public synchronized String summary() {
+            return "requested/started/completed: downloads " + downloadRequested
+                + "/" + downloadStarted + "/" + downloadCompleted
+                + ", uploads " + uploadRequested + "/" + uploadStarted + "/"
+                + uploadCompleted + ", broken " + downloadBroken + "/" + uploadBroken
+                + ", aborted " + downloadAborted + "/" + uploadAborted
+                + ", completed-removed " + downloadsCompletedRemoved + "/"
+                + uploadsCompletedRemoved + ", queued " + downloadQueued
+                + ". Files seen more than once - requested downloads: "
+                + repeatedIn(downloadsRequested) + ", completed downloads: "
+                + repeatedIn(downloadsCompleted) + ", requested uploads: "
+                + repeatedIn(uploadsRequested);
+        }
+
+        private static String repeatedIn(List<FileInfo> files) {
+            List<String> repeated = new ArrayList<String>();
+            Set<FileInfo> seen = new HashSet<FileInfo>();
+            for (FileInfo file : files) {
+                if (!seen.add(file)) {
+                    repeated.add(file.toDetailString());
+                }
+            }
+            return repeated.isEmpty() ? "none" : repeated.toString();
+        }
         public int downloadQueued;
         public int pendingDownloadEnqued;
         public int downloadStarted;

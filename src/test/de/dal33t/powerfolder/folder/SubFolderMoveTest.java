@@ -104,6 +104,36 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * dissolves the share on the way: {@code unshareSubFoldersIn} removes every share at or below the
      * deleted directory, and the data reappears at the target as an ordinary directory.
      */
+    private String whyAMoveWouldBeRefused(Folder subFolder, String newLocation) {
+        Folder topFolder = subFolder.getTopFolder();
+        if (topFolder == null) {
+            return "Folder.move refuses without a top folder, and " + subFolder
+                + " has none.";
+        }
+        String oldLocation = subFolder.getInfo().locationPath();
+        Path newBase = topFolder.getLocalBase().resolve(newLocation);
+        StringBuilder state = new StringBuilder();
+        state.append("Before the move: location was \"").append(oldLocation)
+            .append("\", target location \"").append(newLocation)
+            .append("\", base on disk ").append(subFolder.getLocalBase())
+            .append(" exists=").append(Files.exists(subFolder.getLocalBase()))
+            .append(", target ").append(newBase)
+            .append(" exists=").append(Files.exists(newBase));
+        if (newLocation.startsWith(oldLocation + '/')) {
+            state.append(". That target is inside its own subtree, which Folder.move")
+                .append(" refuses.");
+        }
+        if (Files.exists(newBase)) {
+            state.append(". The target directory already exists, which Folder.move")
+                .append(" refuses; it was not created by this test.");
+        }
+        if (!state.toString().contains("refuses")) {
+            state.append(". None of Folder.move's own preconditions explain a refusal,")
+                .append(" so moveLocalFolder failed and logged it as severe.");
+        }
+        return state.toString();
+    }
+
     @Test
     public void testMovingCarriesTheShare() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
@@ -111,9 +141,10 @@ public class SubFolderMoveTest extends ControllerTestCase {
         scanFolder(getFolder());
         Path target = getFolder().getLocalBase().resolve("moved");
 
+        String before = whyAMoveWouldBeRefused(subFolder, "moved");
         subFolder = subFolder.move("moved");
 
-        assertNotNull(subFolder, "The move must not be refused");
+        assertNotNull(subFolder, "The move must not be refused. " + before);
         assertTrue(Files.exists(target.resolve("content.txt")), "The content is at the target");
         assertNotNull(getController().getFolderRepository().getFolder(subFolder.getInfo()), "The share must survive the move - it is a folder, not a directory");
         assertEquals("moved", subFolder.getInfo().locationPath(), "...and it must name its new location");
