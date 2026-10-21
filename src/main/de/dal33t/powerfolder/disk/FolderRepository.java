@@ -3599,7 +3599,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 if (atomic) {
-                    Files.move(sourceDirectory, targetPath);
+                    try {
+                        Files.move(sourceDirectory, targetPath);
+                    } catch (FileAlreadyExistsException e) {
+                        if (!PathUtils.isEmptyDir(targetPath)) {
+                            throw e;
+                        }
+                        logFine(folder + ": " + targetPath + " appeared empty while the"
+                            + " move was being prepared; removing it and moving again.");
+                        PathUtils.recursiveDelete(targetPath);
+                        Files.move(sourceDirectory, targetPath);
+                    }
                 } else {
                     PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
                 }
