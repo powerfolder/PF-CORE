@@ -87,9 +87,8 @@ public class SubFolderMoveTest extends ControllerTestCase {
         Path oldDir = subFolder.getLocalBase();
         Path newDir = oldDir.resolveSibling("renamed");
 
-        subFolder = subFolder.move(PARENT_DIR + "/renamed");
+        subFolder = moveOrExplain(subFolder, PARENT_DIR + "/renamed");
 
-        assertNotNull(subFolder, "The rename must not be refused");
         assertTrue(Files.exists(newDir.resolve("content.txt")), "The data is at the new path");
         assertFalse(Files.exists(oldDir), "Nothing is left at the old path");
         assertEquals(PARENT_DIR + "/renamed", subFolder.getInfo().locationPath(), "The share must follow the directory it stands for");
@@ -122,6 +121,28 @@ public class SubFolderMoveTest extends ControllerTestCase {
             return "Repeating the same move by hand failed the same way: "
                 + e.getClass().getName() + ": " + e.getMessage();
         }
+    }
+
+    /**
+     * Moves the subfolder and, when the product refuses, fails with everything that decides a
+     * refusal: the two locations, both paths on disk, which of {@link Folder#move}'s preconditions
+     * applies, and - when none of them does - what the operating system says when the very same
+     * move is attempted again.
+     */
+    private Folder moveOrExplain(Folder subFolder, String newLocation) {
+        String before = whyAMoveWouldBeRefused(subFolder, newLocation);
+        Path source = subFolder.getLocalBase();
+        Path target = subFolder.getTopFolder() == null
+            ? null
+            : subFolder.getTopFolder().getLocalBase().resolve(newLocation);
+        Folder moved = subFolder.move(newLocation);
+        if (moved == null) {
+            fail("The move to \"" + newLocation + "\" must not be refused. " + before
+                + (target == null
+                    ? ""
+                    : " " + whatTheOperatingSystemSaysAbout(source, target)));
+        }
+        return moved;
     }
 
     private String whyAMoveWouldBeRefused(Folder subFolder, String newLocation) {
@@ -161,13 +182,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         scanFolder(getFolder());
         Path target = getFolder().getLocalBase().resolve("moved");
 
-        String before = whyAMoveWouldBeRefused(subFolder, "moved");
-        Path source = subFolder.getLocalBase();
-        subFolder = subFolder.move("moved");
-
-        final Folder refused = subFolder;
-        assertNotNull(refused, () -> "The move must not be refused. " + before
-            + " " + whatTheOperatingSystemSaysAbout(source, target));
+        subFolder = moveOrExplain(subFolder, "moved");
         assertTrue(Files.exists(target.resolve("content.txt")), "The content is at the target");
         assertNotNull(getController().getFolderRepository().getFolder(subFolder.getInfo()), "The share must survive the move - it is a folder, not a directory");
         assertEquals("moved", subFolder.getInfo().locationPath(), "...and it must name its new location");
@@ -186,8 +201,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         FolderRepository repository = getController().getFolderRepository();
         assertFalse(repository.isMoving(subFolder.getInfo()), "Nothing is moving yet");
 
-        Folder moved = subFolder.move("moved");
-        assertNotNull(moved, "The move must not be refused");
+        Folder moved = moveOrExplain(subFolder, "moved");
 
         assertFalse(repository.isMoving(moved.getInfo()), "The mark is gone once the move is done");
         // The correction runs in the constructor of the mounted instance - with the mark set it must
@@ -247,8 +261,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         TestHelper.createRandomFile(inner.getLocalBase(), "deep.txt");
         scanFolder(getFolder());
 
-        outer = outer.move("moved");
-        assertNotNull(outer, "The move must not be refused");
+        outer = moveOrExplain(outer, "moved");
 
         assertEquals("moved/inner", inner.getInfo().locationPath(), "The nested share must follow its parent");
         assertTrue(Files.exists(getFolder().getLocalBase().resolve("moved/inner/deep.txt")), "...and its content moved with it");
@@ -265,7 +278,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         TestHelper.createRandomFile(inner.getLocalBase(), "deep.txt");
         scanFolder(getFolder());
 
-        assertNotNull(outer.move("moved"), "The move must not be refused");
+        moveOrExplain(outer, "moved");
 
         Folder mounted = getController().getFolderRepository().getFolder(inner.getInfo());
         assertNotNull(mounted, "The nested share stays mounted");
@@ -368,8 +381,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         // The interruption moves the rows into the subfolder's own database.
         subFolder.setInheritsPermissions(false);
 
-        subFolder = subFolder.move("moved");
-        assertNotNull(subFolder, "The move must not be refused");
+        subFolder = moveOrExplain(subFolder, "moved");
 
         FolderInfo[] barriers = InterruptedSubFolderIndex.barriersOf(getFolder().getInfo());
         assertEquals(1, barriers.length, "Precondition: the subfolder is still a barrier");
