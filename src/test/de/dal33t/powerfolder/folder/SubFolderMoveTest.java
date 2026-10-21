@@ -33,7 +33,10 @@ import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -103,32 +106,50 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * dissolves the share on the way: {@code unshareSubFoldersIn} removes every share at or below the
      * deleted directory, and the data reappears at the target as an ordinary directory.
      */
-    /**
-     * Runs the move the product just refused, so the report carries the operating system's own
-     * answer. Only called while building a failure message - the test has already failed here, so
-     * moving the directory changes nothing that is still going to be asserted.
-     */
     private static String whatTheOperatingSystemSaysAbout(Path source, Path target) {
         if (Files.notExists(source)) {
             return "The source directory is gone, so the move cannot be retried here.";
         }
-        try {
-            Files.move(source, target);
-            return "Repeating the same move by hand SUCCEEDED, so whatever refused it was"
-                + " transient - most likely a handle inside " + source
-                + " that had not been released yet.";
-        } catch (IOException e) {
-            return "Repeating the same move by hand failed the same way: "
-                + e.getClass().getName() + ": " + e.getMessage();
+        String contents = listOf(source);
+        IOException first = null;
+        for (int attempt = 0; attempt < 40; attempt++) {
+            try {
+                Files.move(source, target);
+                return "Repeating the same move by hand succeeded after "
+                    + (attempt * 250) + " ms, so the holder was transient and a bounded"
+                    + " retry is the fix. The first attempt failed with " + first
+                    + ". The directory held " + contents;
+            } catch (IOException e) {
+                if (first == null) {
+                    first = e;
+                }
+            }
+            try {
+                Thread.sleep(250L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
+        return "Repeating the same move by hand failed for 10 s, so the holder is not"
+            + " transient and a retry would not fix it. First failure: " + first
+            + ". The directory held " + contents;
     }
 
-    /**
-     * Moves the subfolder and, when the product refuses, fails with everything that decides a
-     * refusal: the two locations, both paths on disk, which of {@link Folder#move}'s preconditions
-     * applies, and - when none of them does - what the operating system says when the very same
-     * move is attempted again.
-     */
+    private static String listOf(Path dir) {
+        List<String> names = new ArrayList<>();
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
+            for (Path entry : entries) {
+                names.add(Files.isDirectory(entry)
+                    ? entry.getFileName() + "/" + listOf(entry)
+                    : entry.getFileName().toString());
+            }
+        } catch (IOException e) {
+            names.add("unreadable: " + e);
+        }
+        return names.toString();
+    }
+
     private Folder moveOrExplain(Folder subFolder, String newLocation) {
         String before = whyAMoveWouldBeRefused(subFolder, newLocation);
         Path source = subFolder.getLocalBase();
