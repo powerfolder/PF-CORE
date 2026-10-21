@@ -1802,6 +1802,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
+            logInfo("Leave folder: local 'remove folder' action triggered for '"
+                + folderInfo + "'");
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folderInfo);
             panel.open();
@@ -1828,6 +1830,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
+            logInfo("Leave folder: online 'leave folder' action triggered for '"
+                + folderInfo + "'");
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folderInfo);
             panel.open();

@@ -79,6 +79,9 @@ public class FolderRemoveDialog extends BaseDialog {
         admin = getController().getOSClient().getAccount()
             .hasAdminPermission(foInfo);
         localFolder = folder != null;
+        logInfo("Leave folder: dialog created for '" + foInfo + "' localFolder="
+            + localFolder + ", onlineFolder=" + onlineFolder + ", admin=" + admin
+            + ", loggedIn=" + getController().getOSClient().isLoggedIn());
     }
 
     // UI Building ************************************************************
@@ -163,6 +166,12 @@ public class FolderRemoveDialog extends BaseDialog {
         // Buttons
         createRemoveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                logInfo("Leave folder: remove button clicked for '" + foInfo
+                    + "'. deleteSystemSubFolder="
+                    + deleteSystemSubFolderBox.isSelected() + ", removeFromOS="
+                    + removeFromServerBox.isSelected() + ", removeCompletely="
+                    + deleteFolderCompletelyBox.isSelected() + ", localFolder="
+                    + localFolder + ", onlineFolder=" + onlineFolder);
                 confirmedFolderLeave(deleteSystemSubFolderBox.isSelected(),
                     removeFromServerBox.isSelected(),
                     deleteFolderCompletelyBox.isSelected());
@@ -306,6 +315,11 @@ public class FolderRemoveDialog extends BaseDialog {
         boolean removeFromOS, boolean removeCompletely)
     {
 
+        logInfo("Leave folder: confirmedFolderLeave start for '" + foInfo
+            + "' deleteSystemSubFolder=" + deleteSystemSubFolder
+            + " removeFromOS=" + removeFromOS + " removeCompletely="
+            + removeCompletely);
+
         // Dispose before closing parent frame (when folder is deleted),
         // otherwise parent closes and this is orphanned, and reappears next
         // time Info window displays.
@@ -315,21 +329,47 @@ public class FolderRemoveDialog extends BaseDialog {
             .getFolderRepository();
 
         Folder f = foInfo.getFolder(getController());
+        logInfo("Leave folder: local folder lookup for '" + foInfo + "' -> "
+            + (f != null ? "present (removing locally)" : "not present locally"));
         if (f != null) {
             // PFS-2227 / PFC-3028
-            folderRepository.addToIgnoredFolders(f);
-            folderRepository.removeFolder(f, deleteSystemSubFolder);
+            try {
+                folderRepository.addToIgnoredFolders(f);
+                folderRepository.removeFolder(f, deleteSystemSubFolder);
+                logInfo("Leave folder: local removeFolder done for '" + foInfo
+                    + "'");
+            } catch (RuntimeException ex) {
+                logSevere("Leave folder: local removeFolder FAILED for '"
+                    + foInfo + "': " + ex, ex);
+            }
         }
 
         if (removeFromOS) {
-            // If remove local means = total removal of folder, also remove
-            // permissions.
+            // An admin (with delete permission) removes the whole folder online;
+            // a normal member only leaves it (leaveFolder needs read, not delete
+            // permission). Previously both paths called removeFolder, which a
+            // member is not allowed to do -> "Permission denied".
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
-                protected Void doInBackground() throws Exception {
-                    ServerClient client = getController().getOSClient();
-                    client.getFolderService(foInfo).removeFolder(foInfo, true,
-                        true);
+                protected Void doInBackground() {
+                    try {
+                        ServerClient client = getController().getOSClient();
+                        if (admin) {
+                            logInfo("Leave folder: admin online removeFolder "
+                                + "(delete) for '" + foInfo + "'");
+                            client.getFolderService(foInfo).removeFolder(foInfo,
+                                true, true);
+                        } else {
+                            logInfo("Leave folder: member leaveFolder for '"
+                                + foInfo + "'");
+                            client.getFolderService(foInfo).leaveFolder(foInfo);
+                        }
+                        logInfo("Leave folder: online leave/remove OK for '"
+                            + foInfo + "'");
+                    } catch (Exception ex) {
+                        logSevere("Leave folder: online leave/remove FAILED for '"
+                            + foInfo + "': " + ex, ex);
+                    }
                     return null;
                 }
             };
