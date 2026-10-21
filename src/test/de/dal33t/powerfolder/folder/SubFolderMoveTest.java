@@ -104,6 +104,26 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * dissolves the share on the way: {@code unshareSubFoldersIn} removes every share at or below the
      * deleted directory, and the data reappears at the target as an ordinary directory.
      */
+    /**
+     * Runs the move the product just refused, so the report carries the operating system's own
+     * answer. Only called while building a failure message - the test has already failed here, so
+     * moving the directory changes nothing that is still going to be asserted.
+     */
+    private static String whatTheOperatingSystemSaysAbout(Path source, Path target) {
+        if (Files.notExists(source)) {
+            return "The source directory is gone, so the move cannot be retried here.";
+        }
+        try {
+            Files.move(source, target);
+            return "Repeating the same move by hand SUCCEEDED, so whatever refused it was"
+                + " transient - most likely a handle inside " + source
+                + " that had not been released yet.";
+        } catch (IOException e) {
+            return "Repeating the same move by hand failed the same way: "
+                + e.getClass().getName() + ": " + e.getMessage();
+        }
+    }
+
     private String whyAMoveWouldBeRefused(Folder subFolder, String newLocation) {
         Folder topFolder = subFolder.getTopFolder();
         if (topFolder == null) {
@@ -142,9 +162,12 @@ public class SubFolderMoveTest extends ControllerTestCase {
         Path target = getFolder().getLocalBase().resolve("moved");
 
         String before = whyAMoveWouldBeRefused(subFolder, "moved");
+        Path source = subFolder.getLocalBase();
         subFolder = subFolder.move("moved");
 
-        assertNotNull(subFolder, "The move must not be refused. " + before);
+        final Folder refused = subFolder;
+        assertNotNull(refused, () -> "The move must not be refused. " + before
+            + " " + whatTheOperatingSystemSaysAbout(source, target));
         assertTrue(Files.exists(target.resolve("content.txt")), "The content is at the target");
         assertNotNull(getController().getFolderRepository().getFolder(subFolder.getInfo()), "The share must survive the move - it is a folder, not a directory");
         assertEquals("moved", subFolder.getInfo().locationPath(), "...and it must name its new location");
