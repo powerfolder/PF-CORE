@@ -2709,9 +2709,12 @@ public class Folder extends PFComponent {
                 }
 
                 Folder moved = repository.moveLocalFolder(this, newBase, true);
-                if (moved == null) {
+                if (moved == null || !isMountedAt(moved, newBase)) {
                     // Nothing moved: put the identity back, one version further so peers accept it.
-                    logSevere(this + ": Move to " + newBase + " failed, restoring " + oldLocation);
+                    logSevere(this + ": Move to " + newBase + " failed, restoring " + oldLocation
+                        + (moved == null ? "" : ". The folder came back mounted at "
+                            + moved.getLocalBase() + ", not at the place its identity"
+                            + " now names, so the move did not happen."));
                     restoreLocation(topFolder, oldLocation, nestedBefore);
                     return null;
                 }
@@ -2821,6 +2824,15 @@ public class Folder extends PFComponent {
      * Puts the identity back after a refused move. The old location is applied as a NEW version -
      * never the old instance: a lower version is dropped by the DAOs and ignored by peers.
      */
+    private static boolean isMountedAt(Folder folder, Path base) {
+        Path mounted = folder.getLocalBase();
+        if (mounted == null) {
+            return false;
+        }
+        return mounted.toAbsolutePath().normalize()
+            .equals(base.toAbsolutePath().normalize());
+    }
+
     private void restoreLocation(Folder topFolder, String oldLocation, Map<Folder, FolderInfo> nestedBefore) {
         updateInfo(atLocation(topFolder, currentInfo, oldLocation));
         for (Map.Entry<Folder, FolderInfo> entry : nestedBefore.entrySet()) {

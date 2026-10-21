@@ -3607,6 +3607,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {
+                if (atomic) {
+                    logWarning(folder + ": The atomic move of " + sourceDirectory
+                        + " to " + targetPath + " failed, and an atomic move has no"
+                        + " copy fallback, so the folder stays where it is: " + e, e);
+                }
                 if (!atomic) {
                     // Use fallback copy + delete
                     if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
@@ -3678,6 +3683,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (moved) {
                 long took = System.currentTimeMillis() - start;
                 logInfo(folder + ": Successfully moved folder from " + sourceDirectory + " to " + targetPath + ". Took " + took + "ms.");
+            } else if (atomic) {
+                logWarning(folder + ": Not moved folder from " + sourceDirectory
+                    + " to " + targetPath + ". The caller asked for an atomic move,"
+                    + " so staying in the old directory is a failed move, not a"
+                    + " fallback.");
             } else {
                 logInfo(folder + ": Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
             }
