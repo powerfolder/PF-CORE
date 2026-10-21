@@ -899,8 +899,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, lisasListener.downloadsCompletedRemoved,
             "Lisa removed a completed download before the test cleared them. "
                 + lisasListener.summary());
-        assertEquals(nFiles, lisasListener.downloadRequested,
-            "Lisa requested a different number of downloads than files created. "
+        assertEquals(nFiles, lisasListener.distinctDownloadsRequested(),
+            "Lisa did not request every created file exactly once. "
+                + lisasListener.summary());
+        assertEquals(lisasListener.downloadRequested
+            - lisasListener.distinctDownloadsRequested(),
+            lisasListener.downloadAborted,
+            "Every repeated download request must end in an abort. "
                 + lisasListener.summary());
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
@@ -2575,6 +2580,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     private class MyTransferManagerListener implements TransferManagerListener {
         public int downloadRequested;
+
+        public synchronized int distinctDownloadsRequested() {
+            return new HashSet<FileInfo>(downloadsRequested).size();
+        }
 
         public synchronized String summary() {
             return "requested/started/completed: downloads " + downloadRequested
