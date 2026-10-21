@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -138,12 +139,28 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
             "The top folder holds no row of the subfolder's content: " + stray);
     }
 
+    private static void deleteReally(Path directory) throws IOException {
+        IOException last = null;
+        for (int attempt = 0; attempt < 20; attempt++) {
+            try {
+                PathUtils.recursiveDelete(directory);
+                return;
+            } catch (DirectoryNotEmptyException e) {
+                last = e;
+            }
+            TestHelper.waitMilliSeconds(250);
+        }
+        throw new IOException(directory + " could not be emptied in 5 s: a mounted"
+            + " folder below it keeps writing into its own system directory faster"
+            + " than a single pass can remove it. Last failure: " + last, last);
+    }
+
     /** Really deleted: then, and only then, the share is dissolved - as before. */
     @Test
     public void testDeletingTheParentDirectoryStillDissolvesTheSubFolder() throws IOException {
         FolderInfo restricted = interruptedSubFolder("area/old/restricted", "report.pdf");
 
-        PathUtils.recursiveDelete(top.getLocalBase().resolve("area/old"));
+        deleteReally(top.getLocalBase().resolve("area/old"));
         scanFolder(top);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
