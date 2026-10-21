@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
@@ -597,9 +596,12 @@ public class TestHelper {
         do {
             randomFile = directory.resolve(createRandomFilename());
         } while (Files.exists(randomFile));
-        byte[] content = randomContent((int) size);
-        try {
-            writeWhole(randomFile, content);
+        try (OutputStream fOut = new BufferedOutputStream(
+            Files.newOutputStream(randomFile, StandardOpenOption.CREATE))) {
+            for (int i = 0; i < size; i++) {
+                fOut.write((int) (Math.random() * 256));
+            }
+
             if (Files.notExists(randomFile)) {
                 throw new IOException("Could not create random file '"
                     + randomFile.toAbsolutePath() + "'");
@@ -608,28 +610,6 @@ public class TestHelper {
             throw new RuntimeException(e);
         }
         return randomFile;
-    }
-
-    private static byte[] randomContent(int size) {
-        byte[] content = new byte[size];
-        for (int i = 0; i < content.length; i++) {
-            content[i] = (byte) (Math.random() * 256);
-        }
-        return content;
-    }
-
-    private static void writeWhole(Path target, byte[] content)
-        throws IOException
-    {
-        Path staging = target.resolveSibling(target.getFileName().toString()
-            + Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
-        Files.write(staging, content);
-        try {
-            Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException e) {
-            Files.move(staging, target,
-                StandardCopyOption.REPLACE_EXISTING);
-        }
     }
 
     /**
@@ -670,9 +650,11 @@ public class TestHelper {
             size = 10;
         }
 
-        byte[] content = randomContent((int) size);
-        try {
-            Files.write(file, content);
+        try (OutputStream fOut = new BufferedOutputStream(
+            Files.newOutputStream(file))) {
+            for (int i = 0; i < size; i++) {
+                fOut.write((int) (Math.random() * 256));
+            }
             if (Files.notExists(file)) {
                 throw new IOException("Could not create random file '"
                     + file.toAbsolutePath() + "'");
@@ -724,8 +706,8 @@ public class TestHelper {
             throw new RuntimeException(e);
         }
 
-        try {
-            writeWhole(file, contents);
+        try (OutputStream fOut = Files.newOutputStream(file)) {
+            fOut.write(contents);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
