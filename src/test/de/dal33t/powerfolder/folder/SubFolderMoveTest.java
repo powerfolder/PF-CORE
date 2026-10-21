@@ -110,7 +110,9 @@ public class SubFolderMoveTest extends ControllerTestCase {
         if (Files.notExists(source)) {
             return "The source directory is gone, so the move cannot be retried here.";
         }
-        String contents = listOf(source);
+        String contents = "source " + source.getFileName() + " held "
+            + listOf(source) + ", target " + target.getFileName() + " held "
+            + (Files.exists(target) ? listOf(target) : "nothing, it does not exist");
         IOException first = null;
         for (int attempt = 0; attempt < 40; attempt++) {
             try {
@@ -118,7 +120,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
                 return "Repeating the same move by hand succeeded after "
                     + (attempt * 250) + " ms, so the holder was transient and a bounded"
                     + " retry is the fix. The first attempt failed with " + first
-                    + ". The directory held " + contents;
+                    + ". At that moment: " + contents;
             } catch (IOException e) {
                 if (first == null) {
                     first = e;
@@ -133,7 +135,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         }
         return "Repeating the same move by hand failed for 10 s, so the holder is not"
             + " transient and a retry would not fix it. First failure: " + first
-            + ". The directory held " + contents;
+            + ". At that moment: " + contents;
     }
 
     private static String listOf(Path dir) {
