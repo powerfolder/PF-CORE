@@ -384,7 +384,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
         } catch (FileAlreadyExistsException e) {
             tempFileChannel = FileChannel.open(tempFile,
-                    StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+                    StandardOpenOption.WRITE);
+            tempFileChannel
+                .truncate(filePartsState == null ? 0 : fileInfo.getSize());
         }
     }
 
@@ -910,13 +912,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     + getFileInfo().toDetailString());
             }
 
-            FileChannel fileChannel = FileChannel.open(getTempFile(),
-                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-
-            try {
-                fileChannel.position(0);
-            } finally {
-                fileChannel.close();
+            try (FileChannel fileChannel = FileChannel.open(getTempFile(),
+                StandardOpenOption.WRITE))
+            {
+                fileChannel.truncate(0);
             }
         }
     }
