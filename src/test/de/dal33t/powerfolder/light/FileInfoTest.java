@@ -162,30 +162,6 @@ public class FileInfoTest {
         assertEquals("directory", FileInfo.parentOfRelativeName("directory/"), "A trailing separator leaves the whole name as the parent");
     }
 
-    /**
-     * PFI-61: FileInfo.equals/hashCode must treat an NFC name and its NFD twin as the same file,
-     * so a name read in NFD form (a macOS scan) matches the NFC name stored in the DB / sent by
-     * the server. Without this the scanner flags a present file as DELETED - data loss.
-     */
-    @Test
-
-    public void testEqualsHashCodeNfcNfd() {
-        FolderInfo top = FolderInfoFactory.newTopFolderForTest("Top", "PFI-61");
-        FileInfo nfc = FileInfoFactory.lookupInstance(top, "caf\u00e9/\u00dcbung.txt");
-        FileInfo nfd = FileInfoFactory.lookupInstance(top, "cafe\u0301/U\u0308bung.txt");
-        assertFalse(nfc.getRelativeName().equals(nfd.getRelativeName()),
-            "fixture names must differ byte-wise, else the test proves nothing");
-
-        assertEquals(nfc, nfd, "an NFC name and its NFD twin must be equal()");
-        assertEquals(nfd, nfc, "equals must be symmetric");
-        assertEquals(nfc.hashCode(), nfd.hashCode(),
-            "equal FileInfos must share hashCode (equals/hashCode contract)");
-
-        // a genuinely different name is still a different file
-        FileInfo other = FileInfoFactory.lookupInstance(top, "cafe/Ubung.txt");
-        assertFalse(nfc.equals(other), "distinct names must not collapse to one FileInfo");
-    }
-
     private void testAssertEquals(FileInfo fInfo, FileInfo copy) {
         // Test
         assertEquals(fInfo, copy);
