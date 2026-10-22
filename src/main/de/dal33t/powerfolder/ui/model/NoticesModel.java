@@ -51,6 +51,7 @@ public class NoticesModel extends PFUIComponent {
 
     private final ValueModel allNoticesCountVM = new ValueHolder();
     private final ValueModel unreadNoticesCountVM = new ValueHolder();
+    private final ValueModel unreadInvitationsCountVM = new ValueHolder();
 
     private final List<Notice> notices = new CopyOnWriteArrayList<Notice>();
 
@@ -76,6 +77,13 @@ public class NoticesModel extends PFUIComponent {
      */
     public ValueModel getUnreadNoticesCountVM() {
         return unreadNoticesCountVM;
+    }
+
+    /**
+     * @return Value model with integer count of unread (open) folder invitations.
+     */
+    public ValueModel getUnreadInvitationsCountVM() {
+        return unreadInvitationsCountVM;
     }
 
     private void addNotice(Notice notice) {
@@ -359,12 +367,17 @@ public class NoticesModel extends PFUIComponent {
         allNoticesCountVM.setValue(notices.size());
 
         int count = 0;
+        int invitations = 0;
         for (Notice notice : notices) {
             if (!notice.isRead()) {
                 count++;
+                if (notice instanceof InvitationNotice) {
+                    invitations++;
+                }
             }
         }
         unreadNoticesCountVM.setValue(count);
+        unreadInvitationsCountVM.setValue(invitations);
     }
 
     public int getUnreadNoticesCount() {

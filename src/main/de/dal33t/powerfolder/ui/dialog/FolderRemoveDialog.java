@@ -79,6 +79,7 @@ public class FolderRemoveDialog extends BaseDialog {
         admin = getController().getOSClient().getAccount()
             .hasAdminPermission(foInfo);
         localFolder = folder != null;
+        logFine(foInfo + ": Leave dialog. local=" + localFolder + ", online=" + onlineFolder + ", admin=" + admin);
     }
 
     // UI Building ************************************************************
@@ -306,6 +307,9 @@ public class FolderRemoveDialog extends BaseDialog {
         boolean removeFromOS, boolean removeCompletely)
     {
 
+        logFine(foInfo + ": Leaving. deleteSystemSubFolder=" + deleteSystemSubFolder + ", removeFromOS=" + removeFromOS
+            + ", removeCompletely=" + removeCompletely);
+
         // Dispose before closing parent frame (when folder is deleted),
         // otherwise parent closes and this is orphanned, and reappears next
         // time Info window displays.
@@ -317,19 +321,35 @@ public class FolderRemoveDialog extends BaseDialog {
         Folder f = foInfo.getFolder(getController());
         if (f != null) {
             // PFS-2227 / PFC-3028
-            folderRepository.addToIgnoredFolders(f);
-            folderRepository.removeFolder(f, deleteSystemSubFolder);
+            try {
+                folderRepository.addToIgnoredFolders(f);
+                folderRepository.removeFolder(f, deleteSystemSubFolder);
+                logInfo(foInfo + ": Removed locally");
+            } catch (RuntimeException ex) {
+                logSevere(foInfo + ": Local removal failed: " + ex, ex);
+            }
         }
 
         if (removeFromOS) {
-            // If remove local means = total removal of folder, also remove
-            // permissions.
+            // An admin (with delete permission) removes the whole folder online;
+            // a normal member only leaves it (leaveFolder needs read, not delete
+            // permission). Previously both paths called removeFolder, which a
+            // member is not allowed to do -> "Permission denied".
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
-                protected Void doInBackground() throws Exception {
-                    ServerClient client = getController().getOSClient();
-                    client.getFolderService(foInfo).removeFolder(foInfo, true,
-                        true);
+                protected Void doInBackground() {
+                    try {
+                        ServerClient client = getController().getOSClient();
+                        if (admin) {
+                            client.getFolderService(foInfo).removeFolder(foInfo, true, true);
+                            logInfo(foInfo + ": Removed online");
+                        } else {
+                            client.getFolderService(foInfo).leaveFolder(foInfo);
+                            logInfo(foInfo + ": Left online");
+                        }
+                    } catch (Exception ex) {
+                        logSevere(foInfo + ": Online " + (admin ? "removal" : "leave") + " failed: " + ex, ex);
+                    }
                     return null;
                 }
             };
