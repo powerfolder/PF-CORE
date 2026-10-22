@@ -380,6 +380,13 @@ public class FolderScanner extends PFComponent {
      * without any disk I/O.
      */
     private void warnIfDifferentlyEncodedTwinOnDisk(FileInfo fileInfo) {
+        // PFI-93: only inspect files being newly flagged DELETED this scan. An
+        // already-deleted tombstone is not losing data, and inspecting it would
+        // run a parent-directory listing (below) for every accented tombstone on
+        // every scan - a recurring cost that grows with the deletion history.
+        if (fileInfo.isDeleted()) {
+            return;
+        }
         String relativeName = fileInfo.getRelativeName();
         if (relativeName == null) {
             return;
@@ -714,6 +721,10 @@ public class FolderScanner extends PFComponent {
                     // PFI-93: remove by the NFC-normalized key (keys are stored NFC).
                     remaining.remove(Util.normalizeRelativeName(otherFInfo.getRelativeName()));
                     exists = otherFInfo;
+                    // PFI-93: stop here - removing from `remaining` while its
+                    // values() iterator is live throws ConcurrentModificationException
+                    // on the next element, and the first case/NFC match is the file.
+                    break;
                 }
             }
         }
