@@ -108,6 +108,52 @@ public class UtilTest {
     }
 
     @Test
+    public void testEqualsRelativeNameNfcNfd() {
+        // PFI-61: a macOS scan yields NFD names; the DB / server store NFC. The two forms
+        // must compare equal so a file that is present is not flagged DELETED (data loss).
+        String nfc = "caf\u00e9.txt";    // e-acute as one code point U+00E9
+        String nfd = "cafe\u0301.txt";   // e + combining acute accent U+0301
+        assertFalse(nfc.equals(nfd), "fixture must differ byte-wise, else the test proves nothing");
+        assertTrue(Util.equalsRelativeName(nfc, nfd));
+        assertTrue(Util.equalsRelativeName(nfd, nfc));
+
+        // whole relative path with several combining characters across directories
+        String nfcPath = "R\u00e9sum\u00e9/\u00dcbung.txt";
+        String nfdPath = "Re\u0301sume\u0301/U\u0308bung.txt";
+        assertFalse(nfcPath.equals(nfdPath), "fixture must differ byte-wise");
+        assertTrue(Util.equalsRelativeName(nfcPath, nfdPath));
+
+        // genuinely different names still differ after normalization
+        assertFalse(Util.equalsRelativeName("caf\u00e9.txt", "cafe.txt"));
+    }
+
+    @Test
+    public void testEqualsRelativeNameNfcNfdIgnoreCase() {
+        if (!FileInfo.IGNORE_CASE) {
+            return;
+        }
+        assumeTrue(FileInfo.IGNORE_CASE, "Test only supported on systems which ignore character case in filenames, e.g. Windows");
+        // E-acute (NFC, upper U+00C9) vs e-acute (NFD, lower) -> equal once normalized and case-folded
+        assertTrue(Util.equalsRelativeName("CAF\u00c9.txt", "cafe\u0301.txt"));
+    }
+
+    @Test
+    public void testNormalizeRelativeName() {
+        assertNull(Util.normalizeRelativeName(null));
+
+        String nfc = "caf\u00e9.txt";    // already NFC
+        String nfd = "cafe\u0301.txt";   // NFD twin
+        // already-NFC input is returned unchanged (same instance, no allocation)
+        assertSame(nfc, Util.normalizeRelativeName(nfc));
+        // NFD input is converted to the canonical NFC form
+        assertEquals(nfc, Util.normalizeRelativeName(nfd));
+        assertTrue(Normalizer.isNormalized(Util.normalizeRelativeName(nfd), Normalizer.Form.NFC));
+        // idempotent: normalizing an already-normalized value changes nothing
+        String once = Util.normalizeRelativeName(nfd);
+        assertEquals(once, Util.normalizeRelativeName(once));
+    }
+
+    @Test
     public void testEqualsTrue(){
         //Primitive types
         assertTrue(Util.equals(1,1));
