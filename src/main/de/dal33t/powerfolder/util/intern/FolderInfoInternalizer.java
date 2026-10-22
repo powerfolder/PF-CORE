@@ -67,6 +67,22 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         return internInstance;
     }
 
+    /**
+     * PFS-5926: the instance held for this folder, without putting one there.
+     *
+     * @return the held instance, or {@code foInfo} itself when none is held
+     */
+    public FolderInfo peek(FolderInfo foInfo) {
+        if (foInfo == null) {
+            return null;
+        }
+        FolderInfo held;
+        synchronized (INSTANCES) {
+            held = INSTANCES.get(foInfo);
+        }
+        return held != null ? held : foInfo;
+    }
+
     public FolderInfo rename(FolderInfo foInfo) {
         if (foInfo == null) {
             return null;

@@ -34,6 +34,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3632: A subfolder that inherits its permissions has no search index of its own - the top folder's
@@ -42,6 +46,7 @@ import java.util.List;
  */
 public class SubFolderSearchIndexTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         // The index worker waits before its first pass and between commits - not in a test.
@@ -59,15 +64,17 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testInheritingSubFolderSearchesTheTopFolderIndex() throws IOException {
         final Folder topFolder = getFolderAtBart();
-        assertNotNull("Sanity: the top folder has an index", topFolder.getSearchIndexManager());
+        assertNotNull(topFolder.getSearchIndexManager(), "Sanity: the top folder has an index");
 
         Path reports = Files.createDirectories(topFolder.getPhysicalDir().resolve("reports"));
         TestHelper.createRandomFile(reports, "Quarterly Report.txt");
@@ -88,22 +95,21 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         });
         FileInfoCriteria scoped = criteria(topFolder, "quarterly");
         scoped.setPath("reports");
-        assertEquals("Sanity: the top folder's index finds the file below the path", 1, topFolder.searchFiles(scoped).size());
+        assertEquals(1, topFolder.searchFiles(scoped).size(), "Sanity: the top folder's index finds the file below the path");
 
         final Folder subFolder = topFolder.share((DirectoryInfo) topFolder.getFileInfo("reports"));
-        assertNull("An inheriting subfolder has no index of its own", subFolder.getSearchIndexManager());
-        assertFalse("... and no index directory", Files.exists(subFolder.getSystemSubDir().resolve("index")));
+        assertNull(subFolder.getSearchIndexManager(), "An inheriting subfolder has no index of its own");
+        assertFalse(Files.exists(subFolder.getSystemSubDir().resolve("index")), "... and no index directory");
 
         List<FileInfo> fromSub = subFolder.searchFiles(criteria(subFolder, "quarterly"));
-        assertEquals("The subfolder search answers from the top folder's index", 1, fromSub.size());
-        assertEquals("... and the hit is a row of the subfolder", subFolder.getInfo(), fromSub.get(0).getFolderInfo());
+        assertEquals(1, fromSub.size(), "The subfolder search answers from the top folder's index");
+        assertEquals(subFolder.getInfo(), fromSub.get(0).getFolderInfo(), "... and the hit is a row of the subfolder");
         assertEquals("Quarterly Report.txt", fromSub.get(0).getRelativeName());
-        assertEquals("The top folder finds the file exactly once", 1,
-            topFolder.searchFiles(criteria(topFolder, "quarterly")).size());
+        assertEquals(1, topFolder.searchFiles(criteria(topFolder, "quarterly")).size(), "The top folder finds the file exactly once");
 
         // --- Interrupt: the subfolder owns its rows and gets an index for them ---
         subFolder.setInheritsPermissions(false);
-        assertNotNull("An interrupted subfolder owns an index", subFolder.getSearchIndexManager());
+        assertNotNull(subFolder.getSearchIndexManager(), "An interrupted subfolder owns an index");
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
@@ -115,13 +121,12 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
                 return "The interrupted subfolder's own index did not pick up its file";
             }
         });
-        assertEquals("The top folder's index let go of the rows", 0,
-            topFolder.searchFiles(criteria(topFolder, "quarterly")).size());
+        assertEquals(0, topFolder.searchFiles(criteria(topFolder, "quarterly")).size(), "The top folder's index let go of the rows");
 
         // --- Restore: the rows are the top folder's again, the own index is gone ---
         subFolder.setInheritsPermissions(true);
-        assertNull("A restored subfolder has no index of its own", subFolder.getSearchIndexManager());
-        assertFalse("... and its index directory is gone", Files.exists(subFolder.getSystemSubDir().resolve("index")));
+        assertNull(subFolder.getSearchIndexManager(), "A restored subfolder has no index of its own");
+        assertFalse(Files.exists(subFolder.getSystemSubDir().resolve("index")), "... and its index directory is gone");
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
@@ -135,8 +140,7 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
                     + topFolder.getSearchIndexManager().getIndexEntryCount() + ")";
             }
         });
-        assertEquals("The subfolder finds it through the top folder's index", 1,
-            subFolder.searchFiles(criteria(subFolder, "quarterly")).size());
+        assertEquals(1, subFolder.searchFiles(criteria(subFolder, "quarterly")).size(), "The subfolder finds it through the top folder's index");
     }
 
     private static FileInfoCriteria criteria(Folder folder, String keyword) {

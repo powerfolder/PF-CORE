@@ -29,6 +29,9 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A search over several folders answers for ALL of them. Stopping early - after so many hits, or so many
@@ -43,6 +46,7 @@ public class FolderRepositorySearchTest extends ControllerTestCase {
 
     private final List<Folder> folders = new ArrayList<>();
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -79,20 +83,21 @@ public class FolderRepositorySearchTest extends ControllerTestCase {
         return criteria;
     }
 
+    @Test
     public void testEveryFolderIsSearched() {
         List<FileInfo> hits = getController().getFolderRepository().searchFiles(folders, criteria());
-        assertEquals("Every folder answers, none is left out", FOLDERS * FILES_PER_FOLDER, hits.size());
+        assertEquals(FOLDERS * FILES_PER_FOLDER, hits.size(), "Every folder answers, none is left out");
     }
 
     /** Two runs of one search must answer the same, or page 2 of a result does not continue page 1. */
+    @Test
     public void testTheSameSearchAnswersTheSame() {
         FolderRepository repository = getController().getFolderRepository();
         List<FileInfo> first = repository.searchFiles(folders, criteria());
         List<FileInfo> second = repository.searchFiles(folders, criteria());
-        assertEquals("The same number of hits", first.size(), second.size());
+        assertEquals(first.size(), second.size(), "The same number of hits");
         for (int i = 0; i < first.size(); i++) {
-            assertEquals("Hit " + i + " is the same file", first.get(i).getRelativeName(),
-                second.get(i).getRelativeName());
+            assertEquals(first.get(i).getRelativeName(), second.get(i).getRelativeName(), "Hit " + i + " is the same file");
         }
     }
 }

@@ -25,6 +25,10 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * PFC-3543: Live test that two connected controllers negotiate the correct
  * protocol version depending on whether the "interruption of permission
@@ -41,13 +45,14 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  */
 public class InheritPermissionsProtocolNegotiationTest extends TwoControllerTestCase {
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         // The feature flag is process-wide - never leak it into other tests.
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testFeatureDisabledNegotiatesLegacyProtocol() {
         // setUp() already disabled all features via Feature.setupForTests().
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -55,6 +60,7 @@ public class InheritPermissionsProtocolNegotiationTest extends TwoControllerTest
         assertNegotiatedProtocolVersion(Identity.PROTOCOL_VERSION_114);
     }
 
+    @Test
     public void testFeatureEnabledNegotiatesInheritanceProtocol() {
         // Enable BEFORE connecting so the exchanged Identity advertises the newest version (PFS-5306: 116).
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
@@ -67,8 +73,8 @@ public class InheritPermissionsProtocolNegotiationTest extends TwoControllerTest
             .getNode(getContollerLisa().getMySelf().getId());
         final Member bartAtLisa = getContollerLisa().getNodeManager()
             .getNode(getContollerBart().getMySelf().getId());
-        assertNotNull("Lisa is not known at Bart", lisaAtBart);
-        assertNotNull("Bart is not known at Lisa", bartAtLisa);
+        assertNotNull(lisaAtBart, "Lisa is not known at Bart");
+        assertNotNull(bartAtLisa, "Bart is not known at Lisa");
 
         // Wait until the handshake (incl. Identity exchange) has completed.
         TestHelper.waitForCondition(10, new Condition() {
@@ -80,9 +86,9 @@ public class InheritPermissionsProtocolNegotiationTest extends TwoControllerTest
             }
         });
 
-        assertEquals("Unexpected protocol version negotiated at Bart",
-            expected, lisaAtBart.getProtocolVersion());
-        assertEquals("Unexpected protocol version negotiated at Lisa",
-            expected, bartAtLisa.getProtocolVersion());
+        assertEquals(expected, lisaAtBart.getProtocolVersion(),
+            "Unexpected protocol version negotiated at Bart");
+        assertEquals(expected, bartAtLisa.getProtocolVersion(),
+            "Unexpected protocol version negotiated at Lisa");
     }
 }

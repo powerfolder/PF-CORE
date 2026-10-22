@@ -919,8 +919,8 @@ public class Folder extends PFComponent {
      * <ul>
      *   <li>If the folder is located inside another top folder, it is corrected
      *       to be a subfolder of that top folder.</li>
-     *   <li>If the folder is no longer located inside any top folder but is marked
-     *       as a subfolder, it is promoted to a top folder.</li>
+     *   <li>A subfolder found inside no mounted top folder is left unchanged - PFC-3649: its top folder may simply
+     *       not be mounted yet.</li>
      *   <li>The correct parent directory inside the top folder is derived from the
      *       filesystem path.</li>
      * </ul>
@@ -951,30 +951,16 @@ public class Folder extends PFComponent {
             path = path.getParent();
         }
 
-        if (foundTopFolder == null && isTopFolder()) {
-            // Regular case for top folders
-            return false;
-        }
-
-        if (foundTopFolder == null && isSubFolder()) {
-            // PFC-3543: NEVER auto-promote a subfolder with interrupted inheritance. Its whole point
-            // is data isolation below a parent: dropping the parent silently discards the permission
-            // barrier, the location and the index entry - and the version-bumped change replicates.
-            // An empty ancestor chain is no proof of relocation either (mount order, disconnected
-            // device, a path bug - the storage-path check was one and promoted 150 of them). Log
-            // SEVERE and keep the hierarchy for a human to inspect.
-            if (!currentInfo.inheritsPermissions()) {
+        if (foundTopFolder == null) {
+            // PFC-3543, PFC-3649: never promote a subfolder - no mounted folder above is no proof of a relocation, its
+            // top folder may just not be mounted yet. Losing the permission barrier of an interrupted one is SEVERE.
+            if (isSubFolder() && !currentInfo.inheritsPermissions()) {
                 logSevere(this + ": NOT promoting to topfolder - permission inheritance is interrupted."
                     + " No mounted folder found above " + getLocalBase() + ", hierarchy left unchanged");
-                return false;
+            } else if (isSubFolder()) {
+                logInfo(this + ": NOT promoting to topfolder - no mounted folder found above " + getLocalBase()
+                    + ", hierarchy left unchanged");
             }
-            logWarning(this + ": Promoting folder to topfolder based on filesystem location");
-            FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
-            updateInfo(corrected);
-            return true;
-        }
-
-        if (foundTopFolder == null) {
             return false;
         }
 
@@ -987,7 +973,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        if (getTopFolder().equals(foundTopFolder)) {
+        // PFC-3649: own top folder not mounted - it is not another one's subfolder just because it lies in its tree
+        if (getTopFolder() == null || getTopFolder().equals(foundTopFolder)) {
             return false;
         }
 
@@ -2318,22 +2305,31 @@ public class Folder extends PFComponent {
              * So the whole deletion is handed up, in the top folder's coordinates: it dissolves the
              * share - which hands the rows, the index and the archived versions back - and then deletes
              * an ordinary directory of its own. */
-            if (isSubFolder() && containsOwnBaseDirectory(fInfos)) {
-                Folder topFolder = getTopFolder();
-                if (topFolder != null && topFolder != this) {
-                    List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
-                    for (FileInfo fInfo : fInfos) {
-                        inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
-                    }
+            Folder topFolder = isSubFolder() ? getTopFolder() : null;
+            if (topFolder != null && topFolder != this) {
+                List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
+                for (FileInfo fInfo : fInfos) {
+                    inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
+                }
+                if (containsOwnBaseDirectory(fInfos)) {
                     logFine(this + ": Deleting the directory of this subfolder through " + topFolder);
                     topFolder.removeFilesLocal(deletingAccount, inTopCoordinates);
                     return;
                 }
+                // PFC-3646: the shares below the deleted directories - only the top folder dissolves them
+                topFolder.unshareSubFoldersIn(inTopCoordinates, deletingAccount);
+            } else {
+                /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
+                 * to be done before anything is read from the database - the content of an interrupted
+                 * subfolder only becomes ours again with the restore inside unshare. */
+                unshareSubFoldersIn(fInfos, deletingAccount);
+                if (isTopFolder()) {
+                    fInfos = handOverToOwners(fInfos, deletingAccount);
+                    if (fInfos.isEmpty()) {
+                        return;
+                    }
+                }
             }
-            /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
-             * to be done before anything is read from the database - the content of an interrupted
-             * subfolder only becomes ours again with the restore inside unshare. */
-            unshareSubFoldersIn(fInfos, deletingAccount);
         }
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
@@ -2702,6 +2698,11 @@ public class Folder extends PFComponent {
                     restoreLocation(topFolder, oldLocation, nestedBefore);
                     return null;
                 }
+                // PFS-5926: the nested ones moved with the directory, their base still names the old place
+                for (Folder child : nested.keySet()) {
+                    Path childBase = topFolder.getLocalBase().resolve(child.getInfo().locationPath());
+                    repository.rebaseLocalFolder(child, childBase);
+                }
                 logInfo(moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
                     + movedRows.size() + " rows re-addressed, " + nested.size() + " nested subfolder(s)");
                 return moved;
@@ -2899,11 +2900,11 @@ public class Folder extends PFComponent {
                 /* PFS-5306: last chance to save the tags of the directory this folder occupies - its
                  * row is about to leave the top folder and is not representable in this folder's own
                  * coordinates (blank name), so nothing would carry them. Tagging travels onto the
-                 * FolderInfo, where the tags of a subfolder belong anyway; a directory tagged before
-                 * it was shared brought them along already (FolderInfoFactory#newFolder). */
-                String rootTags = tagsOfRootRow(toMigrate);
-                if (StringUtils.isNotBlank(rootTags) && StringUtils.isBlank(newInfo.getTags())) {
-                    newInfo = FolderInfoFactory.changeTags(newInfo, rootTags);
+                 * FolderInfo, where the tags of an interrupted subfolder belong. */
+                // PFS-5911: always - the copy the FolderInfo got when shared is stale, the directory led until now
+                FileInfo baseDirectory = baseDirectoryIn(toMigrate);
+                if (baseDirectory != null) {
+                    newInfo = FolderInfoFactory.changeTags(newInfo, baseDirectory.getTags());
                 }
             }
 
@@ -2948,7 +2949,7 @@ public class Folder extends PFComponent {
                  * without it the parent has no row for that directory until the next scan, and
                  * everything that resolves a directory by its row (unshare, versions, links) fails in
                  * the meantime. */
-                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion()));
+                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion(), currentInfo.getTags()));
 
                 List<FileInfo> ownerInfos = topInfos;
                 if (owner != topFolder) {
@@ -3128,8 +3129,9 @@ public class Folder extends PFComponent {
      * @param topFolder  the top folder the row belongs into
      * @param minVersion the version this step justifies - the result is at least this, and at least
      *                   the version of a row already present
+     * @param tags       the tags of the directory - PFS-5911: from wherever they led until now
      */
-    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion) {
+    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion, String tags) {
         DirectoryInfo location = currentInfo.getLocation();
         FileInfo present = topFolder.getFile(
             FileInfoFactory.lookupDirectory(topFolder.getInfo(), location.getRelativeName()));
@@ -3140,8 +3142,6 @@ public class Folder extends PFComponent {
             logFine(this + ": Unable to read the modification date of " + getLocalBase()
                 + " - writing its directory row with the epoch. " + e);
         }
-        String tags = StringUtils.isNotBlank(currentInfo.getTags())
-            ? currentInfo.getTags() : (present != null ? present.getTags() : null);
         return FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), location.getRelativeName(),
             present != null ? present.getOID() : null, 0L, getMySelf().getInfo(),
             getController().getMySelf().getAccountInfo(), modified,
@@ -3149,20 +3149,19 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * PFS-5306: The tags of the row that IS this subfolder - the directory it occupies in the top
-     * folder, named by its location.
+     * PFS-5306: The directory that IS this subfolder - the one it occupies in the top folder, named by its location.
      *
      * @param topRows the rows about to be migrated out of the top folder, in top coordinates
-     * @return the tags as a raw JSON array string, {@code null} when the row is untagged or absent
+     * @return the directory, {@code null} when absent
      */
-    private String tagsOfRootRow(Collection<FileInfo> topRows) {
+    private FileInfo baseDirectoryIn(Collection<FileInfo> topRows) {
         DirectoryInfo location = currentInfo.getLocation();
         if (location == null) {
             return null;
         }
         for (FileInfo row : topRows) {
             if (row.isDiretory() && location.getRelativeName().equals(row.getRelativeName())) {
-                return row.getTags();
+                return row;
             }
         }
         return null;
@@ -3662,8 +3661,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
-                // Don't remove. We have archived files.
-                if (archiver.hasArchivedFileInfo(file)) {
+                // Don't remove. We have archived files - below a directory, or of the file itself.
+                if (file.isDiretory() ? archiver.hasArchivedFilesBelow(file.getRelativeName())
+                    : archiver.hasArchivedFileInfo(file))
+                {
                     continue;
                 }
                 expired++;
@@ -5929,6 +5930,12 @@ public class Folder extends PFComponent {
      * @return {@code true} if {@code file} is gone; {@code false} if content had to be left behind -
      *         then the directory itself stays as well, and the caller must not report it as deleted
      */
+    /** PFC-3646: a .PowerFolder, not this folder's own, in a directory no mounted folder sits on. */
+    private boolean isLeftoverSystemSubDir(Path dir) {
+        return Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(dir.getFileName().toString()) && !isSystemSubDir(dir)
+            && getController().getFolderRepository().findExistingFolder(dir.getParent(), false) == null;
+    }
+
     private boolean deleteFileRecursive(FileInfo newFileInfo, Path file) throws IOException {
         if (newFileInfo.isDiretory() || Files.isDirectory(file)) {
             boolean emptied = true;
@@ -5939,6 +5946,11 @@ public class Folder extends PFComponent {
                      * the scanner skips it for the same reason (FolderScanner, isSystemSubDir). Left in,
                      * the deletion tried to archive and delete the running database. */
                     if (isSystemSubDir(path) || !PathUtils.isScannable(path, this)) {
+                        // PFC-3646: unless no mounted folder owns it - a share dissolved after its directory moved
+                        if (isLeftoverSystemSubDir(path)) {
+                            logInfo(path + ": Deleting the .PowerFolder of a folder no longer mounted here");
+                            PathUtils.recursiveDelete(path);
+                        }
                         continue;
                     }
                     /* PFC-3543: never touch an interrupted subfolder - that subtree is owned by its own
@@ -7151,10 +7163,23 @@ public class Folder extends PFComponent {
         /* The folder carried the directory's tags and version while it WAS that directory - hand them
          * back, advanced by this step, so the directory continues where the folder left off instead of
          * falling back to whatever its old row said (PFS-5306). */
-        synchronized (dbAccessLock) {
-            getDAO().store(null, subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1));
+        // PFC-3646: into the folder that owns the place - inside an interrupted subfolder that is not this one
+        Folder owner = ownerOfPlace(subFolder.getInfo().locationPath());
+        // PFS-5911: the directory's own tags - the restore above handed back those of an interrupted folder
+        FileInfo place = FileInfoFactory.lookupDirectory(getInfo(), subFolder.getInfo().locationPath());
+        if (owner != this) {
+            place = FileInfoFactory.mapToSubFolder(place, owner.getInfo());
         }
-        setDBDirty();
+        FileInfo directory = owner.getFile(place);
+        FileInfo baseDirectory = subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1,
+            directory != null ? directory.getTags() : null);
+        if (owner != this) {
+            baseDirectory = FileInfoFactory.mapToSubFolder(baseDirectory, owner.getInfo());
+        }
+        synchronized (owner.dbAccessLock) {
+            owner.getDAO().store(null, baseDirectory);
+        }
+        owner.setDBDirty();
 
         /* PFC-3536: the subfolder's own .PowerFolder directory goes with it - index, meta folder and the
          * database it owned while interrupted are stale copies now that the directory is the top folder's
@@ -7240,6 +7265,44 @@ public class Folder extends PFComponent {
                 break;
             }
         }
+    }
+
+    /**
+     * PFC-3646: the folder that owns the place {@code relativeName} of this top folder - the innermost interrupted
+     * subfolder around it, otherwise this one.
+     */
+    private Folder ownerOfPlace(String relativeName) {
+        String parent = FileInfo.parentOfRelativeName(relativeName);
+        FolderInfo enclosing = parent.isEmpty() ? null
+            : FolderInfo.findEnclosingInterruptedSubFolder(currentInfo, parent);
+        Folder owner = enclosing != null ? getController().getFolderRepository().getFolder(enclosing) : null;
+        return owner != null ? owner : this;
+    }
+
+    /**
+     * PFC-3646: An entry of this top folder that lies inside an interrupted subfolder belongs to that subfolder -
+     * this folder may not touch it there. A share dissolved just before is one. Only what this folder does not know
+     * itself is handed over; a row it still holds there is its own to delete.
+     *
+     * @return the entries this folder deletes itself
+     */
+    private Collection<FileInfo> handOverToOwners(Collection<FileInfo> fInfos, AccountInfo deletingAccount) {
+        List<FileInfo> own = new ArrayList<>(fInfos.size());
+        Map<Folder, List<FileInfo>> handedOver = new LinkedHashMap<>(0);
+        for (FileInfo fInfo : fInfos) {
+            Folder owner = ownerOfPlace(fInfo.getRelativeName());
+            if (owner == this || getFile(fInfo) != null) {
+                own.add(fInfo);
+                continue;
+            }
+            handedOver.computeIfAbsent(owner, o -> new ArrayList<>())
+                .add(FileInfoFactory.mapToSubFolder(fInfo, owner.getInfo()));
+        }
+        for (Map.Entry<Folder, List<FileInfo>> entry : handedOver.entrySet()) {
+            logFine(this + ": Deleting " + entry.getValue() + " through " + entry.getKey());
+            entry.getKey().removeFilesLocal(deletingAccount, entry.getValue(), false);
+        }
+        return own;
     }
 
     /** @return whether one of the given files is the base directory of this folder */

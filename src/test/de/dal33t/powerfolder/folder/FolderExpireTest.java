@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,13 +29,14 @@ import java.nio.file.Path;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This test checks that a FileInfo expires after a period if deleted.
  */
 public class FolderExpireTest extends ControllerTestCase {
 
-    @Override
+    @BeforeEach
     public void setUp() throws Exception {
 
         super.setUp();
@@ -69,6 +73,7 @@ public class FolderExpireTest extends ControllerTestCase {
     /**
      * Test the file info gets deleted after expiry time.
      */
+    @Test
     public void testFolderExpire() throws IOException {
 
         // Start with two files...
