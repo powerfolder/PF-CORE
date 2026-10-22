@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
+import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
@@ -129,58 +130,144 @@ public class LookAndFeelSupport {
         log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
         de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
         currentDark = dark;
+        // Publish to the neutral holder so non-ui code (e.g. the log DocumentHandler)
+        // can theme itself without depending upward on the ui package.
+        de.dal33t.powerfolder.util.UIThemeState.setDark(dark);
         startSystemThemeWatcher();
     }
 
     /**
-     * @return {@code true} if the OS is currently in Dark Mode (detected on
-     *         macOS). Other platforms default to light for now.
+     * @return {@code true} if the OS is currently in Dark Mode. Detected on
+     *         macOS (AppleInterfaceStyle), Windows (AppsUseLightTheme registry
+     *         value) and Linux (GNOME/freedesktop {@code color-scheme}). Unknown
+     *         setups fall back to the currently applied theme.
      */
     private static boolean isSystemDarkMode() {
-        if (!OSUtil.isMacOS()) {
-            return false;
+        if (OSUtil.isMacOS()) {
+            // `defaults read -g AppleInterfaceStyle` prints "Dark" (exit 0) when
+            // Dark mode is on, and exits non-zero when the key is absent (light).
+            String out = readProcessOutput("defaults", "read", "-g",
+                "AppleInterfaceStyle");
+            return out != null && out.toLowerCase().contains("dark");
         }
-        // Leak-free detection: spawn `defaults read -g AppleInterfaceStyle`, fully
-        // drain + close its output, wait with a timeout, and ALWAYS destroy the
-        // process. (An earlier version leaked the process/file descriptors on every
-        // poll, which exhausted the JVM after ~20 min and froze the UI.)
-        Process p = null;
-        try {
-            p = new ProcessBuilder("defaults", "read", "-g", "AppleInterfaceStyle")
-                .redirectErrorStream(true).start();
-            try (java.io.InputStream in = p.getInputStream()) {
-                byte[] buf = new byte[256];
-                while (in.read(buf) != -1) { /* discard, let the process finish */ }
+        if (OSUtil.isWindowsSystem()) {
+            // AppsUseLightTheme: 0x0 => dark apps, 0x1 => light apps.
+            String out = readProcessOutput("reg", "query",
+                "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                "/v", "AppsUseLightTheme");
+            if (out != null) {
+                java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("AppsUseLightTheme\\s+REG_DWORD\\s+0x0*([0-9a-fA-F]+)")
+                    .matcher(out);
+                if (m.find()) {
+                    return Integer.parseInt(m.group(1), 16) == 0;
+                }
             }
-            if (!p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
-                return currentDark; // don't thrash if it hangs; cleaned up in finally
-            }
-            return p.exitValue() == 0; // key present => Dark mode
-        } catch (Exception e) {
-            log.fine("dark-mode detection failed: " + e);
             return currentDark;
-        } finally {
-            if (p != null) {
-                p.destroy();
-                try { p.getOutputStream().close(); } catch (Exception ignore) { }
-                try { p.getInputStream().close(); } catch (Exception ignore) { }
-                try { p.getErrorStream().close(); } catch (Exception ignore) { }
+        }
+        return isLinuxDarkMode();
+    }
+
+    /**
+     * Dark-mode detection across the common Linux desktops, tried in order:
+     * the desktop-agnostic freedesktop portal, then GNOME (gsettings), KDE
+     * Plasma (kreadconfig), XFCE (xfconf-query), and finally the GTK theme name.
+     * Non-GNOME setups without any of these tools fall back to the current theme.
+     */
+    private static boolean isLinuxDarkMode() {
+        // 1) freedesktop portal (works across GNOME, KDE, ...): color-scheme
+        //    0 = no preference, 1 = prefer dark, 2 = prefer light.
+        String portal = readProcessOutput("gdbus", "call", "--session",
+            "--dest", "org.freedesktop.portal.Desktop",
+            "--object-path", "/org/freedesktop/portal/desktop",
+            "--method", "org.freedesktop.portal.Settings.Read",
+            "org.freedesktop.appearance", "color-scheme");
+        if (portal != null) {
+            if (portal.contains("uint32 1")) {
+                return true;
+            }
+            if (portal.contains("uint32 2") || portal.contains("uint32 0")) {
+                return false;
             }
         }
+        // 2) GNOME: color-scheme = 'prefer-dark'.
+        String scheme = readProcessOutput("gsettings", "get",
+            "org.gnome.desktop.interface", "color-scheme");
+        if (scheme != null) {
+            String v = scheme.toLowerCase();
+            if (v.contains("dark")) {
+                return true;
+            }
+            if (v.contains("light") || v.contains("default")) {
+                return false;
+            }
+        }
+        // 3) KDE Plasma: the active ColorScheme name (e.g. "BreezeDark").
+        for (String tool : new String[] { "kreadconfig6", "kreadconfig5" }) {
+            String kde = readProcessOutput(tool, "--group", "General",
+                "--key", "ColorScheme");
+            if (kde != null && !kde.trim().isEmpty()) {
+                return kde.toLowerCase().contains("dark");
+            }
+        }
+        // 4) XFCE: the GTK theme name from xsettings.
+        String xfce = readProcessOutput("xfconf-query", "-c", "xsettings",
+            "-p", "/Net/ThemeName");
+        if (xfce != null && !xfce.trim().isEmpty()) {
+            return xfce.toLowerCase().contains("dark");
+        }
+        // 5) Last resort: the GNOME gtk-theme name (often ends in "-dark").
+        String theme = readProcessOutput("gsettings", "get",
+            "org.gnome.desktop.interface", "gtk-theme");
+        if (theme != null && theme.toLowerCase().contains("dark")) {
+            return true;
+        }
+        return currentDark;
+    }
+
+    /**
+     * Run a short-lived command and return its (stdout+stderr) output, or
+     * {@code null} on error/timeout. Leak-free: the output is fully drained and
+     * every stream plus the process itself is always closed/destroyed. (An
+     * earlier macOS-only version leaked the process/file descriptors on every
+     * poll, which exhausted the JVM after ~20 min and froze the UI.)
+     */
+    private static String readProcessOutput(String... command) {
+        return de.dal33t.powerfolder.util.ProcessUtils.runBounded(2, command);
     }
 
     /** The dark/light state currently applied to the UI. */
     private static volatile boolean currentDark;
     private static Thread themeWatcher;
+    /**
+     * Guards against overlapping live theme switches: the watcher only schedules a
+     * new switch when no switch is already pending/running, so rapid OS appearance
+     * toggles cannot pile up FlatLaf.updateUI() calls on the EDT (which froze the
+     * UI after a few switches).
+     */
+    /** The running controller, so the watcher can offer a restart on change. */
+    private static volatile de.dal33t.powerfolder.Controller themeController;
+    /** True once the restart prompt was shown for the current mismatch. */
+    private static volatile boolean restartPrompted;
 
     /**
-     * Start a background watcher (macOS only) that flips the FlatLaf theme live
-     * when the system appearance changes, so no client restart is needed. The
+     * Register the controller so the system-appearance watcher can prompt for a
+     * restart when the OS light/dark setting changes. Safe to call more than once.
+     */
+    public static void setThemeController(de.dal33t.powerfolder.Controller controller) {
+        themeController = controller;
+    }
+
+    /**
+     * Start a background watcher (macOS, Windows and Linux) that detects OS
+     * light/dark changes and offers the user a restart to apply the new theme.
+     * Live switching is intentionally avoided: repeatedly re-theming the running
+     * UI (FlatLaf.updateUI()) froze the client after a few switches. The
      * appearance check spawns a short-lived process, so it runs off the EDT; the
-     * actual theme switch is applied on the EDT.
+     * restart prompt is shown on the EDT.
      */
     private static synchronized void startSystemThemeWatcher() {
-        if (!OSUtil.isMacOS() || themeWatcher != null) {
+        if (themeWatcher != null) {
             return;
         }
         themeWatcher = new Thread(() -> {
@@ -188,8 +275,18 @@ public class LookAndFeelSupport {
                 try {
                     Thread.sleep(5000);
                     boolean dark = isSystemDarkMode();
-                    if (dark != currentDark) {
-                        SwingUtilities.invokeLater(() -> switchTheme(dark));
+                    if (dark == currentDark) {
+                        // Back in sync with the applied theme; allow prompting
+                        // again on a future change.
+                        restartPrompted = false;
+                    } else if (!restartPrompted) {
+                        // Appearance changed. We do NOT live-switch (repeated
+                        // FlatLaf.updateUI() froze the UI after a few switches);
+                        // instead offer a restart, once per change.
+                        restartPrompted = true;
+                        final boolean target = dark;
+                        SwingUtilities.invokeLater(
+                            () -> promptRestartForThemeChange(target));
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -198,7 +295,7 @@ public class LookAndFeelSupport {
                     log.fine("theme watcher: " + t);
                 }
             }
-        }, "FlatLaf-macOS-appearance-watcher");
+        }, "system-appearance-watcher");
         themeWatcher.setDaemon(true);
         themeWatcher.start();
     }
@@ -226,35 +323,34 @@ public class LookAndFeelSupport {
         return currentDark;
     }
 
-    /** Re-install the light/dark FlatLaf theme and refresh all open windows. */
-    private static void switchTheme(boolean dark) {
-        if (dark == currentDark) {
-            return;
+    /**
+     * The OS light/dark setting changed. Instead of re-theming the running UI
+     * (which froze the client after a few switches), offer the user a restart so
+     * the new theme is applied cleanly at startup. If declined, the current theme
+     * stays until the next (manual) restart. Runs on the EDT.
+     */
+    private static void promptRestartForThemeChange(boolean dark) {
+        de.dal33t.powerfolder.Controller c = themeController;
+        if (c == null || !c.isUIOpen()) {
+            return; // no UI to prompt / restart yet
         }
-        currentDark = dark;
+        log.info("System appearance changed to " + (dark ? "Dark" : "Light")
+            + "; offering restart to apply the new theme.");
         try {
-            applyThemeDefaults(dark);
-            boolean ok = dark
-                ? com.formdev.flatlaf.FlatDarkLaf.setup()
-                : com.formdev.flatlaf.FlatLightLaf.setup();
-            if (ok) {
-                UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
-                de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
-                com.formdev.flatlaf.FlatLaf.updateUI();
-                // Refresh set-once elements (logo, header icons, label colours)
-                // that FlatLaf.updateUI() alone does not re-run.
-                for (Runnable r : themeChangeListeners) {
-                    try {
-                        r.run();
-                    } catch (Throwable t) {
-                        log.fine("theme change listener failed: " + t);
-                    }
-                }
-                log.info("Switched FlatLaf theme to " + (dark ? "Dark" : "Light")
-                    + " (system appearance changed)");
+            int choice = de.dal33t.powerfolder.ui.dialog.DialogFactory.genericDialog(
+                c,
+                Translation.get("preferences.dialog.restart.title"),
+                Translation.get("preferences.dialog.restart.text"),
+                new String[] {
+                    Translation.get("preferences.dialog.restart.restart"),
+                    Translation.get("general.cancel") },
+                0,
+                de.dal33t.powerfolder.ui.dialog.GenericDialogType.QUESTION);
+            if (choice == 0) {
+                c.shutdownAndRequestRestart();
             }
         } catch (Throwable t) {
-            log.warning("live theme switch failed: " + t);
+            log.warning("theme-change restart prompt failed: " + t);
         }
     }
 
@@ -274,14 +370,37 @@ public class LookAndFeelSupport {
     };
 
     /**
+     * Bright text colour used in dark mode. FlatDark's default foreground is a
+     * dimmed grey (~#bbbbbb); this raises it to a crisp near-white so labels,
+     * menus and lists read clearly on the dark background. Tune here if needed.
+     */
+    private static final String DARK_FOREGROUND = "#f5f5f5";
+
+    /**
+     * FlatLaf keys set to {@link #DARK_FOREGROUND} in dark mode so text is bright
+     * white. Removed in light mode so FlatLight's own dark text applies.
+     */
+    private static final String[] FOREGROUND_KEYS = {
+        "@foreground", "Label.foreground"
+    };
+
+    /**
      * Set FlatLaf's global {@code @accentColor} to the active brand's primary
      * colour so selection/focus/accents match the brand in both light and dark.
      */
     private static void applyThemeDefaults(boolean dark) {
         try {
             String hex = accentColorHex(activeSkin);
-            java.util.Map<String, String> extra =
-                new java.util.HashMap<>(com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults());
+            // getGlobalExtraDefaults() returns null when nothing has been set yet
+            // (the first startup call), and new HashMap<>(null) throws an NPE -
+            // which was silently swallowed below, so the brand accent and the
+            // white light-mode background never got applied. Default to an empty
+            // map when none exists yet.
+            java.util.Map<String, String> existing =
+                com.formdev.flatlaf.FlatLaf.getGlobalExtraDefaults();
+            java.util.Map<String, String> extra = existing != null
+                ? new java.util.HashMap<>(existing)
+                : new java.util.HashMap<>();
             extra.put("@accentColor", hex);
             // Light mode: force a clean white background on the window and all
             // container surfaces (FlatLaf's light theme uses light grey for panels/
@@ -292,6 +411,15 @@ public class LookAndFeelSupport {
                     extra.remove(key);
                 } else {
                     extra.put(key, "#ffffff");
+                }
+            }
+            // Dark mode: brighten the default text foreground to near-white.
+            // Light mode: drop the override so FlatLight's dark text applies.
+            for (String key : FOREGROUND_KEYS) {
+                if (dark) {
+                    extra.put(key, DARK_FOREGROUND);
+                } else {
+                    extra.remove(key);
                 }
             }
             com.formdev.flatlaf.FlatLaf.setGlobalExtraDefaults(extra);
@@ -306,6 +434,22 @@ public class LookAndFeelSupport {
      * (the {@code <color type="BACKGROUND" value="#..."/> <!-- Primary color -->}
      * entry). Falls back to {@link #DEFAULT_ACCENT}.
      */
+    /**
+     * PFC-3643: the resolved brand accent colour - the active skin's primary colour,
+     * or {@link #DEFAULT_ACCENT} when none is found. Single source of truth for the
+     * avatar disc ({@code AvatarLabel}), the account-header status glyphs
+     * ({@code Icons}) and the splash loading bar ({@code SplashScreen}), so they all
+     * match the FlatLaf {@code @accentColor}. Resolve at paint/build time, not in a
+     * static initialiser, because the active skin is set during L&F startup.
+     */
+    public static Color getAccentColor() {
+        try {
+            return Color.decode(accentColorHex(activeSkin));
+        } catch (RuntimeException ex) {
+            return Color.decode(DEFAULT_ACCENT);
+        }
+    }
+
     private static String accentColorHex(Skin skin) {
         if (!(skin instanceof AbstractSyntheticaSkin)) {
             return DEFAULT_ACCENT;
@@ -320,12 +464,28 @@ public class LookAndFeelSupport {
                 }
                 String xml = new String(in.readAllBytes(),
                     java.nio.charset.StandardCharsets.UTF_8);
-                java.util.regex.Matcher m = java.util.regex.Pattern.compile(
-                    "BACKGROUND\"\\s+value=\"(#[0-9a-fA-F]{6})\"\\s*/>\\s*<!--\\s*Primary color",
-                    java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
-                if (m.find()) {
-                    return m.group(1);
+                // The brand primary is the BACKGROUND colour tagged with the
+                // "Primary color" comment in the skin's synth.xml. Match the hex
+                // regardless of the order of the type/value attributes, and tolerate
+                // flexible whitespace, so a harmless reformat of the XML does not drop
+                // the accent. The comment marker stays the disambiguator (there are
+                // several BACKGROUND entries).
+                for (String pattern : new String[] {
+                    "type=\"BACKGROUND\"[^>]*?value=\"(#[0-9a-fA-F]{6})\"[^>]*?/>\\s*<!--\\s*Primary color",
+                    "value=\"(#[0-9a-fA-F]{6})\"[^>]*?type=\"BACKGROUND\"[^>]*?/>\\s*<!--\\s*Primary color"})
+                {
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                        pattern, java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
+                    if (m.find()) {
+                        return m.group(1);
+                    }
                 }
+                // A branded skin with no recognisable primary colour is a real
+                // problem (the UI silently falls back to the generic accent), so make
+                // it visible instead of hiding it at fine level.
+                log.warning(skin.getName()
+                    + ": no 'Primary color' BACKGROUND entry in " + resource
+                    + " - falling back to the default accent " + DEFAULT_ACCENT);
             }
         } catch (Throwable t) {
             log.fine("accent extraction failed: " + t);

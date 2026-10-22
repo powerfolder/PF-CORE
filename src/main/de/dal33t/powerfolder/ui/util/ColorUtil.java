@@ -25,17 +25,50 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 
 import de.dal33t.powerfolder.util.MathUtil;
+import de.dal33t.powerfolder.util.UIThemeState;
 
 /**
  * Class for any reusable color functions.
  */
 public class ColorUtil {
 
-    /** Color for odd rows in tables. */
+    /** Color for odd rows in tables (light mode). */
     public static final Color ODD_TABLE_ROW_COLOR = new Color(240, 240, 240);
 
-    /** Color for even rows in tables. */
+    /** Color for even rows in tables (light mode). */
     public static final Color EVEN_TABLE_ROW_COLOR = Color.white;
+
+    /**
+     * PFC-3643: theme-aware even-row (zebra) background. The light colour in light
+     * mode; the LaF table background in dark mode - the hardcoded light colours above
+     * painted white row bands under the near-white dark-mode text, hiding it. Table
+     * renderers must call this instead of {@link #EVEN_TABLE_ROW_COLOR} directly.
+     */
+    public static Color getEvenTableRowColor() {
+        return UIThemeState.isDark() ? darkTableBackground() : EVEN_TABLE_ROW_COLOR;
+    }
+
+    /**
+     * PFC-3643: theme-aware odd-row (zebra) background - light grey in light mode, a
+     * subtly lifted dark shade in dark mode. See {@link #getEvenTableRowColor()}.
+     */
+    public static Color getOddTableRowColor() {
+        return UIThemeState.isDark()
+            ? lighten(darkTableBackground(), 12) : ODD_TABLE_ROW_COLOR;
+    }
+
+    /** The active LaF's table background, with a dark fallback. */
+    private static Color darkTableBackground() {
+        Color bg = UIManager.getColor("Table.background");
+        return bg != null ? bg : new Color(0x3C, 0x3F, 0x41);
+    }
+
+    /** Return {@code c} lightened by {@code delta} per channel (clamped to 255). */
+    private static Color lighten(Color c, int delta) {
+        return new Color(Math.min(255, c.getRed() + delta),
+            Math.min(255, c.getGreen() + delta),
+            Math.min(255, c.getBlue() + delta));
+    }
 
     /**
      * Creates a '#rrggbb' String for a Color.

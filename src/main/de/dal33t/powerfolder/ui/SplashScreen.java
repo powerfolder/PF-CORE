@@ -82,8 +82,18 @@ public class SplashScreen extends JWindow {
 
         image = new JLabel(Icons.getIconById(Icons.SPLASH));
         image.setBorder(BorderFactory.createEmptyBorder());
+        // PFC-3643: smooth continuous loading bar filled in the brand accent colour
+        // on a light track (FlatLaf rounds it), matching the new wallpaper splash.
+        // Same on all platforms.
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
         bar.setBorder(BorderFactory.createEmptyBorder());
+        bar.setBorderPainted(false);
+        bar.setStringPainted(false);
+        bar.setOpaque(true);
+        bar.setPreferredSize(new java.awt.Dimension(574, 10));
+        bar.setForeground(LookAndFeelSupport.getAccentColor()); // shared brand accent
+        bar.setBackground(new java.awt.Color(0xEDF1F5)); // light track
+        bar.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
 
         getContentPane().add(image, BorderLayout.NORTH);
         getContentPane().add(bar, BorderLayout.SOUTH);

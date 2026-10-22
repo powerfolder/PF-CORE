@@ -20,7 +20,9 @@ package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -38,7 +40,7 @@ public enum SyncStatus {
      * @return the sync status of the file
      */
     public static SyncStatus of(Controller controller, FileInfo fInfo) {
-        return SyncStatus.of(controller, fInfo, null);
+        return SyncStatus.of(controller, fInfo, null, false);
     }
 
     /**
@@ -51,6 +53,28 @@ public enum SyncStatus {
      * @return the sync status of the file
      */
     public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder) {
+        return SyncStatus.of(controller, fInfo, folder, false);
+    }
+
+    /**
+     * @param controller
+     * @param fInfo
+     *            The file to get the {@link SyncStatus} for.
+     * @param folder
+     *            If the {@code Folder} is already known, just pass it here.
+     *            Otherwise use {@link #of(Controller, FileInfo)}.
+     * @param directoryOverlay
+     *            PFC-3643: when {@code true} a (non base-dir) directory reports a
+     *            sync state for the file-manager icon overlay - LOCKED, the spinner
+     *            while something transfers under it, otherwise the synced tick. When
+     *            {@code false} directories keep the pre-PFC-3643 behaviour and always
+     *            return {@link #NONE}, so the webhook/API and context-menu callers
+     *            are unaffected. Only {@code IconOverlayHandler} opts in.
+     * @return the sync status of the file
+     */
+    public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder,
+        boolean directoryOverlay)
+    {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
@@ -77,8 +101,24 @@ public enum SyncStatus {
                 return SYNC_OK;
             }
         }
-        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
-            return NONE;
+        if (fInfo.isDiretory()) {
+            if (!directoryOverlay) {
+                // Non-overlay callers (webhook/API FileEvent, context menu) keep the
+                // pre-PFC-3643 behaviour: a directory has no sync state of its own.
+                return NONE;
+            }
+            if (fInfo.isLocked(controller)) {
+                return LOCKED;
+            }
+            // PFC-3643: subfolders show a sync overlay too (they used to always
+            // return NONE): the spinner while anything inside them is transferring,
+            // otherwise the synced tick. A tick on an otherwise-idle directory means
+            // "nothing is syncing under it" - with the default full sync that is the
+            // on-device/synced state.
+            if (folder.getCompletelyConnectedMembersCount() == 0) {
+                return NONE;
+            }
+            return isTransferringUnder(controller, fInfo) ? SYNCING : SYNC_OK;
         }
         if (fInfo.isLookupInstance()) {
             fInfo = folder.getDAO().find(fInfo, null);
@@ -106,5 +146,44 @@ public enum SyncStatus {
             return SYNCING;
         }
         return SYNC_OK;
+    }
+
+    /**
+     * PFC-3643: is any active transfer (download or upload) for a file located
+     * inside the given directory? Active transfers are few, so this is a cheap
+     * bounded check (no per-callback directory scan).
+     */
+    private static boolean isTransferringUnder(Controller controller, FileInfo dirInfo) {
+        String prefix = dirInfo.getRelativeName();
+        if (prefix == null) {
+            return false;
+        }
+        if (!prefix.endsWith("/")) {
+            prefix = prefix + "/";
+        }
+        TransferManager tm = controller.getTransferManager();
+        for (DownloadManager dm : tm.getActiveDownloads()) {
+            if (isUnder(dm.getFileInfo(), dirInfo, prefix)) {
+                return true;
+            }
+        }
+        for (Upload ul : tm.getActiveUploads()) {
+            if (isUnder(ul.getFile(), dirInfo, prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isUnder(FileInfo transferFile, FileInfo dirInfo,
+        String dirPrefix)
+    {
+        if (transferFile == null
+            || !transferFile.getFolderInfo().equals(dirInfo.getFolderInfo()))
+        {
+            return false;
+        }
+        String rn = transferFile.getRelativeName();
+        return rn != null && rn.startsWith(dirPrefix);
     }
 }

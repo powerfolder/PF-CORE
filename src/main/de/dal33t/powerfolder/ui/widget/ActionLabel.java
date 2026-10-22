@@ -142,11 +142,12 @@ public class ActionLabel extends PFComponent {
 
     public void setNeverUnderline(boolean neverUnderline) {
         this.neverUnderline = neverUnderline;
-        if (neverUnderline) {
-            CursorUtils.setDefaultCursor(uiComponent);
-        } else {
-            CursorUtils.setHandCursor(uiComponent);
-        }
+        // PFC-3643: "never underline" controls only the underline style, not
+        // interactivity - an ActionLabel is still clickable, so always keep the
+        // hand cursor. (Previously neverUnderline forced the default arrow, which
+        // made clickable labels like the account name and the sync-status text
+        // look non-clickable and inconsistent with the other hand-cursor targets.)
+        CursorUtils.setHandCursor(uiComponent);
         displayText();
     }
 

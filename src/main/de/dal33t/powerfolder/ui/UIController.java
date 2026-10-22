@@ -117,9 +117,9 @@ public class UIController extends PFComponent {
 
     // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
-    private Menu sysTrayFoldersMenu;
-    private MenuItem pauseResumeMenu;
-    private Menu recentlyChangedMenu;
+    private JMenu sysTrayFoldersMenu;
+    private JMenuItem pauseResumeMenu;
+    private JMenu recentlyChangedMenu;
     @SuppressWarnings("unused")
     private BoundPermission changePrefsPermission;
 
@@ -139,7 +139,7 @@ public class UIController extends PFComponent {
 
     private final Map<Long, FileInfo> recentlyChangedFiles = new HashMap<Long, FileInfo>(
         MAX_RECENTLY_CHANGED_FILES);
-    private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
+    private final JMenuItem[] recentMenuItems = new JMenuItem[MAX_RECENTLY_CHANGED_FILES];
     private final PreferencesDialog preferencesDialog;
     /**
      * The UI distribution running.
@@ -302,7 +302,7 @@ public class UIController extends PFComponent {
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        if (getController().isStartMinimized() || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (getController().isStartMinimized()) {
             logInfo("Starting minimized");
         }
 
@@ -311,19 +311,18 @@ public class UIController extends PFComponent {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    boolean isSystraySupported = OSUtil.isSystraySupported();
                     boolean isLinux = OSUtil.isLinux();
                     boolean isStartMinimized = getController()
                         .isStartMinimized();
-                    boolean isExpertMode = PreferencesEntry.EXPERT_MODE
-                        .getValueBoolean(getController());
 
-                    // PFC-2806 never minimize on Linux
+                    // PFC-3643: bring the main window up on start unless the user
+                    // explicitly chose "start minimized". Previously non-expert
+                    // mode also kept the window hidden behind the tray icon, so the
+                    // client never came up on a normal start.
+                    // PFC-2806 never minimize on Linux.
                     mainFrame.getUIComponent()
-                        .setVisible(isLinux
-                            || ((!isSystraySupported || !isStartMinimized)
-                                && isExpertMode));
-                    if (!isStartMinimized && isExpertMode) {
+                        .setVisible(isLinux || !isStartMinimized);
+                    if (!isStartMinimized) {
                         mainFrame.toFront();
                     }
                 }
@@ -535,12 +534,13 @@ public class UIController extends PFComponent {
 
     private void initializeSystray() {
         trayIconManager = new TrayIconManager(this);
-        PopupMenu menu = new PopupMenu();
+        // PFC-3643: a Swing JPopupMenu (FlatLaf themes it dark in dark mode),
+        // instead of the native java.awt.PopupMenu which Windows always draws
+        // light. TrayIcon.setPopupMenu only accepts an AWT PopupMenu, so the
+        // Swing menu is shown manually on the tray popup trigger (see below).
+        final JPopupMenu menu = new JPopupMenu();
 
         TrayIcon trayIcon = trayIconManager.getTrayIcon();
-        if (trayIcon != null) {
-            trayIcon.setPopupMenu(menu);
-        }
 
         ActionListener systrayActionHandler = new ActionListener() {
             @Override
@@ -646,7 +646,7 @@ public class UIController extends PFComponent {
         // /////////////////////////
         // Open / close menu item //
         // /////////////////////////
-        final MenuItem openUI = new MenuItem(
+        final JMenuItem openUI = new JMenuItem(
             Translation.get("systray.show"));
         menu.add(openUI);
         openUI.setActionCommand(COMMAND_OPEN_UI);
@@ -655,11 +655,11 @@ public class UIController extends PFComponent {
         // //////
         // Web //
         // //////
-        MenuItem item;
+        JMenuItem item;
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("action_open_web_interface.name")));
             item.setActionCommand(COMMAND_WEB);
             item.addActionListener(systrayActionHandler);
@@ -668,7 +668,7 @@ public class UIController extends PFComponent {
         // //////////
         // Folders //
         // //////////
-        sysTrayFoldersMenu = new Menu(
+        sysTrayFoldersMenu = new JMenu(
             Translation.get("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (Feature.SYSTRAY_ALL_FOLDERS.isEnabled()) {
@@ -679,7 +679,7 @@ public class UIController extends PFComponent {
         // Browse //
         // /////////
         if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("action_open_folders_base.name")));
             item.setActionCommand(COMMAND_BROWSE);
             item.addActionListener(systrayActionHandler);
@@ -689,7 +689,7 @@ public class UIController extends PFComponent {
         // Pause / Resume //
         // /////////////////
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            pauseResumeMenu = new MenuItem(
+            pauseResumeMenu = new JMenuItem(
                     Translation.get("action_resume_sync.name"));
             menu.add(pauseResumeMenu);
             pauseResumeMenu.addActionListener(systrayActionHandler);
@@ -701,12 +701,12 @@ public class UIController extends PFComponent {
         // Recent //
         // /////////
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            recentlyChangedMenu = new Menu(
+            recentlyChangedMenu = new JMenu(
                     Translation.get("uicontroller.recently_changed"));
             recentlyChangedMenu.setEnabled(false);
             menu.add(recentlyChangedMenu);
             for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-                recentMenuItems[i] = new MenuItem();
+                recentMenuItems[i] = new JMenuItem();
                 recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
                 recentMenuItems[i].addActionListener(systrayActionHandler);
             }
@@ -715,7 +715,7 @@ public class UIController extends PFComponent {
         // //////////////
         // Preferences //
         // //////////////
-        final MenuItem prefItem = menu.add(new MenuItem(Translation
+        final JMenuItem prefItem = menu.add(new JMenuItem(Translation
             .get("action_open_preferences.name")));
         prefItem.setActionCommand(COMMAND_PREFERENCES);
         prefItem.addActionListener(systrayActionHandler);
@@ -736,7 +736,7 @@ public class UIController extends PFComponent {
         if (SystemUtil.isShutdownSupported()
             && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
@@ -746,7 +746,7 @@ public class UIController extends PFComponent {
         // Sync Exit //
         // ////////////
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("systray.sync_exit")));
             item.setActionCommand(COMMAND_SYNC_EXIT);
             item.addActionListener(systrayActionHandler);
@@ -756,7 +756,7 @@ public class UIController extends PFComponent {
         // Exit //
         // ///////
         item = menu
-            .add(new MenuItem(Translation.get("systray.exit")));
+            .add(new JMenuItem(Translation.get("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
@@ -765,6 +765,70 @@ public class UIController extends PFComponent {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     mainFrame.toFront();
+                }
+            });
+
+            // PFC-3643: show the (FlatLaf-themed, dark-mode-aware) Swing menu on
+            // the tray popup trigger. A TrayIcon can't host a JPopupMenu directly,
+            // so an invisible, focusable owner window is positioned at the cursor
+            // and the popup is shown on it; losing focus (click-away) or picking an
+            // item hides the owner again. TrayIcon mouse coordinates are screen
+            // coordinates; Swing auto-flips the menu upward near the taskbar.
+            // A JWindow (not a JDialog): FlatLaf decorates JDialogs, and applying
+            // its rounded/translucent popup on a decorated-dialog owner throws
+            // IllegalComponentStateException ("The dialog is decorated") on every
+            // open. A JWindow is undecorated by nature; the heavyweight popup still
+            // dismisses on click-away via its own grab.
+            final JWindow trayMenuOwner = new JWindow();
+            trayMenuOwner.setAlwaysOnTop(true);
+            trayMenuOwner.setSize(1, 1);
+            menu.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                    trayMenuOwner.setVisible(false);
+                }
+
+                @Override
+                public void popupMenuCanceled(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                    trayMenuOwner.setVisible(false);
+                }
+            });
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    maybeShowMenu(e);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    maybeShowMenu(e);
+                }
+
+                private void maybeShowMenu(MouseEvent e) {
+                    if (!e.isPopupTrigger()) {
+                        return;
+                    }
+                    final int x = e.getX();
+                    final int y = e.getY();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            trayMenuOwner.setLocation(x, y);
+                            trayMenuOwner.setVisible(true);
+                            trayMenuOwner.toFront();
+                            menu.show(trayMenuOwner, 0, 0);
+                        }
+                    });
                 }
             });
         }
@@ -781,13 +845,13 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent arg0) {
-                openUI.setLabel(Translation.get("systray.hide"));
+                openUI.setText(Translation.get("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
 
             @Override
             public void componentHidden(ComponentEvent arg0) {
-                openUI.setLabel(Translation.get("systray.show"));
+                openUI.setText(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
@@ -795,13 +859,13 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addWindowListener(new WindowAdapter() {
             @Override
             public void windowIconified(WindowEvent e) {
-                openUI.setLabel(Translation.get("systray.show"));
+                openUI.setText(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
-                openUI.setLabel(Translation.get("systray.hide"));
+                openUI.setText(Translation.get("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
         });
@@ -819,11 +883,11 @@ public class UIController extends PFComponent {
      * @param folder
      */
     private void addFolderToSysTray(Folder folder) {
-        MenuItem menuItem = new MenuItem(folder.getName());
+        JMenuItem menuItem = new JMenuItem(folder.getName());
         // Insert in the correct position.
         boolean done = false;
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            if (sysTrayFoldersMenu.getItem(i).getLabel().toLowerCase()
+            if (sysTrayFoldersMenu.getItem(i).getText().toLowerCase()
                 .compareTo(folder.getName().toLowerCase()) > 0)
             {
                 sysTrayFoldersMenu.insert(menuItem, i);
@@ -853,8 +917,10 @@ public class UIController extends PFComponent {
      */
     private void removeFolderFromSysTray(Folder folder) {
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
-            if (menuItem.getLabel().equals(folder.getName())) {
+            JMenuItem menuItem = sysTrayFoldersMenu.getItem(i);
+            if (menuItem != null
+                && menuItem.getText().equals(folder.getName()))
+            {
                 sysTrayFoldersMenu.remove(i);
             }
         }
@@ -933,6 +999,9 @@ public class UIController extends PFComponent {
         }
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel(), activeSkin);
+            // Give the appearance watcher a controller so it can offer a restart
+            // when the OS light/dark setting changes.
+            LookAndFeelSupport.setThemeController(getController());
         } catch (UnsupportedLookAndFeelException | ParseException e) {
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
@@ -1342,11 +1411,11 @@ public class UIController extends PFComponent {
         // AWT tray path.
         if (pauseResumeMenu != null) {
             if (getController().isPaused()) {
-                pauseResumeMenu.setLabel(Translation
+                pauseResumeMenu.setText(Translation
                     .get("action_resume_sync.name"));
                 pauseResumeMenu.setActionCommand(COMMAND_RESUME);
             } else {
-                pauseResumeMenu.setLabel(Translation
+                pauseResumeMenu.setText(Translation
                     .get("action_pause_sync.name"));
                 pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
             }
@@ -1480,9 +1549,9 @@ public class UIController extends PFComponent {
                     recentlyChangedMenu.removeAll();
                     int i = 0;
                     for (FileInfo info : recentlyChangedFiles.values()) {
-                        MenuItem menuItem = recentMenuItems[i++];
+                        JMenuItem menuItem = recentMenuItems[i++];
                         recentlyChangedMenu.add(menuItem);
-                        menuItem.setLabel(info.getFilenameOnly());
+                        menuItem.setText(info.getFilenameOnly());
                     }
                     recentlyChangedMenu.setEnabled(!recentlyChangedFiles
                         .isEmpty());

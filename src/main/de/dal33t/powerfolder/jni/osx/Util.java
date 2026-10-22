@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -236,33 +235,6 @@ public class Util {
      * Never throws; bounded by {@link #CMD_TIMEOUT_SECONDS}.
      */
     private static String runProcess(String... cmd) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.redirectErrorStream(true);
-            Process proc = pb.start();
-            StringBuilder sb = new StringBuilder();
-            try (java.io.BufferedReader r = new java.io.BufferedReader(
-                new java.io.InputStreamReader(proc.getInputStream(),
-                    java.nio.charset.StandardCharsets.UTF_8)))
-            {
-                String line;
-                while ((line = r.readLine()) != null) {
-                    sb.append(line).append('\n');
-                }
-            }
-            if (!proc.waitFor(CMD_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                proc.destroyForcibly();
-                LOG.warning("Command timed out: " + String.join(" ", cmd));
-                return null;
-            }
-            if (proc.exitValue() != 0) {
-                LOG.fine("Command exit " + proc.exitValue() + ": "
-                    + String.join(" ", cmd) + " -> " + sb.toString().trim());
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            LOG.log(Level.FINE, "Command failed: " + String.join(" ", cmd), e);
-            return null;
-        }
+        return de.dal33t.powerfolder.util.ProcessUtils.runBounded(CMD_TIMEOUT_SECONDS, cmd);
     }
 }

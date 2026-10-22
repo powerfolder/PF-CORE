@@ -21,6 +21,7 @@ package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.os.Win32.WinAppUserModelID;
 import org.apache.commons.cli.*;
 
 import javax.swing.*;
@@ -137,6 +138,14 @@ public class PowerFolder {
         CommandLine commandLine = parseCommandLine(args);
         if (commandLine == null) {
             return;
+        }
+
+        // PFC-3643: in GUI mode, claim an explicit Windows taskbar identity
+        // (AppUserModelID) before any window is shown, so the taskbar button and
+        // jump list group under PowerFolder instead of the generic Java runtime.
+        // No-op off Windows and in server mode (-s, headless).
+        if (!commandLine.hasOption("s")) {
+            WinAppUserModelID.setForCurrentProcess(NAME);
         }
 
         // -l --log console log levels (severe, warning, info, fine and finer).

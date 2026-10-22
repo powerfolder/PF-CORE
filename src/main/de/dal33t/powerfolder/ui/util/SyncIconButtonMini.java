@@ -39,6 +39,9 @@ public class SyncIconButtonMini extends JButtonMini {
     private static final long ROTATION_STEP_DELAY = 200L;
     private int angle;
     private volatile boolean spin;
+    // PFC-3643: when > 0, render the (modern blue) spinner at this px size instead
+    // of the bundled base frame - e.g. the avatar-sized main status glyph.
+    private int spinnerSize;
     private static final Icon ICON_ZERO = Icons
         .getIconById(Icons.SYNC_ANIMATION[0]);
 
@@ -54,8 +57,10 @@ public class SyncIconButtonMini extends JButtonMini {
     private void rotate() {
 
         if (!spin) {
-            if (!getIcon().equals(ICON_ZERO)) {
-                setIcon(ICON_ZERO);
+            Icon idle = spinnerSize > 0
+                ? Icons.getSyncSpinnerFrame(0, spinnerSize) : ICON_ZERO;
+            if (!idle.equals(getIcon())) {
+                setIcon(idle);
             }
             return;
         }
@@ -64,12 +69,22 @@ public class SyncIconButtonMini extends JButtonMini {
         if (angle >= Icons.SYNC_ANIMATION.length) {
             angle = 0;
         }
-        Icon icon = Icons.getIconById(Icons.SYNC_ANIMATION[angle]);
+        Icon icon = spinnerSize > 0
+            ? Icons.getSyncSpinnerFrame(angle, spinnerSize)
+            : Icons.getIconById(Icons.SYNC_ANIMATION[angle]);
         setIcon(icon);
     }
 
     public void spin(boolean b) {
         spin = b;
+    }
+
+    /** PFC-3643: render the spinner at {@code size} px (0 = bundled base size). */
+    public void setSpinnerSize(int size) {
+        spinnerSize = size;
+        if (size > 0) {
+            setIcon(Icons.getSyncSpinnerFrame(angle, size));
+        }
     }
 
     private static class MyUpdateTask extends TimerTask {

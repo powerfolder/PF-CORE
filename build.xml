@@ -183,8 +183,9 @@ For creation of the installer:
             <include name="commons-logging-1.1.3.jar" />
 			<include name="json-20250517.jar" />
 
-			<!-- PFC-3096: StatusNotifierItem (D-Bus) tray for GNOME/KDE.
-			     Pure-Java (JDK unix-socket transport), no native libs. -->
+			<!-- D-Bus (pure-Java, JDK unix-socket transport, no native libs), shared by:
+			     PFC-3096 StatusNotifierItem tray for GNOME/KDE and
+			     PFC-3643 libcloudproviders (Linux file-manager sync status). -->
 			<include name="dbus-java-core-5.2.2.jar" />
 			<include name="dbus-java-transport-native-unixsocket-5.2.2.jar" />
 			<!-- INT-1785: the only slf4j-api - an older one next to it (cryptomator brought 1.7.25) wins in the jar

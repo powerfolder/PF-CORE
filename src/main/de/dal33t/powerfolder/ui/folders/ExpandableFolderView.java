@@ -120,6 +120,11 @@ public class ExpandableFolderView extends PFUIComponent implements
     // private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
+    /** PFC-3643: rotating folder-spinner animation while transferring. */
+    private javax.swing.Timer folderSpinTimer;
+    private int folderSpinFrame;
+    /** PFS-5949: throttles the live sync-% refresh on the 100ms spin timer. */
+    private int folderStatsTick;
     private SyncIconButtonMini upperSyncFolderButton;
     private JButtonMini lowerSyncFolderButton;
 
@@ -707,6 +712,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateSyncButton() {
         if (type != Type.Local) {
+            stopFolderSpin();
             upperSyncFolderButton.setVisible(false);
             upperSyncFolderButton.spin(false);
             primaryButton.setVisible(true);
@@ -719,17 +725,59 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (folder == null) {
                     return;
                 }
+                // PFC-3643: while syncing, show the folder icon WITH a rotating
+                // blue spinner badge (not a separate base-less spinner). The
+                // legacy spinner button stays hidden. Idle states keep the static
+                // icon set by updateIconAndOS().
+                upperSyncFolderButton.setVisible(false);
+                upperSyncFolderButton.spin(false);
+                primaryButton.setVisible(true);
                 if (folder.isTransferring()) {
-                    primaryButton.setVisible(false);
-                    upperSyncFolderButton.setVisible(true);
-                    upperSyncFolderButton.spin(true);
+                    startFolderSpin();
                 } else {
-                    primaryButton.setVisible(true);
-                    upperSyncFolderButton.setVisible(false);
-                    upperSyncFolderButton.spin(false);
+                    stopFolderSpin();
+                    updateIconAndOS();
                 }
             }
         });
+    }
+
+    /**
+     * PFC-3643: animate the folder icon with a rotating spinner badge while the
+     * folder is transferring. Runs on the EDT (javax.swing.Timer).
+     */
+    private void startFolderSpin() {
+        if (folderSpinTimer == null) {
+            folderSpinTimer = new javax.swing.Timer(100, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    folderSpinFrame =
+                        (folderSpinFrame + 1) % Icons.SYNC_ANIMATION.length;
+                    primaryButton.setIcon(Icons.getFolderWithBadge(
+                        Icons.SYNC_ANIMATION[folderSpinFrame]));
+                    // PFS-5949: refresh the sync-% (and sizes/ETA) live while the
+                    // folder transfers - transfer progress is not an event, so
+                    // without this the "0 %" would sit stale until the download
+                    // finishes. Throttled to ~1s (every 10th 100ms tick).
+                    if (++folderStatsTick >= 10) {
+                        folderStatsTick = 0;
+                        updateStatsDetails();
+                    }
+                }
+            });
+            folderSpinTimer.setRepeats(true);
+        }
+        if (!folderSpinTimer.isRunning()) {
+            primaryButton.setIcon(Icons.getFolderWithBadge(
+                Icons.SYNC_ANIMATION[folderSpinFrame]));
+            folderSpinTimer.start();
+        }
+    }
+
+    /** PFC-3643: stop the folder spinner animation. */
+    private void stopFolderSpin() {
+        if (folderSpinTimer != null && folderSpinTimer.isRunning()) {
+            folderSpinTimer.stop();
+        }
     }
 
     private void registerListeners() {
@@ -754,6 +802,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
+        stopFolderSpin(); // PFC-3643: stop the folder-spinner animation timer
         if (myToSListener != null) {
             getController().getOSClient().removeListener(myToSListener);
         }
@@ -1044,27 +1093,42 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == Type.Local) {
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+            boolean syncKnown = sync != FolderStatistic.UNKNOWN_SYNC_STATUS;
+            boolean incomplete = syncKnown && Double.compare(sync, 100.0d) < 0;
             if (folder != null && folder.countProblems() > 0) {
                 // Got a problem.
+                stopFolderSpin();
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_problem_text"));
-            } else if (getController().isPaused()
-                && Double.compare(sync, 100.0d) < 0
-                && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
-            {
+            } else if (getController().isPaused() && incomplete) {
                 // Sync is in pause
+                stopFolderSpin();
                 primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
-            } else if (Double.compare(sync, 100.0d) < 0) {
-                // Not synced and not syncing.
-                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
+            } else if ((folder != null && folder.isTransferring()) || incomplete) {
+                // PFS-5949/PFC-3643: the folder is syncing - either actively
+                // transferring, or not yet fully in sync (e.g. 0 %, download
+                // pending) - so show the rotating blue spinner badge, NEVER the
+                // green check or a plain folder. Checked after problem/pause so
+                // those still win, and before the green check so an upload that
+                // momentarily reads 100 % keeps spinning. The spin timer owns the
+                // icon; see startFolderSpin()/updateSyncButton().
+                startFolderSpin();
+                primaryButton.setToolTipText(Translation
+                    .get("exp_folder_view.folder_sync_incomplete"));
+            } else if (!syncKnown) {
+                // Sync state unknown (e.g. no connected members / offline) ->
+                // plain black/white folder icon, no badge.
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderIcon());
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
             } else {
-                // We are in sync.
-                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+                // We are in sync -> black folder + green check badge.
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_COMPLETE));
                 if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
@@ -1081,8 +1145,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
-        } else { // CloudOnly
-            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+        } else { // PFC-3643: CloudOnly / not on device -> plain folder icon, no
+                 // badge (no blue cloud).
+            primaryButton.setIcon(Icons.getFolderIcon());
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
@@ -1509,6 +1574,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             updateSyncButton();
             updateIconAndOS();
+            // PFS-5949: refresh the sync-% immediately on transfer start/finish
+            // (the live climb between events comes from the spin timer).
+            updateStatsDetails();
         }
 
         @Override

@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.nio.file.Path;
@@ -34,11 +33,9 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -86,16 +83,66 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
 
     private void initComponents() {
+        // PFC-3643: modern, flat, theme-aware layout. The dated etched TitledBorder
+        // boxes are replaced by section separators (see createSection); the general
+        // section spans the full width, with PowerFolder / System side by side below.
         FormLayout layout = new FormLayout(
-            "pref:grow, pref:grow, pref:grow",
-            "fill:pref:grow, fill:pref:grow, fill:pref:grow");
+            "pref:grow, 14dlu, pref:grow",
+            "pref, 12dlu, pref, 14dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("10dlu, 12dlu, 10dlu, 12dlu"));
         CellConstraints cc = new CellConstraints();
-        builder.add(createGeneralBox(), cc.xywh(1, 1, 2, 1));
-        builder.add(createPowerFolderBox(), cc.xy(1, 2));
-        builder.add(createSystemBox(), cc.xy(2, 2));
+        builder.add(createGeneralBox(), cc.xyw(1, 1, 3));
+        builder.add(createPowerFolderBox(), cc.xy(1, 3, "fill, top"));
+        builder.add(createSystemBox(), cc.xy(3, 3, "fill, top"));
+        // PFC-3643: Transfers and Logging were removed from the bottom bar; they now
+        // open from here.
+        builder.add(createTransfersButton(), cc.xy(1, 5, "left, center"));
+        builder.add(createLoggingButton(), cc.xy(3, 5, "left, center"));
 
         panel = builder.getPanel();
+    }
+
+    /**
+     * PFC-3643: open the Transfers (downloads/uploads) view. Transfers was taken out
+     * of the bottom bar on request; this button is its new home. The Preferences
+     * dialog is modal, so close it first, then open the transfers information view.
+     */
+    private JButton createTransfersButton() {
+        JButton button = new JButton(
+            Translation.get("exp.action_open_transfers_information.name"));
+        button.setToolTipText(Translation
+            .get("exp.action_open_transfers_information.description"));
+        button.addActionListener(e -> {
+            java.awt.Window w = javax.swing.SwingUtilities
+                .getWindowAncestor((java.awt.Component) e.getSource());
+            if (w != null) {
+                w.setVisible(false);
+            }
+            getController().getUIController().openTransfersInformation();
+        });
+        return button;
+    }
+
+    /**
+     * PFC-3643: open the Logging (real-time logs) view. Logging was taken out of the
+     * bottom bar and is always on now; this button is its new home. The Preferences
+     * dialog is modal, so close it first, then open the logging information view.
+     */
+    private JButton createLoggingButton() {
+        JButton button = new JButton(
+            Translation.get("action_open_debug_information.name"));
+        button.setToolTipText(Translation
+            .get("action_open_debug_information.description"));
+        button.addActionListener(e -> {
+            java.awt.Window w = javax.swing.SwingUtilities
+                .getWindowAncestor((java.awt.Component) e.getSource());
+            if (w != null) {
+                w.setVisible(false);
+            }
+            getController().getUIController().openDebugInformation();
+        });
+        return button;
     }
 
     private JButton createActivateButton() {
@@ -124,7 +171,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         if (action != null) {
             activateButton.addActionListener(action);
         }
-        activateButton.setBackground(Color.WHITE);
         boolean changeLoginAllowed =
                 ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
             .getValueBoolean(getController());
@@ -206,61 +252,59 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     private static JPanel createTextBox(String title, String contents, JButton button) {
         String[] contentsArray = contents.split("\n");
 
-        FormLayout contentsForm = new FormLayout("pref");
+        // PFC-3643: a flat section = a titled separator header, then the content
+        // lines as plain (theme-coloured) labels on a transparent panel.
+        FormLayout contentsForm = new FormLayout("pref:grow", "pref, 5dlu");
         PanelBuilder builder = new PanelBuilder(contentsForm);
-
-        TitledBorder titledBorder = new TitledBorder(title);
-        titledBorder.setTitleColor(Color.BLACK);
-        builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2, 2, 2, 2)));
-        // split into tokens
-        int row = 1;
         CellConstraints cc = new CellConstraints();
+
+        builder.addSeparator(title, cc.xy(1, 1));
+        int row = 2;
 
         for (String lineText : contentsArray) {
             if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
                 builder.appendRow("3dlu");
+                row += 1;
             } else {
                 builder.appendRow("pref");
-                builder.add(new JLabel("<HTML><BODY>" + lineText + "</BODY></HTML>"), cc.xy(1, row));
+                row += 1;
+                builder.add(new JLabel(lineText), cc.xy(1, row));
             }
-            row += 1;
         }
 
         if (button != null) {
             // Gap, then button
-            builder.appendRow("3dlu");
+            builder.appendRow("8dlu");
             row += 1;
             builder.appendRow("pref");
+            row += 1;
             builder.add(button, cc.xy(1, row));
         }
 
         JPanel textBoxPanel = builder.getPanel();
-        textBoxPanel.setBackground(Color.WHITE);
+        textBoxPanel.setOpaque(false);
         return textBoxPanel;
     }
 
     private JPanel createGeneralBox() {
-        FormLayout layout = new FormLayout("pref",
-            "pref, 15dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref, 8dlu, pref, 12dlu, pref, 6dlu, pref, 6dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        builder.addSeparator(
+            Translation.get("exp.preferences.information.general_information"),
+            cc.xy(1, 1));
         builder.add(TextLinesPanelBuilder.createTextPanel(
             Translation.get("exp.preferences.information.app_description"),
-            HEADER_FONT_SIZE), cc.xy(1, 1));
-        builder.add(createHomeLink().getUIComponent(), cc.xy(1, 3));
-        builder.add(createDocLink().getUIComponent(), cc.xy(1, 5));
-        builder.add(createSupportLink().getUIComponent(), cc.xy(1, 7));
-
-        TitledBorder titledBorder = new TitledBorder(
-            Translation.get("exp.preferences.information.general_information"));
-        titledBorder.setTitleColor(Color.BLACK);
-        builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2,
-            2, 2, 2)));
+            HEADER_FONT_SIZE), cc.xy(1, 3));
+        builder.add(createHomeLink().getUIComponent(), cc.xy(1, 5));
+        builder.add(createDocLink().getUIComponent(), cc.xy(1, 7));
+        builder.add(createSupportLink().getUIComponent(), cc.xy(1, 9));
 
         JPanel generalPanel = builder.getPanel();
-        generalPanel.setBackground(Color.WHITE);
+        generalPanel.setOpaque(false);
         return generalPanel;
     }
 

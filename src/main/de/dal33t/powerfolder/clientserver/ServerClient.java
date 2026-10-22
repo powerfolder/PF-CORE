@@ -841,7 +841,11 @@ public class ServerClient extends PFComponent {
             return null;
         }
         StringBuilder url = new StringBuilder();
-        url.append("/avatars/user/");
+        // The server (ThumbnailServlet) treats everything after "/avatars/" as the
+        // account OID (findByID). A "user/" path segment would make the OID
+        // "user/<oid>" -> no match -> 403, so the avatar never loads. Match the
+        // server and the Android client: /avatars/<oid>.
+        url.append("/avatars/");
         url.append(aInfo.getOID());
         if (thumbnail) {
             url.append("?thumbnail=true");
@@ -1847,6 +1851,64 @@ public class ServerClient extends PFComponent {
 
     public String getDeviceToken() {
         return tokenSecret;
+    }
+
+    /**
+     * PFC-3643: the {@code Authorization} header value for authenticating web
+     * requests (e.g. loading/uploading the account avatar via /avatars/*).
+     * <p>
+     * Prefers a device token ({@code Bearer <token>}). Falls back to HTTP Basic with
+     * the login password only over HTTPS (never cleartext http) and only as a last
+     * resort - the server rejects Basic for OTP/SSO accounts (403), whereas a device
+     * token always authenticates. Must be called off the EDT (it may do a remote call
+     * to mint the token).
+     *
+     * @return the header value, or {@code null} if no usable credentials are
+     *         available.
+     * @see #getWebAuthorizationHeader(boolean)
+     */
+    public String getWebAuthorizationHeader() {
+        // Default: do NOT mint a device token. Passive uses (e.g. loading the avatar)
+        // must not create a persistent server-side credential as a side effect -
+        // especially when the user opted out of "keep me logged in" at login.
+        return getWebAuthorizationHeader(false);
+    }
+
+    /**
+     * @param mintIfMissing when {@code true} and no device token exists yet, mint one
+     *                      on demand and cache it. Pass {@code true} only for an
+     *                      explicit, user-initiated web action (e.g. uploading or
+     *                      removing the avatar); pass {@code false} for passive loads.
+     * @return the {@code Authorization} header value, or {@code null}.
+     * @see #getWebAuthorizationHeader()
+     */
+    public String getWebAuthorizationHeader(boolean mintIfMissing) {
+        if (StringUtils.isBlank(tokenSecret) && mintIfMissing) {
+            String minted = requestAndSaveToken();
+            if (StringUtils.isNotBlank(minted)) {
+                tokenSecret = minted;
+            }
+        }
+        if (StringUtils.isNotBlank(tokenSecret)) {
+            return "Bearer " + tokenSecret;
+        }
+        // Basic carries the account password: only ever over HTTPS, never http.
+        String webURL = getWebURL();
+        boolean secure = webURL != null
+            && webURL.toLowerCase().startsWith("https:");
+        if (secure && StringUtils.isNotBlank(username) && passwordObf != null) {
+            char[] pw = LoginUtil.deobfuscate(passwordObf);
+            if (pw != null && pw.length > 0) {
+                try {
+                    String creds = username + ':' + new String(pw);
+                    return "Basic " + java.util.Base64.getEncoder().encodeToString(
+                        creds.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } finally {
+                    LoginUtil.clear(pw);
+                }
+            }
+        }
+        return null;
     }
 
     /**
