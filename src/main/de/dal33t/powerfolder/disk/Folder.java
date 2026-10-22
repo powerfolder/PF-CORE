@@ -1356,7 +1356,12 @@ public class Folder extends PFComponent {
                 if (isFiner()) {
                     logFiner(this + ": Scan of local filesystem is done by " + holder + ", whose database holds the rows");
                 }
-                return holder.scanLocalFiles();
+                // Count the holder's scan as our own, else autoScanRequired() asks for it again on every maintenance.
+                boolean scanned = holder.scanLocalFiles();
+                if (scanned) {
+                    lastScan = new Date();
+                }
+                return scanned;
             }
         }
         checkIfDeviceDisconnected();
