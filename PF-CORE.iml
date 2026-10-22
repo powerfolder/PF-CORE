@@ -26,6 +26,7 @@
     <libelement value="jar://$MODULE_DIR$/lib/json-20250517.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/dbus-java-core-5.2.2.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/dbus-java-transport-native-unixsocket-5.2.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/flatlaf-3.5.4.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/slf4j-api-2.0.17.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/slf4j-jdk14-2.0.17.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/httpcore-4.3.2.jar!/" />
@@ -276,6 +277,15 @@
       <library name="dbus-java-transport-native-unixsocket-5.2.2.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dbus-java-transport-native-unixsocket-5.2.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="flatlaf-3.5.4.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/flatlaf-3.5.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
