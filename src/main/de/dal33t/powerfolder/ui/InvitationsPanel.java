@@ -87,13 +87,12 @@ public class InvitationsPanel extends PFUIComponent {
         uiComponent.add(listPanel, BorderLayout.CENTER);
         uiComponent.setVisible(false);
 
-        // Rebuild whenever the notices change.
+        // Rebuild whenever the open invitations change.
         PropertyChangeListener rebuildListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 SwingUtilities.invokeLater(() -> rebuild());
             }
         };
-        getNoticesModel().getAllNoticesCountVM().addValueChangeListener(rebuildListener);
         getNoticesModel().getUnreadInvitationsCountVM().addValueChangeListener(rebuildListener);
 
         // Pull the account's own pending invitations from the server on every
@@ -112,35 +111,43 @@ public class InvitationsPanel extends PFUIComponent {
     /**
      * Fetches the account's own pending invitations (full invitations incl. OID,
      * so accept/decline work) and feeds them into the normal invitation handling,
-     * which turns them into notices shown by this panel.
+     * which turns them into notices shown by this panel. Invitations already known
+     * as a notice are skipped, so a reconnect does not pop them up again.
      */
     private void fetchOpenInvitations() {
         getController().getThreadPool().execute(() -> {
+            ServerClient client = getController().getOSClient();
+            AccountInfo accountInfo = client.getAccountInfo();
+            if (!client.isLoggedIn() || accountInfo == null) {
+                return;
+            }
             try {
-                ServerClient client = getController().getOSClient();
-                if (!client.isLoggedIn()) {
-                    return;
-                }
-                AccountInfo accountInfo = client.getAccountInfo();
-                if (accountInfo == null) {
-                    return;
-                }
-                Collection<Invitation> invitations = client.getAccountService()
-                    .getInvitationsFor(accountInfo);
-                logInfo("Open invitations: fetched "
-                    + (invitations == null ? 0 : invitations.size())
-                    + " pending invitation(s) from server");
+                Collection<Invitation> invitations = client.getAccountService().getInvitationsFor(accountInfo);
                 if (invitations == null) {
                     return;
                 }
+                logFine(accountInfo + ": " + invitations.size() + " open invitation(s) fetched");
                 for (Invitation invitation : invitations) {
-                    getController().invitationReceived(invitation);
+                    if (!isKnown(invitation)) {
+                        getController().invitationReceived(invitation);
+                    }
                 }
             } catch (Exception e) {
-                logWarning("Open invitations: failed to fetch pending "
-                    + "invitations from server: " + e);
+                logWarning(accountInfo + ": Open invitations not fetched: " + e);
             }
         });
+    }
+
+    private boolean isKnown(Invitation invitation) {
+        for (Notice notice : getNoticesModel().getAllNotices()) {
+            if (notice instanceof InvitationNotice) {
+                Invitation known = ((InvitationNotice) notice).getPayload(getController());
+                if (known != null && known.getOID() != null && known.getOID().equals(invitation.getOID())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private class MyLoginListener implements ServerClientListener {
@@ -219,8 +226,6 @@ public class InvitationsPanel extends PFUIComponent {
             shown++;
         }
 
-        logInfo("Open invitations: rebuild - shown=" + shown);
-
         uiComponent.setVisible(shown > 0);
         uiComponent.revalidate();
         uiComponent.repaint();
@@ -267,10 +272,8 @@ public class InvitationsPanel extends PFUIComponent {
         folderLabel.setNeverUnderline(true);
         folderLabel.setText(Translation.get(
             "main_frame.invitation.row.text", displayName));
-        if (sender != null) {
-            folderLabel.setToolTipText(Translation.get(
-                "notice.invitation.summary", sender, folderName));
-        }
+        folderLabel.setToolTipText(sender != null
+            ? Translation.get("notice.invitation.summary", sender, folderName) : folderName);
         builder.add(folderLabel.getUIComponent(), cc.xy(5, 2));
 
         // Accept / decline live in a dropdown under the directions icon + caret,
@@ -307,10 +310,27 @@ public class InvitationsPanel extends PFUIComponent {
     }
 
     private void acceptInvitation(final Notice notice, final Invitation invitation) {
+        answer(notice, invitation, () -> getController().getOSClient().getSecurityService()
+            .acceptInvitation(invitation));
+    }
+
+    /**
+     * Sends accept or decline to the server. Only on success the invitation is
+     * marked read (and its row disappears); a failure keeps the row and tells the
+     * user.
+     */
+    private void answer(final Notice notice, final Invitation invitation, final Runnable serverCall) {
         getController().getThreadPool().execute(() -> {
-            getController().getOSClient().getSecurityService()
-                .acceptInvitation(invitation);
-            SwingUtilities.invokeLater(() -> getNoticesModel().markRead(notice));
+            try {
+                serverCall.run();
+                SwingUtilities.invokeLater(() -> getNoticesModel().markRead(notice));
+            } catch (RuntimeException e) {
+                logWarning(invitation.folder + ": Invitation not answered: " + e);
+                String folderName = invitation.folder != null ? invitation.folder.getLocalizedName() : "";
+                SwingUtilities.invokeLater(() -> DialogFactory.genericDialog(getController(),
+                    Translation.get("notice.invitation.title"),
+                    Translation.get("main_frame.invitation.failed.text", folderName), GenericDialogType.ERROR));
+            }
         });
     }
 
@@ -325,11 +345,8 @@ public class InvitationsPanel extends PFUIComponent {
             1, GenericDialogType.DEFAULT);
         if (response == 0) {
             // Same as the web interface: decline the invitation server-side.
-            getController().getThreadPool().execute(() -> {
-                getController().getOSClient().getSecurityService()
-                    .declineInvitation(invitation);
-                SwingUtilities.invokeLater(() -> getNoticesModel().markRead(notice));
-            });
+            answer(notice, invitation, () -> getController().getOSClient().getSecurityService()
+                .declineInvitation(invitation));
         }
     }
 }

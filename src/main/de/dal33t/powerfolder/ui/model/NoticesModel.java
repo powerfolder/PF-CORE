@@ -384,11 +384,6 @@ public class NoticesModel extends PFUIComponent {
         return (Integer) unreadNoticesCountVM.getValue();
     }
 
-    public int getUnreadInvitationsCount() {
-        Object value = unreadInvitationsCountVM.getValue();
-        return value == null ? 0 : (Integer) value;
-    }
-
     private class DeclineInvitationTask implements Runnable {
         Invitation invitation;
 
