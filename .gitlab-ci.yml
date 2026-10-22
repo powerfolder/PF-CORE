@@ -43,7 +43,7 @@ test-Linux:
   extends: .rules-test
   resource_group: tests-Linux
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:
@@ -63,7 +63,7 @@ test-macOS:
   extends: .rules-test
   resource_group: tests-macOS
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:
@@ -100,7 +100,7 @@ test-Windows:
   extends: .rules-test
   resource_group: tests-Windows
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:
