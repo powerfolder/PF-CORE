@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
@@ -196,18 +195,14 @@ public class FolderScanner extends PFComponent {
             List<FileInfo> strayFileInfos = new ArrayList<>();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
-                    // PFI-93: key by canonical NFC name so an NFD name read
-                    // from disk (macOS) matches this DB row at lookup time.
-                    remaining.put(Util.normalizeRelativeName(fInfo.getRelativeName()), fInfo);
+                    remaining.put(fInfo.getRelativeName(), fInfo);
                 } else if (topFolder && !fInfo.isDeleted()) {
                     strayFileInfos.add(fInfo);
                 }
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
-                    // PFI-93: key by canonical NFC name so an NFD name read
-                    // from disk (macOS) matches this DB row at lookup time.
-                    remaining.put(Util.normalizeRelativeName(fInfo.getRelativeName()), fInfo);
+                    remaining.put(fInfo.getRelativeName(), fInfo);
                 } else if (topFolder && !fInfo.isDeleted()) {
                     strayFileInfos.add(fInfo);
                 }
@@ -237,8 +232,7 @@ public class FolderScanner extends PFComponent {
             for (int i = 0; i < n; i++) {
                 Path file = unableToScanFiles.get(i);
                 String relativeName = FileInfoFactory.buildFileName(currentScanningFolder.getLocalBase(), file);
-                // PFI-93: keys are stored NFC-normalized, so look up NFC too.
-                remaining.remove(Util.normalizeRelativeName(relativeName));
+                remaining.remove(relativeName);
                 // TRAC #523
                 if (Files.isDirectory(file)) {
                     String dirPath = file.toAbsolutePath().toString().replace(
@@ -308,10 +302,6 @@ public class FolderScanner extends PFComponent {
             // Build scanresult
 
             for (FileInfo fileInfo : remaining.values()) {
-                // PFI-93: before flagging this file as deleted, verify the scan
-                // did not simply fail to match a combining/non-combining
-                // (NFC/NFD) variant of the same name still present on disk.
-                warnIfDifferentlyEncodedTwinOnDisk(fileInfo);
                 // Do not perform FileInfo.syncFromDiskIfRequired
                 // This would leave to extra I/O for all files that had been
                 // deleted in the past on every scan.
@@ -361,91 +351,6 @@ public class FolderScanner extends PFComponent {
             // Remove ownership for this thread
             threadOwnership.release();
         }
-    }
-
-    /**
-     * PFI-93 diagnostic for the combining-character / {@code
-     * jdk.nio.path.useNormalizationFormD} work. A {@link FileInfo} reaches this
-     * point because the scan did not find its name on disk and is about to be
-     * flagged DELETED. If a file with the <b>same</b> path but a different
-     * Unicode normalization (NFC vs NFD) still exists on disk, the deletion is
-     * spurious: the name match failed on a combining/non-combining difference -
-     * exactly what the NFC-insensitive matching and {@code
-     * -Djdk.nio.path.useNormalizationFormD=true} are meant to prevent. Log the
-     * full detail so such a regression is visible in the field instead of
-     * silently propagating a deletion = data loss.
-     * <p>
-     * Cheap for the common case: names that contain no (de)composable character
-     * - every ASCII name, i.e. virtually all of them - return immediately
-     * without any disk I/O.
-     */
-    private void warnIfDifferentlyEncodedTwinOnDisk(FileInfo fileInfo) {
-        String relativeName = fileInfo.getRelativeName();
-        if (relativeName == null) {
-            return;
-        }
-        // No combining characters -> NFC and NFD are identical -> no twin can
-        // exist and the directory listing below would be pure waste.
-        if (Normalizer.isNormalized(relativeName, Normalizer.Form.NFC)
-            && Normalizer.isNormalized(relativeName, Normalizer.Form.NFD))
-        {
-            return;
-        }
-        Path diskFile;
-        try {
-            diskFile = fileInfo.getDiskFile(getController().getFolderRepository());
-        } catch (RuntimeException e) {
-            return;
-        }
-        if (diskFile == null) {
-            return;
-        }
-        Path parent = diskFile.getParent();
-        if (parent == null || !Files.isDirectory(parent)) {
-            return;
-        }
-        String targetName = diskFile.getFileName().toString();
-        try (DirectoryStream<Path> entries = Files.newDirectoryStream(parent)) {
-            for (Path entry : entries) {
-                String diskName = entry.getFileName().toString();
-                if (diskName.equals(targetName)) {
-                    // Byte-identical name still on disk - not an encoding issue;
-                    // whatever removed it from 'remaining' was a real mismatch.
-                    continue;
-                }
-                if (!Util.equalsRelativeName(diskName, targetName)) {
-                    continue;
-                }
-                // Same logical name, different bytes = NFC/NFD twin on disk.
-                logWarning(fileInfo.toDetailString()
-                    + ": flagged DELETED but a differently Unicode-encoded file"
-                    + " still exists on disk (combining-character NFC/NFD"
-                    + " mismatch) - the deletion is most likely spurious. db name=\""
-                    + targetName + "\" " + toCodePointString(targetName)
-                    + ", disk name=\"" + diskName + "\" " + toCodePointString(diskName)
-                    + ", db isNFC=" + Normalizer.isNormalized(targetName, Normalizer.Form.NFC)
-                    + ", disk isNFC=" + Normalizer.isNormalized(diskName, Normalizer.Form.NFC)
-                    + ", jdk.nio.path.useNormalizationFormD="
-                    + System.getProperty("jdk.nio.path.useNormalizationFormD"));
-                return;
-            }
-        } catch (IOException e) {
-            logFine(fileInfo.toDetailString()
-                + ": could not inspect parent for a differently-encoded twin: " + e);
-        }
-    }
-
-    /** PFI-93: render a string as a space-separated list of its Unicode code
-     * points (e.g. [U+0065 U+0301]) so combining sequences are visible in the log. */
-    private static String toCodePointString(String s) {
-        StringBuilder sb = new StringBuilder("[");
-        s.codePoints().forEach(cp -> {
-            if (sb.length() > 1) {
-                sb.append(' ');
-            }
-            sb.append(String.format("U+%04X", cp));
-        });
-        return sb.append(']').toString();
     }
 
     /** after scanning the state of this scanning should be reset */
@@ -687,14 +592,11 @@ public class FolderScanner extends PFComponent {
             "currentScanningFolder must not be null");
 
         // #1531 / #1804
-        // PFI-93: the disk name (filename) can be NFD on macOS while the map is
-        // keyed by canonical NFC names - normalize the lookup key so it matches.
-        FileInfo exists = remaining.remove(Util.normalizeRelativeName(filename));
+        FileInfo exists = remaining.remove(filename);
         if (exists == null && FileInfo.IGNORE_CASE) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
-                // PFI-93: Util.equalsRelativeName is NFC- and case-insensitive.
-                if (Util.equalsRelativeName(otherFInfo.getRelativeName(), filename)) {
+                if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
                     if (isFiner()) {
                         logFiner("Found local diskfile with diffrent name-case in db. file: "
                             + fileToScan.toAbsolutePath().toString()
@@ -711,8 +613,7 @@ public class FolderScanner extends PFComponent {
                     // + otherFInfo.toDetailString()
                     // + " Probably FolderInfo objects are not equal?");
                     // }
-                    // PFI-93: remove by the NFC-normalized key (keys are stored NFC).
-                    remaining.remove(Util.normalizeRelativeName(otherFInfo.getRelativeName()));
+                    remaining.remove(otherFInfo.getRelativeName());
                     exists = otherFInfo;
                 }
             }
