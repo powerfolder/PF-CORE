@@ -605,9 +605,17 @@ public class MainFrame extends PFUIComponent {
         }
 
         // PFC-3643: the account name opens the web account (see openMyAccountOnWeb).
+        // When not logged in the label reads "Login failed (click here)" - clicking
+        // it then opens the login wizard so the user can retry, instead of trying to
+        // open the (unreachable) web account.
         loginActionLabel = new ActionLabel(getController(), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                openMyAccountOnWeb();
+                ServerClient client = getController().getOSClient();
+                if (client == null || !client.isLoggedIn()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                } else {
+                    openMyAccountOnWeb();
+                }
             }
         });
         noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));

@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog.ModalExclusionType;
 import java.awt.Dimension;
@@ -159,7 +158,6 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             row += 2;
             Component buttonBar = buildButtonBar();
             builder.add(buttonBar, cc.xyw(1, row, 3));
-            builder.getPanel().setBackground(Color.WHITE);
 
             frame = new JFrame(getTitle());
             //frame.setAlwaysOnTop(true);
