@@ -62,6 +62,8 @@ public class InvitationsPanel extends PFUIComponent {
 
     private JPanel uiComponent;
     private JPanel listPanel;
+    /** Older servers allow reading invitations to admins only; then no request until the next server connect. */
+    private volatile boolean ownInvitationsDenied;
 
     public InvitationsPanel(Controller controller) {
         super(controller);
@@ -118,7 +120,7 @@ public class InvitationsPanel extends PFUIComponent {
         getController().getThreadPool().execute(() -> {
             ServerClient client = getController().getOSClient();
             AccountInfo accountInfo = client.getAccountInfo();
-            if (!client.isLoggedIn() || accountInfo == null) {
+            if (!client.isLoggedIn() || accountInfo == null || ownInvitationsDenied) {
                 return;
             }
             try {
@@ -133,6 +135,10 @@ public class InvitationsPanel extends PFUIComponent {
                         getController().invitationReceived(invitation);
                     }
                 }
+            } catch (de.dal33t.powerfolder.security.SecurityException e) {
+                // Server before PFC-3301: only live and stored invitations are shown.
+                ownInvitationsDenied = true;
+                logFine(accountInfo + ": Server does not allow reading own invitations: " + e);
             } catch (Exception e) {
                 logWarning(accountInfo + ": Open invitations not fetched: " + e);
             }
@@ -164,6 +170,8 @@ public class InvitationsPanel extends PFUIComponent {
         }
 
         public void serverConnected(ServerClientEvent event) {
+            // A reconnect may reach an updated server.
+            ownInvitationsDenied = false;
         }
 
         public void serverDisconnected(ServerClientEvent event) {
