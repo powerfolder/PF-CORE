@@ -23,15 +23,22 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.image.BaseMultiResolutionImage;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
@@ -80,7 +87,7 @@ public class SplashScreen extends JWindow {
         long lastStartTookMS = controller.getPreferences().getLong(
             "lastStartTookMS", 1000);
 
-        image = new JLabel(Icons.getIconById(Icons.SPLASH));
+        image = new JLabel(splashIcon());
         image.setBorder(BorderFactory.createEmptyBorder());
         // PFC-3643: smooth continuous loading bar filled in the brand accent colour
         // on a light track (FlatLaf rounds it), matching the new wallpaper splash.
@@ -91,8 +98,12 @@ public class SplashScreen extends JWindow {
         bar.setStringPainted(false);
         bar.setOpaque(true);
         bar.setPreferredSize(new java.awt.Dimension(574, 10));
-        bar.setForeground(LookAndFeelSupport.getAccentColor()); // shared brand accent
-        bar.setBackground(new java.awt.Color(0xEDF1F5)); // light track
+        // Light mode: white fills over the brand-accent track; dark mode: the accent fills over a light track.
+        java.awt.Color accent = LookAndFeelSupport.getAccentColor();
+        java.awt.Color light = new java.awt.Color(0xEDF1F5);
+        boolean dark = LookAndFeelSupport.isDarkMode();
+        bar.setForeground(dark ? accent : light);
+        bar.setBackground(dark ? light : accent);
         bar.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
 
         getContentPane().add(image, BorderLayout.NORTH);
@@ -165,6 +176,33 @@ public class SplashScreen extends JWindow {
      *
      * @param absPerc
      */
+    /**
+     * The splash of the active skin plus the {@code @1.5x} / {@code @2x} files next to it, so it is sharp on scaled
+     * displays. Without such files (branded clients) the plain splash icon.
+     */
+    private static Icon splashIcon() {
+        Icon icon = Icons.getIconById(Icons.SPLASH);
+        String path = Icons.getIconProperties().getProperty(Icons.SPLASH);
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        URL baseURL = path != null && path.endsWith(".png") ? cl.getResource(path) : null;
+        if (baseURL == null) {
+            return icon;
+        }
+        String base = path.substring(0, path.length() - ".png".length());
+        List<Image> variants = new ArrayList<>();
+        variants.add(new ImageIcon(baseURL).getImage());
+        for (String suffix : new String[]{"@1.5x.png", "@2x.png"}) {
+            URL url = cl.getResource(base + suffix);
+            if (url != null) {
+                variants.add(new ImageIcon(url).getImage());
+            }
+        }
+        if (variants.size() == 1) {
+            return icon;
+        }
+        return new ImageIcon(new BaseMultiResolutionImage(variants.toArray(new Image[0])));
+    }
+
     public void setCompletionPercentage(final int absPerc, int nextPerc) {
         if (startTime == null) {
             // Started

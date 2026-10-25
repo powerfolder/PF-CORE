@@ -187,4 +187,30 @@ public class CloudProvidersIntegrationTest {
         // No stray keys.
         assertFalse(content.toLowerCase().contains("password"));
     }
+
+    // ---- Per-instance bus name and provider file ----
+
+    @Test
+    public void instanceIdDerivesFromBinaryAndConfigName() {
+        assertEquals("PowerFolder", CloudProvidersIntegration.instanceId("PowerFolder", "PowerFolder"));
+        assertEquals("PowerFolder", CloudProvidersIntegration.instanceId("PowerFolder", null));
+        assertEquals("PowerFolder", CloudProvidersIntegration.instanceId(null, ""));
+        assertEquals("HESSENBOX", CloudProvidersIntegration.instanceId("HESSENBOX", "hessenbox"));
+        assertEquals("PowerFolder_second", CloudProvidersIntegration.instanceId("PowerFolder", "second"));
+    }
+
+    @Test
+    public void instanceIdIsAValidBusNameElement() {
+        assertEquals("_2Go_my_config", CloudProvidersIntegration.instanceId("2Go", "my-config"));
+        String busName = CloudProvidersIntegration.BUS_NAME_PREFIX
+            + CloudProvidersIntegration.instanceId("Brand.X", "a b#c");
+        assertTrue(busName.matches("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+"), busName);
+    }
+
+    @Test
+    public void providerFileNameDiffersPerInstance() {
+        assertEquals("powerfolder.ini", CloudProvidersIntegration.providerFileName("PowerFolder"));
+        assertNotEquals(CloudProvidersIntegration.providerFileName(CloudProvidersIntegration.instanceId("A", null)),
+            CloudProvidersIntegration.providerFileName(CloudProvidersIntegration.instanceId("B", null)));
+    }
 }

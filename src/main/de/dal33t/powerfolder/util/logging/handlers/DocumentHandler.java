@@ -23,10 +23,15 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.MutableAttributeSet;
@@ -34,6 +39,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import de.dal33t.powerfolder.util.UIThemeState;
 import de.dal33t.powerfolder.util.logging.LoggingFormatter;
 
 /**
@@ -44,7 +50,19 @@ public class DocumentHandler extends Handler {
 
     private static int numberOfLogCharacters = 50000;
 
+    /** Delay between batched appends to the log buffer. */
+    static final int FLUSH_DELAY_MS = 250;
+
+    /** Upper bound of records waiting for the next flush; the oldest are dropped beyond it. */
+    static final int MAX_PENDING_RECORDS = 2000;
+
     private final StyledDocument logBuffer = new DefaultStyledDocument();
+
+    private final Queue<Pending> pending = new ConcurrentLinkedQueue<>();
+    private final AtomicInteger pendingCount = new AtomicInteger();
+    private final AtomicBoolean flushScheduled = new AtomicBoolean();
+    /** Created and used on the EDT only. */
+    private Timer flushTimer;
 
     // PFC-3643: per-level log colours for the debug panel, theme-aware. The old
     // single set used Color.BLACK for INFO (invisible on the dark theme) and dark
@@ -80,7 +98,7 @@ public class DocumentHandler extends Handler {
 
         // Dark theme: all log text white (matches the client's text foreground),
         // regardless of level.
-        Color white = new Color(0xF5F5F5);
+        Color white = UIThemeState.DARK_FOREGROUND;
         putColor(logColorsDark, Level.SEVERE, white);
         putColor(logColorsDark, Level.WARNING, white);
         putColor(logColorsDark, Level.INFO, white);
@@ -95,7 +113,8 @@ public class DocumentHandler extends Handler {
     }
 
     /**
-     * Publish a log record to the log buffer.
+     * Queue a log record for the log buffer. Records are formatted on the calling thread and appended in batches,
+     * at most once per {@link #FLUSH_DELAY_MS} on the EDT, so busy logging does not flood the event queue.
      *
      * @param record
      */
@@ -103,34 +122,75 @@ public class DocumentHandler extends Handler {
         if (!isLoggable(record)) {
             return;
         }
+        String formattedMessage;
+        try {
+            formattedMessage = formatterThreadLocal.get().format(record);
+        } catch (RuntimeException e) {
+            return;
+        }
+        pending.add(new Pending(record.getLevel().getName(), formattedMessage));
+        // Bounded: older records would be trimmed from the document anyway.
+        if (pendingCount.incrementAndGet() > MAX_PENDING_RECORDS && pending.poll() != null) {
+            pendingCount.decrementAndGet();
+        }
+        if (flushScheduled.compareAndSet(false, true)) {
+            EventQueue.invokeLater(this::startFlushTimer);
+        }
+    }
 
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    Map<String, SimpleAttributeSet> colors =
-                        de.dal33t.powerfolder.util.UIThemeState.isDark()
-                            ? logColorsDark : logColorsLight;
-                    MutableAttributeSet set = colors.get(record.getLevel()
-                        .getName());
-                    String formattedMessage = formatterThreadLocal.get()
-                        .format(record);
-                    synchronized (logBuffer) {
-                        logBuffer.insertString(logBuffer.getLength(),
-                            formattedMessage, set);
-                        if (logBuffer.getLength() > numberOfLogCharacters) {
-                            int rem = (logBuffer.getLength() - numberOfLogCharacters);
-                            if (rem > 0) {
-                                logBuffer.remove(0, rem);
-                            }
-                        }
+    /** Runs on the EDT. */
+    private void startFlushTimer() {
+        if (flushTimer == null) {
+            flushTimer = new Timer(FLUSH_DELAY_MS, e -> flushPending());
+            flushTimer.setRepeats(false);
+        }
+        flushTimer.start();
+    }
+
+    /** Appends all queued records to the log buffer. Runs on the EDT. */
+    private void flushPending() {
+        // Reset first: a record queued while draining schedules the next flush.
+        flushScheduled.set(false);
+        Map<String, SimpleAttributeSet> colors = UIThemeState.isDark() ? logColorsDark : logColorsLight;
+        StringBuilder run = new StringBuilder();
+        MutableAttributeSet runSet = null;
+        try {
+            synchronized (logBuffer) {
+                Pending p;
+                while ((p = pending.poll()) != null) {
+                    pendingCount.decrementAndGet();
+                    MutableAttributeSet set = colors.get(p.level);
+                    if (run.length() > 0 && set != runSet) {
+                        logBuffer.insertString(logBuffer.getLength(), run.toString(), runSet);
+                        run.setLength(0);
                     }
-                } catch (RuntimeException e) {
-                    // Ignore
-                } catch (BadLocationException e) {
-                    // Ignore
+                    runSet = set;
+                    run.append(p.message);
+                }
+                if (run.length() > 0) {
+                    logBuffer.insertString(logBuffer.getLength(), run.toString(), runSet);
+                }
+                int rem = logBuffer.getLength() - numberOfLogCharacters;
+                if (rem > 0) {
+                    logBuffer.remove(0, rem);
                 }
             }
-        });
+        } catch (RuntimeException e) {
+            // Ignore
+        } catch (BadLocationException e) {
+            // Ignore
+        }
+    }
+
+    /** A formatted record waiting for the next flush. */
+    private static final class Pending {
+        private final String level;
+        private final String message;
+
+        private Pending(String level, String message) {
+            this.level = level;
+            this.message = message;
+        }
     }
 
     /**

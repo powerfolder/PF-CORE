@@ -20,7 +20,6 @@ package de.dal33t.powerfolder.ui.cloudproviders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
@@ -88,7 +87,7 @@ public final class CloudProvidersIntegration {
     static final String ACCOUNT_IFACE =
         "org.freedesktop.CloudProviders.Account";
 
-    static final String BUS_NAME = "de.dal33t.powerfolder.CloudProvider";
+    static final String BUS_NAME_PREFIX = "de.dal33t.powerfolder.CloudProvider.";
     static final String BASE_PATH = "/de/dal33t/powerfolder/CloudProvider";
     static final String PROVIDER_PATH = BASE_PATH + "/Provider";
     static final String ACCOUNT_PATH = BASE_PATH + "/account1";
@@ -98,9 +97,11 @@ public final class CloudProvidersIntegration {
     private final String accountName;
     private final String basePath;
     private final String iconName;
+    /** Per brand and config, so two clients neither clash on the bus nor share the provider file. */
+    private final String instanceId;
+    private final String busName;
 
     private volatile int status = STATUS_INVALID;
-    private volatile String statusDetails = "";
 
     private DBusConnection connection;
     private ScheduledExecutorService scheduler;
@@ -120,11 +121,33 @@ public final class CloudProvidersIntegration {
         this.accountName = providerName;
         this.basePath = basePath;
         this.iconName = iconName;
+        String binaryName = controller != null && controller.getDistribution() != null
+            ? controller.getDistribution().getBinaryName()
+            : null;
+        this.instanceId = instanceId(binaryName, controller != null ? controller.getConfigName() : null);
+        this.busName = BUS_NAME_PREFIX + instanceId;
     }
 
-    /** @return {@code true} on Linux, where this integration applies. */
-    public static boolean isApplicable() {
-        return OSUtil.isLinux();
+    /**
+     * @param binaryName the distribution binary name, e.g. "PowerFolder".
+     * @param configName the config name; part of the id only if it differs from the binary name.
+     * @return a D-Bus name element (letters, digits, underscore; no leading digit) for this client instance.
+     */
+    static String instanceId(String binaryName, String configName) {
+        String id = binaryName == null || binaryName.trim().isEmpty() ? "PowerFolder" : binaryName.trim();
+        if (configName != null && !configName.trim().isEmpty() && !configName.trim().equalsIgnoreCase(id)) {
+            id += "_" + configName.trim();
+        }
+        id = id.replaceAll("[^A-Za-z0-9_]", "_");
+        if (Character.isDigit(id.charAt(0))) {
+            id = "_" + id;
+        }
+        return id.length() > 200 ? id.substring(0, 200) : id;
+    }
+
+    /** @return the provider registration file name for the instance id. */
+    static String providerFileName(String instanceId) {
+        return instanceId.toLowerCase() + ".ini";
     }
 
     /**
@@ -136,7 +159,7 @@ public final class CloudProvidersIntegration {
     public boolean start() {
         try {
             connection = DBusConnectionBuilder.forSessionBus().build();
-            connection.requestBusName(BUS_NAME);
+            connection.requestBusName(busName);
             connection.exportObject(new ManagerImpl());
             connection.exportObject(new ProviderImpl());
             connection.exportObject(new AccountImpl());
@@ -215,7 +238,7 @@ public final class CloudProvidersIntegration {
         try {
             Map<String, Variant<?>> changed = new LinkedHashMap<>();
             changed.put("Status", new Variant<>(Integer.valueOf(status)));
-            changed.put("StatusDetails", new Variant<>(statusDetails));
+            changed.put("StatusDetails", new Variant<>(""));
             connection.sendMessage(new Properties.PropertiesChanged(ACCOUNT_PATH,
                 ACCOUNT_IFACE, changed, Collections.<String> emptyList()));
         } catch (Exception e) {
@@ -225,7 +248,7 @@ public final class CloudProvidersIntegration {
 
     /**
      * Write the provider registration key file so file managers discover us:
-     * {@code $XDG_DATA_HOME/cloud-providers/powerfolder.ini} (default
+     * {@code $XDG_DATA_HOME/cloud-providers/<instance id>.ini} (default
      * {@code ~/.local/share/cloud-providers/}).
      */
     private void writeProviderFile() throws IOException {
@@ -235,10 +258,8 @@ public final class CloudProvidersIntegration {
             : Paths.get(System.getProperty("user.home"), ".local", "share");
         Path dir = dataHome.resolve("cloud-providers");
         Files.createDirectories(dir);
-        providerFile = dir.resolve("powerfolder.ini");
-        Files.write(providerFile,
-            providerFileContent(BUS_NAME, BASE_PATH)
-                .getBytes(StandardCharsets.UTF_8));
+        providerFile = dir.resolve(providerFileName(instanceId));
+        Files.write(providerFile, providerFileContent(busName, BASE_PATH).getBytes(StandardCharsets.UTF_8));
         LOG.fine("Wrote cloud provider file: " + providerFile);
     }
 
@@ -267,7 +288,7 @@ public final class CloudProvidersIntegration {
                 connection.unExportObject(PROVIDER_PATH);
                 connection.unExportObject(BASE_PATH);
                 try {
-                    connection.releaseBusName(BUS_NAME);
+                    connection.releaseBusName(busName);
                 } catch (Exception ignore) {
                     // best effort
                 }
@@ -299,8 +320,7 @@ public final class CloudProvidersIntegration {
     }
 
     private Map<String, Variant<?>> accountProperties() {
-        return accountProperties(accountName, basePath, iconName, status,
-            statusDetails);
+        return accountProperties(accountName, basePath, iconName, status, "");
     }
 
     /** Provider D-Bus properties (unit-testable): {@code Name} only. */
@@ -363,8 +383,7 @@ public final class CloudProvidersIntegration {
         public Map<DBusPath, Map<String, Map<String, Variant<?>>>>
             GetManagedObjects()
         {
-            return managedObjects(accountName, basePath, iconName, status,
-                statusDetails);
+            return managedObjects(accountName, basePath, iconName, status, "");
         }
     }
 

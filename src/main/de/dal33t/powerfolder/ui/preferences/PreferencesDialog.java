@@ -204,35 +204,32 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     /**
-     * PFC-3643: Information (Transfers, Logging and the about/system details) opens
-     * from the dialog's button row, right after Help - it is not a tab. It must work
-     * in non-expert mode too (where the tabbed pane is never shown), so we open it in
-     * its own dialog. The (modal) Preferences dialog is closed first so the Transfers
-     * and Logging buttons inside can reach the main window.
+     * PFC-3643: Information (about/system details, Transfers, Logging) opens from the button row, right after Help.
+     * It opens on top of Preferences, so unsaved edits stay; it also works in non-expert mode (no tabbed pane).
      */
     private JButton createInformationButton() {
         JButton button = new JButton(informationTab.getTabName());
-        button.addActionListener(e -> {
-            close();
-            undoChanges();
-            showInformationDialog();
-        });
+        button.addActionListener(e -> showInformationDialog());
         return button;
     }
 
     private void showInformationDialog() {
-        final java.awt.Window owner = getUIController().getMainFrame()
-            .getUIComponent();
-        final JDialog infoDialog = new JDialog(owner,
-            informationTab.getTabName(), java.awt.Dialog.ModalityType.MODELESS);
-        javax.swing.JPanel content = new javax.swing.JPanel(
-            new java.awt.BorderLayout());
+        final java.awt.Window owner = dialog;
+        final JDialog infoDialog = new JDialog(owner, informationTab.getTabName(),
+            java.awt.Dialog.ModalityType.DOCUMENT_MODAL);
+        infoDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        // Transfers / Logging open in the main window, which the modal Preferences blocks: leave like Cancel.
+        informationTab.setBeforeOpenView(() -> {
+            infoDialog.dispose();
+            close();
+            undoChanges();
+        });
+        javax.swing.JPanel content = new javax.swing.JPanel(new java.awt.BorderLayout());
         content.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 10dlu, 10dlu"));
         content.add(informationTab.getUIPanel(), java.awt.BorderLayout.CENTER);
         JButton closeButton = new JButton(Translation.get("general.close"));
         closeButton.addActionListener(ev -> infoDialog.dispose());
-        content.add(ButtonBarFactory.buildCenteredBar(closeButton),
-            java.awt.BorderLayout.SOUTH);
+        content.add(ButtonBarFactory.buildCenteredBar(closeButton), java.awt.BorderLayout.SOUTH);
         infoDialog.setContentPane(content);
         infoDialog.pack();
         infoDialog.setLocationRelativeTo(owner);

@@ -59,6 +59,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     private static final int HEADER_FONT_SIZE = 16;
     private JPanel panel;
+    private Runnable beforeOpenView;
 
     public InformationTab(Controller controller) {
         super(controller);
@@ -67,6 +68,14 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     public String getTabName() {
         return Translation.get("exp.preferences.information.title");
+    }
+
+    /**
+     * @param beforeOpenView
+     *            runs before Transfers / Logging open in the main window, e.g. to close the hosting dialogs.
+     */
+    public void setBeforeOpenView(Runnable beforeOpenView) {
+        this.beforeOpenView = beforeOpenView;
     }
 
     public boolean needsRestart() {
@@ -105,8 +114,8 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     /**
      * PFC-3643: open the Transfers (downloads/uploads) view. Transfers was taken out
-     * of the bottom bar on request; this button is its new home. The Preferences
-     * dialog is modal, so close it first, then open the transfers information view.
+     * of the bottom bar on request; this button is its new home. The hosting modal
+     * dialogs are closed first (see setBeforeOpenView).
      */
     private JButton createTransfersButton() {
         JButton button = new JButton(
@@ -114,11 +123,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         button.setToolTipText(Translation
             .get("exp.action_open_transfers_information.description"));
         button.addActionListener(e -> {
-            java.awt.Window w = javax.swing.SwingUtilities
-                .getWindowAncestor((java.awt.Component) e.getSource());
-            if (w != null) {
-                w.setVisible(false);
-            }
+            leaveForView(e);
             getController().getUIController().openTransfersInformation();
         });
         return button;
@@ -126,8 +131,8 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     /**
      * PFC-3643: open the Logging (real-time logs) view. Logging was taken out of the
-     * bottom bar and is always on now; this button is its new home. The Preferences
-     * dialog is modal, so close it first, then open the logging information view.
+     * bottom bar and is always on now; this button is its new home. The hosting modal
+     * dialogs are closed first (see setBeforeOpenView).
      */
     private JButton createLoggingButton() {
         JButton button = new JButton(
@@ -135,14 +140,21 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         button.setToolTipText(Translation
             .get("action_open_debug_information.description"));
         button.addActionListener(e -> {
-            java.awt.Window w = javax.swing.SwingUtilities
-                .getWindowAncestor((java.awt.Component) e.getSource());
-            if (w != null) {
-                w.setVisible(false);
-            }
+            leaveForView(e);
             getController().getUIController().openDebugInformation();
         });
         return button;
+    }
+
+    private void leaveForView(java.awt.event.ActionEvent e) {
+        if (beforeOpenView != null) {
+            beforeOpenView.run();
+            return;
+        }
+        java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor((java.awt.Component) e.getSource());
+        if (w != null) {
+            w.setVisible(false);
+        }
     }
 
     private JButton createActivateButton() {

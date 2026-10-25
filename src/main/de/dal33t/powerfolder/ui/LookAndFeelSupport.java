@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.skin.AbstractSyntheticaSkin;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UIThemeState;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
@@ -129,10 +130,8 @@ public class LookAndFeelSupport {
         UIManager.put("defaultFont", new Font(getBaseFontName(), Font.PLAIN, 13));
         log.info("UI look and feel: FlatLaf " + (dark ? "Dark" : "Light"));
         de.dal33t.powerfolder.ui.util.Icons.setDarkMode(dark);
-        currentDark = dark;
-        // Publish to the neutral holder so non-ui code (e.g. the log DocumentHandler)
-        // can theme itself without depending upward on the ui package.
-        de.dal33t.powerfolder.util.UIThemeState.setDark(dark);
+        // Single source of truth, also read by non-ui code (e.g. the log DocumentHandler).
+        UIThemeState.setDark(dark);
         startSystemThemeWatcher();
     }
 
@@ -151,32 +150,65 @@ public class LookAndFeelSupport {
             return out != null && out.toLowerCase().contains("dark");
         }
         if (OSUtil.isWindowsSystem()) {
-            // AppsUseLightTheme: 0x0 => dark apps, 0x1 => light apps.
-            String out = readProcessOutput("reg", "query",
-                "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                "/v", "AppsUseLightTheme");
-            if (out != null) {
-                java.util.regex.Matcher m = java.util.regex.Pattern
-                    .compile("AppsUseLightTheme\\s+REG_DWORD\\s+0x0*([0-9a-fA-F]+)")
-                    .matcher(out);
-                if (m.find()) {
-                    return Integer.parseInt(m.group(1), 16) == 0;
-                }
-            }
-            return currentDark;
+            return isWindowsDarkMode();
         }
         return isLinuxDarkMode();
     }
 
+    private static final String WINDOWS_PERSONALIZE_KEY =
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+
+    /** AppsUseLightTheme (0 = dark apps, 1 = light apps), read in-process via JNA instead of spawning reg.exe. */
+    private static boolean isWindowsDarkMode() {
+        try {
+            if (com.sun.jna.platform.win32.Advapi32Util.registryValueExists(
+                com.sun.jna.platform.win32.WinReg.HKEY_CURRENT_USER, WINDOWS_PERSONALIZE_KEY, "AppsUseLightTheme"))
+            {
+                return com.sun.jna.platform.win32.Advapi32Util.registryGetIntValue(
+                    com.sun.jna.platform.win32.WinReg.HKEY_CURRENT_USER, WINDOWS_PERSONALIZE_KEY,
+                    "AppsUseLightTheme") == 0;
+            }
+        } catch (Throwable t) {
+            log.fine("AppsUseLightTheme: " + t);
+        }
+        return UIThemeState.isDark();
+    }
+
     /**
-     * Dark-mode detection across the common Linux desktops, tried in order:
-     * the desktop-agnostic freedesktop portal, then GNOME (gsettings), KDE
-     * Plasma (kreadconfig), XFCE (xfconf-query), and finally the GTK theme name.
-     * Non-GNOME setups without any of these tools fall back to the current theme.
+     * Linux dark-mode probes, tried in order: the desktop-agnostic freedesktop
+     * portal, then GNOME (gsettings), KDE Plasma (kreadconfig), XFCE (xfconf-query),
+     * and finally the GTK theme name. Each returns {@code null} when it cannot answer.
      */
+    private static final java.util.List<java.util.function.Supplier<Boolean>> LINUX_PROBES = java.util.List.of(
+        LookAndFeelSupport::probePortal, LookAndFeelSupport::probeGnomeColorScheme,
+        () -> probeKde("kreadconfig6"), () -> probeKde("kreadconfig5"), LookAndFeelSupport::probeXfce,
+        LookAndFeelSupport::probeGtkTheme);
+
+    /** Index of the first Linux probe that answered, or -1; only that one is queried while it keeps answering. */
+    private static volatile int linuxProbe = -1;
+
+    /** Dark-mode detection across the common Linux desktops; unknown setups fall back to the current theme. */
     private static boolean isLinuxDarkMode() {
-        // 1) freedesktop portal (works across GNOME, KDE, ...): color-scheme
-        //    0 = no preference, 1 = prefer dark, 2 = prefer light.
+        int known = linuxProbe;
+        if (known >= 0) {
+            Boolean dark = LINUX_PROBES.get(known).get();
+            if (dark != null) {
+                return dark;
+            }
+            linuxProbe = -1;
+        }
+        for (int i = 0; i < LINUX_PROBES.size(); i++) {
+            Boolean dark = LINUX_PROBES.get(i).get();
+            if (dark != null) {
+                linuxProbe = i;
+                return dark;
+            }
+        }
+        return UIThemeState.isDark();
+    }
+
+    /** freedesktop portal color-scheme: 0 = no preference, 1 = prefer dark, 2 = prefer light. */
+    private static Boolean probePortal() {
         String portal = readProcessOutput("gdbus", "call", "--session",
             "--dest", "org.freedesktop.portal.Desktop",
             "--object-path", "/org/freedesktop/portal/desktop",
@@ -190,7 +222,11 @@ public class LookAndFeelSupport {
                 return false;
             }
         }
-        // 2) GNOME: color-scheme = 'prefer-dark'.
+        return null;
+    }
+
+    /** GNOME: color-scheme = 'prefer-dark'. */
+    private static Boolean probeGnomeColorScheme() {
         String scheme = readProcessOutput("gsettings", "get",
             "org.gnome.desktop.interface", "color-scheme");
         if (scheme != null) {
@@ -202,49 +238,36 @@ public class LookAndFeelSupport {
                 return false;
             }
         }
-        // 3) KDE Plasma: the active ColorScheme name (e.g. "BreezeDark").
-        for (String tool : new String[] { "kreadconfig6", "kreadconfig5" }) {
-            String kde = readProcessOutput(tool, "--group", "General",
-                "--key", "ColorScheme");
-            if (kde != null && !kde.trim().isEmpty()) {
-                return kde.toLowerCase().contains("dark");
-            }
-        }
-        // 4) XFCE: the GTK theme name from xsettings.
-        String xfce = readProcessOutput("xfconf-query", "-c", "xsettings",
-            "-p", "/Net/ThemeName");
-        if (xfce != null && !xfce.trim().isEmpty()) {
-            return xfce.toLowerCase().contains("dark");
-        }
-        // 5) Last resort: the GNOME gtk-theme name (often ends in "-dark").
-        String theme = readProcessOutput("gsettings", "get",
-            "org.gnome.desktop.interface", "gtk-theme");
-        if (theme != null && theme.toLowerCase().contains("dark")) {
-            return true;
-        }
-        return currentDark;
+        return null;
     }
 
-    /**
-     * Run a short-lived command and return its (stdout+stderr) output, or
-     * {@code null} on error/timeout. Leak-free: the output is fully drained and
-     * every stream plus the process itself is always closed/destroyed. (An
-     * earlier macOS-only version leaked the process/file descriptors on every
-     * poll, which exhausted the JVM after ~20 min and froze the UI.)
-     */
+    /** KDE Plasma: the active ColorScheme name (e.g. "BreezeDark"). */
+    private static Boolean probeKde(String tool) {
+        String kde = readProcessOutput(tool, "--group", "General", "--key", "ColorScheme");
+        return kde != null && !kde.trim().isEmpty() ? kde.toLowerCase().contains("dark") : null;
+    }
+
+    /** XFCE: the GTK theme name from xsettings. */
+    private static Boolean probeXfce() {
+        String xfce = readProcessOutput("xfconf-query", "-c", "xsettings", "-p", "/Net/ThemeName");
+        return xfce != null && !xfce.trim().isEmpty() ? xfce.toLowerCase().contains("dark") : null;
+    }
+
+    /** Last resort: the GNOME gtk-theme name (often ends in "-dark"). */
+    private static Boolean probeGtkTheme() {
+        String theme = readProcessOutput("gsettings", "get", "org.gnome.desktop.interface", "gtk-theme");
+        return theme != null && theme.toLowerCase().contains("dark") ? Boolean.TRUE : null;
+    }
+
+    /** Run a short-lived command and return its (stdout+stderr) output, or {@code null} on error/timeout. */
     private static String readProcessOutput(String... command) {
         return de.dal33t.powerfolder.util.ProcessUtils.runBounded(2, command);
     }
 
-    /** The dark/light state currently applied to the UI. */
-    private static volatile boolean currentDark;
+    /** How often the OS appearance is checked; a change only triggers a restart prompt, so this need not be fast. */
+    private static final long THEME_POLL_MILLIS = 15_000;
+
     private static Thread themeWatcher;
-    /**
-     * Guards against overlapping live theme switches: the watcher only schedules a
-     * new switch when no switch is already pending/running, so rapid OS appearance
-     * toggles cannot pile up FlatLaf.updateUI() calls on the EDT (which froze the
-     * UI after a few switches).
-     */
     /** The running controller, so the watcher can offer a restart on change. */
     private static volatile de.dal33t.powerfolder.Controller themeController;
     /** True once the restart prompt was shown for the current mismatch. */
@@ -263,8 +286,8 @@ public class LookAndFeelSupport {
      * light/dark changes and offers the user a restart to apply the new theme.
      * Live switching is intentionally avoided: repeatedly re-theming the running
      * UI (FlatLaf.updateUI()) froze the client after a few switches. The
-     * appearance check spawns a short-lived process, so it runs off the EDT; the
-     * restart prompt is shown on the EDT.
+     * appearance check may spawn a short-lived process (macOS, Linux), so it runs
+     * off the EDT; the restart prompt is shown on the EDT.
      */
     private static synchronized void startSystemThemeWatcher() {
         if (themeWatcher != null) {
@@ -273,9 +296,9 @@ public class LookAndFeelSupport {
         themeWatcher = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(THEME_POLL_MILLIS);
                     boolean dark = isSystemDarkMode();
-                    if (dark == currentDark) {
+                    if (dark == UIThemeState.isDark()) {
                         // Back in sync with the applied theme; allow prompting
                         // again on a future change.
                         restartPrompted = false;
@@ -300,27 +323,9 @@ public class LookAndFeelSupport {
         themeWatcher.start();
     }
 
-    /**
-     * Listeners notified after a live light/dark switch, so set-once UI elements
-     * (logo, header icons, label colours) can refresh without an app restart.
-     */
-    private static final java.util.List<Runnable> themeChangeListeners =
-        new java.util.concurrent.CopyOnWriteArrayList<>();
-
-    /**
-     * Register a callback fired on the EDT after every live theme switch. Used
-     * by {@code MainFrame} (and any window) to re-apply icons/colours that are
-     * only set once at build time. Idempotent per instance is the caller's job.
-     */
-    public static void addThemeChangeListener(Runnable r) {
-        if (r != null) {
-            themeChangeListeners.add(r);
-        }
-    }
-
     /** True if the client is currently showing the dark theme. */
     public static boolean isDarkMode() {
-        return currentDark;
+        return UIThemeState.isDark();
     }
 
     /**
@@ -369,12 +374,9 @@ public class LookAndFeelSupport {
         "SplitPane.background"
     };
 
-    /**
-     * Bright text colour used in dark mode. FlatDark's default foreground is a
-     * dimmed grey (~#bbbbbb); this raises it to a crisp near-white so labels,
-     * menus and lists read clearly on the dark background. Tune here if needed.
-     */
-    private static final String DARK_FOREGROUND = "#f5f5f5";
+    /** {@link UIThemeState#DARK_FOREGROUND} as a FlatLaf hex value. */
+    private static final String DARK_FOREGROUND =
+        String.format("#%06x", UIThemeState.DARK_FOREGROUND.getRGB() & 0xFFFFFF);
 
     /**
      * FlatLaf keys set to {@link #DARK_FOREGROUND} in dark mode so text is bright
@@ -390,7 +392,7 @@ public class LookAndFeelSupport {
      */
     private static void applyThemeDefaults(boolean dark) {
         try {
-            String hex = accentColorHex(activeSkin);
+            String hex = accentHex();
             // getGlobalExtraDefaults() returns null when nothing has been set yet
             // (the first startup call), and new HashMap<>(null) throws an NPE -
             // which was silently swallowed below, so the brand accent and the
@@ -430,24 +432,45 @@ public class LookAndFeelSupport {
     }
 
     /**
-     * Extract the brand's primary colour from the active skin's synth.xml
-     * (the {@code <color type="BACKGROUND" value="#..."/> <!-- Primary color -->}
-     * entry). Falls back to {@link #DEFAULT_ACCENT}.
+     * The brand primary is the BACKGROUND colour tagged with the "Primary color" comment in the skin's synth.xml.
+     * Both attribute orders and flexible whitespace match, so a harmless reformat does not drop the accent; the
+     * comment marker disambiguates (there are several BACKGROUND entries).
      */
+    private static final java.util.regex.Pattern[] PRIMARY_COLOR_PATTERNS = {
+        java.util.regex.Pattern.compile(
+            "type=\"BACKGROUND\"[^>]*?value=\"(#[0-9a-fA-F]{6})\"[^>]*?/>\\s*<!--\\s*Primary color",
+            java.util.regex.Pattern.CASE_INSENSITIVE),
+        java.util.regex.Pattern.compile(
+            "value=\"(#[0-9a-fA-F]{6})\"[^>]*?type=\"BACKGROUND\"[^>]*?/>\\s*<!--\\s*Primary color",
+            java.util.regex.Pattern.CASE_INSENSITIVE)};
+
+    /** The skin {@link #accentHex} was resolved for, and the result; resolved once per skin. */
+    private static Skin accentSkin;
+    private static String accentHex;
+
     /**
      * PFC-3643: the resolved brand accent colour - the active skin's primary colour,
      * or {@link #DEFAULT_ACCENT} when none is found. Single source of truth for the
      * avatar disc ({@code AvatarLabel}), the account-header status glyphs
      * ({@code Icons}) and the splash loading bar ({@code SplashScreen}), so they all
-     * match the FlatLaf {@code @accentColor}. Resolve at paint/build time, not in a
-     * static initialiser, because the active skin is set during L&F startup.
+     * match the FlatLaf {@code @accentColor}. Cached per active skin, so cheap on paint paths.
      */
     public static Color getAccentColor() {
         try {
-            return Color.decode(accentColorHex(activeSkin));
+            return Color.decode(accentHex());
         } catch (RuntimeException ex) {
             return Color.decode(DEFAULT_ACCENT);
         }
+    }
+
+    /** @return the accent hex of the active skin, read from its synth.xml only when the skin changed. */
+    private static synchronized String accentHex() {
+        Skin skin = activeSkin;
+        if (accentHex == null || skin != accentSkin) {
+            accentHex = accentColorHex(skin);
+            accentSkin = skin;
+        }
+        return accentHex;
     }
 
     private static String accentColorHex(Skin skin) {
@@ -462,23 +485,9 @@ public class LookAndFeelSupport {
                 if (in == null) {
                     return DEFAULT_ACCENT;
                 }
-                String xml = new String(in.readAllBytes(),
-                    java.nio.charset.StandardCharsets.UTF_8);
-                // The brand primary is the BACKGROUND colour tagged with the
-                // "Primary color" comment in the skin's synth.xml. Match the hex
-                // regardless of the order of the type/value attributes, and tolerate
-                // flexible whitespace, so a harmless reformat of the XML does not drop
-                // the accent. The comment marker stays the disambiguator (there are
-                // several BACKGROUND entries).
-                for (String pattern : new String[] {
-                    "type=\"BACKGROUND\"[^>]*?value=\"(#[0-9a-fA-F]{6})\"[^>]*?/>\\s*<!--\\s*Primary color",
-                    "value=\"(#[0-9a-fA-F]{6})\"[^>]*?type=\"BACKGROUND\"[^>]*?/>\\s*<!--\\s*Primary color"})
-                {
-                    java.util.regex.Matcher m = java.util.regex.Pattern.compile(
-                        pattern, java.util.regex.Pattern.CASE_INSENSITIVE).matcher(xml);
-                    if (m.find()) {
-                        return m.group(1);
-                    }
+                String hex = primaryColorHex(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+                if (hex != null) {
+                    return hex;
                 }
                 // A branded skin with no recognisable primary colour is a real
                 // problem (the UI silently falls back to the generic accent), so make
@@ -491,6 +500,17 @@ public class LookAndFeelSupport {
             log.fine("accent extraction failed: " + t);
         }
         return DEFAULT_ACCENT;
+    }
+
+    /** @return the "Primary color" BACKGROUND hex of a synth.xml, or {@code null} if it has none. */
+    static String primaryColorHex(String synthXml) {
+        for (java.util.regex.Pattern pattern : PRIMARY_COLOR_PATTERNS) {
+            java.util.regex.Matcher m = pattern.matcher(synthXml);
+            if (m.find()) {
+                return m.group(1);
+            }
+        }
+        return null;
     }
 
     /**

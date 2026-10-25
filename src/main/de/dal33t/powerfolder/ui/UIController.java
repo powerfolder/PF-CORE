@@ -319,9 +319,8 @@ public class UIController extends PFComponent {
                     // explicitly chose "start minimized". Previously non-expert
                     // mode also kept the window hidden behind the tray icon, so the
                     // client never came up on a normal start.
-                    // PFC-2806 never minimize on Linux.
-                    mainFrame.getUIComponent()
-                        .setVisible(isLinux || !isStartMinimized);
+                    // PFC-2806 never minimize on Linux. Without a tray the window is the only way back in.
+                    mainFrame.getUIComponent().setVisible(isLinux || !OSUtil.isSystraySupported() || !isStartMinimized);
                     if (!isStartMinimized) {
                         mainFrame.toFront();
                     }
@@ -525,6 +524,83 @@ public class UIController extends PFComponent {
         }
     }
 
+    private static final String AWT_MIRROR = "pf.awtTrayMirror";
+
+    /**
+     * macOS tray: a native AWT menu mirroring the Swing tray menu. Labels, enabled state and sub menu contents follow
+     * the Swing items; a click is forwarded to the Swing item, so its current action command applies.
+     */
+    private static PopupMenu toAwtPopupMenu(JPopupMenu source) {
+        PopupMenu target = new PopupMenu();
+        mirrorChildren(source, () -> target);
+        return target;
+    }
+
+    private static void mirrorChildren(JPopupMenu source, java.util.function.Supplier<Menu> target) {
+        fillAwtMenu(source, target.get());
+        if (source.getClientProperty(AWT_MIRROR) != null) {
+            return;
+        }
+        source.putClientProperty(AWT_MIRROR, Boolean.TRUE);
+        source.addContainerListener(new ContainerListener() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                refill();
+            }
+
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                refill();
+            }
+
+            private void refill() {
+                Menu menu = target.get();
+                if (menu != null) {
+                    menu.removeAll();
+                    fillAwtMenu(source, menu);
+                }
+            }
+        });
+    }
+
+    private static void fillAwtMenu(JPopupMenu source, Menu target) {
+        for (Component c : source.getComponents()) {
+            if (c instanceof JMenuItem && c.isVisible()) {
+                target.add(toAwtMenuItem((JMenuItem) c));
+            } else if (c instanceof JSeparator) {
+                target.addSeparator();
+            }
+        }
+    }
+
+    private static MenuItem toAwtMenuItem(JMenuItem item) {
+        MenuItem awtItem;
+        if (item instanceof JMenu) {
+            JMenu jMenu = (JMenu) item;
+            Menu awtMenu = new Menu(jMenu.getText());
+            item.putClientProperty(AWT_MIRROR, awtMenu);
+            mirrorChildren(jMenu.getPopupMenu(), () -> (Menu) jMenu.getClientProperty(AWT_MIRROR));
+            awtItem = awtMenu;
+        } else {
+            awtItem = new MenuItem(item.getText());
+            awtItem.addActionListener(e -> item.doClick(0));
+            item.putClientProperty(AWT_MIRROR, awtItem);
+        }
+        awtItem.setEnabled(item.isEnabled());
+        if (item.getClientProperty(AWT_MIRROR + ".listener") == null) {
+            item.putClientProperty(AWT_MIRROR + ".listener", Boolean.TRUE);
+            item.addPropertyChangeListener(evt -> {
+                MenuItem current = (MenuItem) item.getClientProperty(AWT_MIRROR);
+                if ("text".equals(evt.getPropertyName())) {
+                    current.setLabel(item.getText());
+                } else if ("enabled".equals(evt.getPropertyName())) {
+                    current.setEnabled(item.isEnabled());
+                }
+            });
+        }
+        return awtItem;
+    }
+
     /** PFC-3096: current Pause/Resume menu label depending on paused state. */
     private String pauseResumeLabel() {
         return getController().isPaused()
@@ -534,10 +610,9 @@ public class UIController extends PFComponent {
 
     private void initializeSystray() {
         trayIconManager = new TrayIconManager(this);
-        // PFC-3643: a Swing JPopupMenu (FlatLaf themes it dark in dark mode),
-        // instead of the native java.awt.PopupMenu which Windows always draws
-        // light. TrayIcon.setPopupMenu only accepts an AWT PopupMenu, so the
-        // Swing menu is shown manually on the tray popup trigger (see below).
+        // PFC-3643: a Swing JPopupMenu (FlatLaf themes it dark in dark mode) on Windows/Linux, where the native
+        // java.awt.PopupMenu is always light; shown manually on the popup trigger (see below). macOS keeps the
+        // native menu (opens on left-click, follows dark mode) as an AWT mirror of this menu.
         final JPopupMenu menu = new JPopupMenu();
 
         TrayIcon trayIcon = trayIconManager.getTrayIcon();
@@ -760,7 +835,10 @@ public class UIController extends PFComponent {
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
-        if (trayIcon != null) {
+        if (trayIcon != null && OSUtil.isMacOS()) {
+            trayIcon.setPopupMenu(toAwtPopupMenu(menu));
+        }
+        if (trayIcon != null && !OSUtil.isMacOS()) {
             trayIcon.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -818,8 +896,11 @@ public class UIController extends PFComponent {
                     if (!e.isPopupTrigger()) {
                         return;
                     }
-                    final int x = e.getX();
-                    final int y = e.getY();
+                    // The pointer location is in user space; TrayIcon event coordinates are device pixels on
+                    // scaled Windows displays.
+                    PointerInfo pointer = MouseInfo.getPointerInfo();
+                    final int x = pointer != null ? pointer.getLocation().x : e.getX();
+                    final int y = pointer != null ? pointer.getLocation().y : e.getY();
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

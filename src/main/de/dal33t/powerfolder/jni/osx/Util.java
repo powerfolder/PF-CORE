@@ -101,7 +101,8 @@ public class Util {
             + "  end if\n"
             + "end tell";
         runOsascript(script);
-        LOGIN_ITEM_CACHE.put(path, Boolean.TRUE);
+        // osascript may have failed: re-query on the next hasLoginItem.
+        LOGIN_ITEM_CACHE.remove(path);
     }
 
     public static void removeLoginItem(String path) {
@@ -112,7 +113,7 @@ public class Util {
         String script = "tell application \"System Events\" to delete "
             + "(every login item whose path is " + p + ")";
         runOsascript(script);
-        LOGIN_ITEM_CACHE.put(path, Boolean.FALSE);
+        LOGIN_ITEM_CACHE.remove(path);
     }
 
     public static boolean hasLoginItem(String path) {
@@ -176,8 +177,9 @@ public class Util {
     private static boolean computeIsOnLocalVolume(String path) {
         try {
             String p = path;
+            // Callers prepend "file://" to a raw path (spaces, # or % allowed), so strip it, do not parse a URI.
             if (p.startsWith("file://")) {
-                p = new java.net.URI(p).getPath();
+                p = p.substring("file://".length());
             }
             Path np = Paths.get(p);
             // Walk up to an existing ancestor so getFileStore works for paths

@@ -32,7 +32,7 @@ import java.awt.geom.RoundRectangle2D;
 
 /**
  * PFC-3643: modern, monochrome, vector line-icons for the main-window action
- * column (Web, Explore, Pause, Preferences, Logging, Transfers, Create Folder).
+ * column (Pause/Play, Preferences, Create Folder, Close).
  * <p>
  * They are painted in the owning component's <b>foreground</b> colour, so they
  * are automatically black in light mode and white in dark mode (matching the
@@ -42,15 +42,10 @@ import java.awt.geom.RoundRectangle2D;
 public final class ActionIcons {
 
     public enum Type {
-        PAUSE, PLAY, PREFERENCES, LOGGING, TRANSFERS, CREATE_FOLDER, CLOSE
+        PAUSE, PLAY, PREFERENCES, CREATE_FOLDER, CLOSE
     }
 
     private ActionIcons() {
-    }
-
-    /** @return an 18px vector icon of the given type. */
-    public static Icon get(Type type) {
-        return get(type, 18);
     }
 
     /**
@@ -112,18 +107,6 @@ public final class ActionIcons {
             case PREFERENCES :
                 gear(g);
                 break;
-            case LOGGING :
-                g.draw(new RoundRectangle2D.Double(3, 2, 16, 18, 3, 3));
-                for (int i = 1; i <= 3; i++) {
-                    g.draw(new Line2D.Double(6, 3 + i * 4, 16, 3 + i * 4));
-                }
-                break;
-            case TRANSFERS :
-                g.draw(new Line2D.Double(7, 3, 7, 18));
-                arrow(g, 3, 7, 7, 3, 11, 7);
-                g.draw(new Line2D.Double(15, 3, 15, 18));
-                arrow(g, 11, 14, 15, 18, 19, 14);
-                break;
             case CREATE_FOLDER :
                 folder(g, true);
                 break;
@@ -177,18 +160,7 @@ public final class ActionIcons {
         }
         gear.subtract(new java.awt.geom.Area(
             new Ellipse2D.Double(cx - hole, cy - hole, 2 * hole, 2 * hole)));
-        // PFC-3643 feedback: draw the gear as a thin outline (like Logging /
-        // Create-Folder) instead of a solid fill, so it is not bold/heavier.
+        // PFC-3643 feedback: draw the gear as a thin outline (like Create-Folder) instead of a solid fill.
         g.draw(gear);
-    }
-
-    private static void arrow(Graphics2D g, double x1, double y1, double x2,
-        double y2, double x3, double y3)
-    {
-        GeneralPath p = new GeneralPath();
-        p.moveTo(x1, y1);
-        p.lineTo(x2, y2);
-        p.lineTo(x3, y3);
-        g.draw(p);
     }
 }

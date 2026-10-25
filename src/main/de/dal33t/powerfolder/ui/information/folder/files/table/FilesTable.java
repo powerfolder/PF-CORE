@@ -72,10 +72,9 @@ public class FilesTable extends JTable {
     // PFC-3643: the default file-name colour must follow the theme - black text was
     // invisible on the dark background. Near-white in dark mode, black in light mode.
     private static final Color NORMAL_LIGHT = Color.BLACK;
-    private static final Color NORMAL_DARK = new Color(0xF5, 0xF5, 0xF5);
 
     private static Color normalForeground() {
-        return UIThemeState.isDark() ? NORMAL_DARK : NORMAL_LIGHT;
+        return UIThemeState.isDark() ? UIThemeState.DARK_FOREGROUND : NORMAL_LIGHT;
     }
 
     /**

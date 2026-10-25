@@ -139,13 +139,7 @@ public class FoldersTab extends PFUIComponent {
         buildEmptyPanel();
         builder.add(emptyPanelOuter, cc.xywh(1,  row, 1, 1));
         builder.add(scrollPane, cc.xywh(1,  row, 1, 1));
-
-        if (!PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.appendRow("3dlu");
-            builder.appendRow("pref");
-            row += 2;
-            builder.addSeparator("", cc.xy(1, row));
-        }
+        // No separator below the list: the bottom tray draws the one line between list and tray.
 
         uiComponent = builder.getPanel();
 

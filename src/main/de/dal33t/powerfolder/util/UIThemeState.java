@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util;
 
+import java.awt.Color;
+
 /**
  * PFC-3643: the dark/light state currently applied to the UI, in a neutral location
  * so non-ui code (e.g. the log {@code DocumentHandler}) can colour itself for the
@@ -26,6 +28,9 @@ package de.dal33t.powerfolder.util;
  * ({@code LookAndFeelSupport}) is the single writer; everyone else only reads.
  */
 public final class UIThemeState {
+
+    /** The near-white text foreground of the dark theme (FlatDark's default grey is too dim). */
+    public static final Color DARK_FOREGROUND = new Color(0xF5F5F5);
 
     private static volatile boolean dark;
 

@@ -70,6 +70,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Paths;
@@ -122,6 +123,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini primaryButton;
     /** PFC-3643: rotating folder-spinner animation while transferring. */
     private javax.swing.Timer folderSpinTimer;
+    private static final int SPIN_TICK_MS = 80;
+    private static final int SPIN_STEP_DEGREES = 10;
+    private static final int SPIN_STEPS = 180 / SPIN_STEP_DEGREES;
     private int folderSpinFrame;
     /** PFS-5949: throttles the live sync-% refresh on the 100ms spin timer. */
     private int folderStatsTick;
@@ -606,6 +610,16 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
         primaryButton.addActionListener(new PrimaryButtonActionListener());
+        primaryButton.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) == 0) {
+                return;
+            }
+            if (primaryButton.isShowing()) {
+                updateSyncButton();
+            } else {
+                stopFolderSpin();
+            }
+        });
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction);
 
@@ -748,28 +762,37 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void startFolderSpin() {
         if (folderSpinTimer == null) {
-            folderSpinTimer = new javax.swing.Timer(100, new ActionListener() {
+            // Smooth and calm: 10° every 80 ms (the two arrows repeat every 180°, so 18 steps loop seamlessly).
+            folderSpinTimer = new javax.swing.Timer(SPIN_TICK_MS, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    folderSpinFrame =
-                        (folderSpinFrame + 1) % Icons.SYNC_ANIMATION.length;
-                    primaryButton.setIcon(Icons.getFolderWithBadge(
-                        Icons.SYNC_ANIMATION[folderSpinFrame]));
+                    // Never animate a hidden card; the showing listener restarts it.
+                    if (!primaryButton.isShowing()) {
+                        stopFolderSpin();
+                        return;
+                    }
+                    folderSpinFrame = (folderSpinFrame + 1) % SPIN_STEPS;
+                    primaryButton.setIcon(Icons.getFolderWithSyncingBadge(folderSpinFrame * SPIN_STEP_DEGREES));
                     // PFS-5949: refresh the sync-% (and sizes/ETA) live while the
                     // folder transfers - transfer progress is not an event, so
                     // without this the "0 %" would sit stale until the download
-                    // finishes. Throttled to ~1s (every 10th 100ms tick).
-                    if (++folderStatsTick >= 10) {
+                    // finishes. Throttled to ~1s.
+                    if (++folderStatsTick >= 1000 / SPIN_TICK_MS) {
                         folderStatsTick = 0;
                         updateStatsDetails();
+                        if (folder == null || !folder.isTransferring()) {
+                            stopFolderSpin();
+                            updateIconAndOS();
+                        }
                     }
                 }
             });
             folderSpinTimer.setRepeats(true);
         }
         if (!folderSpinTimer.isRunning()) {
-            primaryButton.setIcon(Icons.getFolderWithBadge(
-                Icons.SYNC_ANIMATION[folderSpinFrame]));
-            folderSpinTimer.start();
+            primaryButton.setIcon(Icons.getFolderWithSyncingBadge(folderSpinFrame * SPIN_STEP_DEGREES));
+            if (primaryButton.isShowing()) {
+                folderSpinTimer.start();
+            }
         }
     }
 
@@ -1107,20 +1130,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
-            } else if ((folder != null && folder.isTransferring()) || incomplete) {
-                // PFS-5949/PFC-3643: the folder is syncing - either actively
-                // transferring, or not yet fully in sync (e.g. 0 %, download
-                // pending) - so show the rotating blue spinner badge, NEVER the
-                // green check or a plain folder. Checked after problem/pause so
-                // those still win, and before the green check so an upload that
-                // momentarily reads 100 % keeps spinning. The spin timer owns the
-                // icon; see startFolderSpin()/updateSyncButton().
+            } else if (folder.isTransferring()) {
+                // Spinner badge only while actually transferring; the spin timer owns the icon.
                 startFolderSpin();
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
-            } else if (!syncKnown) {
-                // Sync state unknown (e.g. no connected members / offline) ->
-                // plain black/white folder icon, no badge.
+            } else if (!syncKnown || incomplete) {
+                // Not synced but idle, or state unknown -> plain folder icon, no badge.
                 stopFolderSpin();
                 primaryButton.setIcon(Icons.getFolderIcon());
                 primaryButton.setToolTipText(Translation

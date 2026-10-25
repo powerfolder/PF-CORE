@@ -1122,11 +1122,10 @@ public enum ConfigurationEntry {
     PROFILING("profiling", false),
 
     /**
-     * PFC-3643: file logging is always on (no more "Enable Logging" toggle); the
-     * default level is INFO. Set log.file.level explicitly (e.g. FINE) for more
-     * detailed diagnostics.
+     * The loglevel to write to the log file. PFC-3643: the UI client always logs to file, at INFO unless verbose or
+     * this entry is set explicitly.
      */
-    LOG_LEVEL_FILE("log.file.level", Level.INFO.getName(), true),
+    LOG_LEVEL_FILE("log.file.level", Level.FINE.getName(), true),
 
     /**
      * #2585

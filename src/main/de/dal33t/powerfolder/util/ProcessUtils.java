@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.util;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +48,8 @@ public class ProcessUtils {
      * Run {@code command} and return its combined stdout+stderr, or {@code null} on
      * error or timeout (never throws). The exit value is not inspected - callers
      * that only need the output do not care, and the few that do can parse it.
+     * The output is drained on a separate daemon thread, so the timeout also bounds a
+     * child that keeps its output open; on timeout the child is destroyed forcibly.
      *
      * @param timeoutSeconds how long to wait before giving up and destroying the
      *                       process.
@@ -56,22 +60,39 @@ public class ProcessUtils {
         Process p = null;
         try {
             p = new ProcessBuilder(command).redirectErrorStream(true).start();
-            String out;
-            try (InputStream in = p.getInputStream()) {
-                out = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            }
+            final InputStream in = p.getInputStream();
+            CompletableFuture<String> output = new CompletableFuture<>();
+            Thread drainer = new Thread(() -> {
+                try {
+                    output.complete(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+                } catch (Throwable t) {
+                    output.completeExceptionally(t);
+                }
+            }, "process-output-" + command[0]);
+            drainer.setDaemon(true);
+            drainer.start();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
             if (!p.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
-                // Don't thrash if it hangs; the process is destroyed in finally.
-                LOG.fine("command timed out: " + String.join(" ", command));
+                LOG.fine(String.join(" ", command) + ": timed out after " + timeoutSeconds + "s");
                 return null;
             }
-            return out;
+            // The process exited; a grandchild may still hold the pipe, so bound the read too.
+            long remainingNanos = Math.max(TimeUnit.MILLISECONDS.toNanos(100), deadline - System.nanoTime());
+            return output.get(remainingNanos, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (TimeoutException e) {
+            LOG.fine(String.join(" ", command) + ": output still open after exit");
+            return null;
         } catch (Exception e) {
-            LOG.log(Level.FINE, "command failed: " + String.join(" ", command), e);
+            LOG.log(Level.FINE, String.join(" ", command) + ": failed", e);
             return null;
         } finally {
             if (p != null) {
-                p.destroy();
+                if (p.isAlive()) {
+                    p.destroyForcibly();
+                }
                 try { p.getOutputStream().close(); } catch (Exception ignore) { }
                 try { p.getInputStream().close(); } catch (Exception ignore) { }
                 try { p.getErrorStream().close(); } catch (Exception ignore) { }

@@ -50,6 +50,7 @@ import org.ietf.jgss.*;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -1854,61 +1855,54 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * PFC-3643: the {@code Authorization} header value for authenticating web
-     * requests (e.g. loading/uploading the account avatar via /avatars/*).
-     * <p>
-     * Prefers a device token ({@code Bearer <token>}). Falls back to HTTP Basic with
-     * the login password only over HTTPS (never cleartext http) and only as a last
-     * resort - the server rejects Basic for OTP/SSO accounts (403), whereas a device
-     * token always authenticates. Must be called off the EDT (it may do a remote call
-     * to mint the token).
+     * PFC-3643: loads the avatar image of an account. Authenticates with the device token only; without a token the
+     * load is skipped. Must be called off the EDT.
      *
-     * @return the header value, or {@code null} if no usable credentials are
-     *         available.
-     * @see #getWebAuthorizationHeader(boolean)
+     * @return the image, or {@code null} without a device token, without a web URL or on any non-200 response.
      */
-    public String getWebAuthorizationHeader() {
-        // Default: do NOT mint a device token. Passive uses (e.g. loading the avatar)
-        // must not create a persistent server-side credential as a side effect -
-        // especially when the user opted out of "keep me logged in" at login.
-        return getWebAuthorizationHeader(false);
+    public BufferedImage loadAvatar(AccountInfo aInfo) throws IOException {
+        String url = aInfo != null ? getAvatarURL(aInfo, true) : null;
+        String authorization = getAvatarAuthorization();
+        if (url == null || authorization == null) {
+            return null;
+        }
+        HttpURLConnection con = openAvatarConnection(url, "GET", 10_000, authorization);
+        try {
+            int code = con.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                logFine(aInfo + ": Avatar not loaded, HTTP " + code);
+                return null;
+            }
+            try (InputStream in = con.getInputStream()) {
+                return javax.imageio.ImageIO.read(in);
+            }
+        } finally {
+            con.disconnect();
+        }
     }
 
     /**
-     * @param mintIfMissing when {@code true} and no device token exists yet, mint one
-     *                      on demand and cache it. Pass {@code true} only for an
-     *                      explicit, user-initiated web action (e.g. uploading or
-     *                      removing the avatar); pass {@code false} for passive loads.
-     * @return the {@code Authorization} header value, or {@code null}.
-     * @see #getWebAuthorizationHeader()
+     * The {@code Authorization} header for the avatar endpoint: the device token from the login as {@code Bearer}.
+     * Never mints a token, never sends the password.
+     *
+     * @return the header value, or {@code null} without a device token.
      */
-    public String getWebAuthorizationHeader(boolean mintIfMissing) {
-        if (StringUtils.isBlank(tokenSecret) && mintIfMissing) {
-            String minted = requestAndSaveToken();
-            if (StringUtils.isNotBlank(minted)) {
-                tokenSecret = minted;
-            }
-        }
-        if (StringUtils.isNotBlank(tokenSecret)) {
-            return "Bearer " + tokenSecret;
-        }
-        // Basic carries the account password: only ever over HTTPS, never http.
-        String webURL = getWebURL();
-        boolean secure = webURL != null
-            && webURL.toLowerCase().startsWith("https:");
-        if (secure && StringUtils.isNotBlank(username) && passwordObf != null) {
-            char[] pw = LoginUtil.deobfuscate(passwordObf);
-            if (pw != null && pw.length > 0) {
-                try {
-                    String creds = username + ':' + new String(pw);
-                    return "Basic " + java.util.Base64.getEncoder().encodeToString(
-                        creds.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                } finally {
-                    LoginUtil.clear(pw);
-                }
-            }
-        }
-        return null;
+    private String getAvatarAuthorization() {
+        String token = tokenSecret;
+        return StringUtils.isNotBlank(token) ? "Bearer " + token : null;
+    }
+
+    /** Redirects are not followed: HttpURLConnection would re-send the Authorization header to the redirect host. */
+    private static HttpURLConnection openAvatarConnection(String url, String method, int readTimeout,
+        String authorization) throws IOException
+    {
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        con.setRequestMethod(method);
+        con.setInstanceFollowRedirects(false);
+        con.setConnectTimeout(10_000);
+        con.setReadTimeout(readTimeout);
+        con.setRequestProperty("Authorization", authorization);
+        return con;
     }
 
     /**
