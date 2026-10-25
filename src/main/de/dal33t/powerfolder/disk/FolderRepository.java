@@ -2005,6 +2005,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Synchronize folder memberships
         triggerSynchronizeAllFolderMemberships();
 
+        // A folder that never had ignore patterns gets the defaults, else e.g. the desktop.ini of its folder icon
+        // counts as unsynced while the server ignores it (folder stuck below 100 %).
+        if (Files.notExists(folder.getSystemSubDir().resolve(DiskItemFilter.PATTERNS_FILENAME))) {
+            folder.addDefaultExcludes();
+        }
+
         // Calc stats
         folder.getStatistic().scheduleCalculate();
 
