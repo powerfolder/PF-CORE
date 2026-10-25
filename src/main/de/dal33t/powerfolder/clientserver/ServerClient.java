@@ -1537,10 +1537,10 @@ public class ServerClient extends PFComponent {
                     logInfo("Switching to new server: " + server);
                     try {
                         setServer(server, allowServerChange);
-                        if (!wasConnected) {
-                            // PFC-2676
-                            primaryServerConnected(server);
-                        }
+                        // PFC-2676: announce the new primary server. Also when it was already connected: its
+                        // handshake ran while it was not the primary, so nobody announced it - no status update,
+                        // no login wizard (first start against a cluster whose configured server is not reachable).
+                        primaryServerConnected(server);
                         break;
                     } catch (Exception e) {
                         logWarning("Unable to switch server to "
