@@ -653,6 +653,7 @@ For creation of the installer:
 					<sysproperty key="file.encoding" value="UTF-8"/>
 					<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - PF-CORE and PF-PRO suites can run concurrently on one runner and two 4g forks exhausted the machine (OOM in Argon2 during FileLinkDAOTest setup) -->
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+					<jvmarg value="--enable-native-access=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
 				</fork>
@@ -738,6 +739,7 @@ For creation of the installer:
 							<sysproperty key="file.encoding" value="UTF-8"/>
 							<jvmarg value="-Xmx2g"/><!-- PFS-5561: 2g, not 4g - several forks run at once on one runner -->
 							<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+							<jvmarg value="--enable-native-access=ALL-UNNAMED"/>
 							<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 							<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
 						</fork>
