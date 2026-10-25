@@ -124,9 +124,10 @@ public class InvitationsPanel extends PFUIComponent {
             try {
                 Collection<Invitation> invitations = client.getAccountService().getInvitationsFor(accountInfo);
                 if (invitations == null) {
+                    logInfo(accountInfo + ": No open invitations returned by the server");
                     return;
                 }
-                logFine(accountInfo + ": " + invitations.size() + " open invitation(s) fetched");
+                logInfo(accountInfo + ": " + invitations.size() + " open invitation(s) fetched");
                 for (Invitation invitation : invitations) {
                     if (!isKnown(invitation)) {
                         getController().invitationReceived(invitation);
@@ -300,9 +301,14 @@ public class InvitationsPanel extends PFUIComponent {
         manageButton.setBorderPainted(false);
         manageButton.setContentAreaFilled(false);
         manageButton.setFocusPainted(false);
-        manageButton.addActionListener(
-            e -> menu.show(manageButton, 0, manageButton.getHeight()));
-        builder.add(manageButton, cc.xy(7, 2));
+        // No internal padding and right-aligned in the cell, so the directions
+        // icon lines up vertically with the folder rows' sync-percentage column.
+        manageButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        manageButton.addActionListener(e -> {
+            logInfo(folderName + ": Invitation manage dropdown opened");
+            menu.show(manageButton, 0, manageButton.getHeight());
+        });
+        builder.add(manageButton, cc.xy(7, 2, "right, center"));
 
         JPanel row = builder.getPanel();
         row.setOpaque(false);
@@ -310,7 +316,8 @@ public class InvitationsPanel extends PFUIComponent {
     }
 
     private void acceptInvitation(final Notice notice, final Invitation invitation) {
-        answer(notice, invitation, () -> getController().getOSClient().getSecurityService()
+        logInfo(nameOf(invitation) + ": Accepting invitation");
+        answer(notice, invitation, "accept", () -> getController().getOSClient().getSecurityService()
             .acceptInvitation(invitation));
     }
 
@@ -318,14 +325,21 @@ public class InvitationsPanel extends PFUIComponent {
      * Sends accept or decline to the server. Only on success the invitation is
      * marked read (and its row disappears); a failure keeps the row and tells the
      * user.
+     *
+     * @param action "accept" or "decline", for the log trace only.
      */
-    private void answer(final Notice notice, final Invitation invitation, final Runnable serverCall) {
+    private void answer(final Notice notice, final Invitation invitation, final String action,
+        final Runnable serverCall)
+    {
         getController().getThreadPool().execute(() -> {
             try {
                 serverCall.run();
+                logInfo(nameOf(invitation) + ": Invitation " + action + " succeeded");
                 SwingUtilities.invokeLater(() -> getNoticesModel().markRead(notice));
             } catch (RuntimeException e) {
-                logWarning(invitation.folder + ": Invitation not answered: " + e);
+                // INFO so it is visible in a normal client log; the WARNING carries the cause.
+                logInfo(nameOf(invitation) + ": Invitation could not be " + action + "ed");
+                logWarning(nameOf(invitation) + ": Invitation not answered: " + e);
                 String folderName = invitation.folder != null ? invitation.folder.getLocalizedName() : "";
                 SwingUtilities.invokeLater(() -> DialogFactory.genericDialog(getController(),
                     Translation.get("notice.invitation.title"),
@@ -345,8 +359,19 @@ public class InvitationsPanel extends PFUIComponent {
             1, GenericDialogType.DEFAULT);
         if (response == 0) {
             // Same as the web interface: decline the invitation server-side.
-            answer(notice, invitation, () -> getController().getOSClient().getSecurityService()
+            logInfo(nameOf(invitation) + ": Declining invitation");
+            answer(notice, invitation, "decline", () -> getController().getOSClient().getSecurityService()
                 .declineInvitation(invitation));
+        } else {
+            logInfo(nameOf(invitation) + ": Decline cancelled by user");
         }
+    }
+
+    /** Folder name of an invitation for log messages, null-safe. */
+    private static String nameOf(Invitation invitation) {
+        if (invitation == null || invitation.folder == null) {
+            return "(unknown folder)";
+        }
+        return invitation.folder.getLocalizedName();
     }
 }
