@@ -1217,10 +1217,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else {
             // Local folder popup
             contextMenu.add(openExplorerAction).setIcon(null);
-            contextMenu.addSeparator();
             boolean expert = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
             if (expert) {
+                addSeparatorIfNeeded(contextMenu);
                 if (!folder.getSyncProfile().equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION)) {
                     contextMenu.add(syncFolderAction).setIcon(null);
                 }
@@ -1229,28 +1229,26 @@ public class ExpandableFolderView extends PFUIComponent implements
                 contextMenu.add(clearCompletedDownloadsAction).setIcon(null);
             }
             if (!getController().isBackupOnly()) {
-                boolean addedSeparator = false;
+                addSeparatorIfNeeded(contextMenu);
                 if (ConfigurationEntry.SERVER_INVITE_ENABLED
                     .getValueBoolean(getController()) && admin)
                 {
-                    contextMenu.addSeparator();
-                    addedSeparator = true;
                     contextMenu.add(inviteAction).setIcon(null);
                 }
                 if (expert) {
-                    if (!addedSeparator) {
-                        contextMenu.addSeparator();
-                    }
                     contextMenu.add(openMembersInformationAction).setIcon(null);
                 }
             }
-            contextMenu.addSeparator();
+            addSeparatorIfNeeded(contextMenu);
             if (ConfigurationEntry.SETTINGS_ENABLED
                 .getValueBoolean(getController()))
             {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
-            contextMenu.add(moveFolderLocalAction).setIcon(null);
+            // Moving the local directory is an expert function.
+            if (expert) {
+                contextMenu.add(moveFolderLocalAction).setIcon(null);
+            }
             if (getController().getOSClient().isAllowedToRemoveFolders()) {
                 contextMenu.add(removeFolderLocalAction).setIcon(null);
             }
@@ -1267,7 +1265,20 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
+        // No separator at the end (all entries after it may be hidden).
+        int last = contextMenu.getComponentCount() - 1;
+        if (last >= 0 && contextMenu.getComponent(last) instanceof JPopupMenu.Separator) {
+            contextMenu.remove(last);
+        }
         return contextMenu;
+    }
+
+    /** A separator only between entries: never first, never two in a row. */
+    private static void addSeparatorIfNeeded(JPopupMenu menu) {
+        int n = menu.getComponentCount();
+        if (n > 0 && !(menu.getComponent(n - 1) instanceof JPopupMenu.Separator)) {
+            menu.addSeparator();
+        }
     }
 
     /**

@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -130,7 +131,8 @@ public class FolderRemoveDialog extends BaseDialog {
             .createCheckBox(Translation
                 .get("folder_remove.dialog.delete"));
         deleteSystemSubFolderBox.setEnabled(allowRemove);
-        deleteSystemSubFolderBox.setVisible(allowRemove);
+        // Normal mode: only "delete local files", which removes the metadata with it (see its listener).
+        deleteSystemSubFolderBox.setVisible(allowRemove && isExpertMode());
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .get("folder_remove.dialog.remove_from_os"));
@@ -276,8 +278,10 @@ public class FolderRemoveDialog extends BaseDialog {
 
 
         if (localFolder) {
-            builder.add(deleteSystemSubFolderBox, cc.xyw(1, row, 3));
-            row += 2;
+            if (deleteSystemSubFolderBox.isVisible()) {
+                builder.add(deleteSystemSubFolderBox, cc.xyw(1, row, 3));
+                row += 2;
+            }
 
             builder.add(deleteFolderCompletelyBox, cc.xyw(1, row, 3));
             row += 2;
@@ -294,6 +298,10 @@ public class FolderRemoveDialog extends BaseDialog {
 
     protected JButton getDefaultButton() {
         return removeButton;
+    }
+
+    private boolean isExpertMode() {
+        return PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
     }
 
     private void configureComponents() {

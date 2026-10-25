@@ -57,7 +57,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class TrayIconManager extends PFComponent {
 
-    private static final long ROTATION_STEP_DELAY = 200L;
+    // Smooth: 24 frames of 7.5° (the arrows repeat every 180°), one every 100 ms.
+    private static final long ROTATION_STEP_DELAY = 100L;
 
     private final UIController uiController;
     private TrayIcon trayIcon;
@@ -184,28 +185,17 @@ public class TrayIconManager extends PFComponent {
             + ' ' + Controller.PROGRAM_VERSION);
         tooltip.append(" \n");
 
-        Image image;
 
-        boolean syncing = false;
         if (event.equals(SyncStatusEvent.PAUSED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
             tooltip
                 .append(Translation.get("systray.tooltip.paused"));
         } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .get("systray.tooltip.not_started"));
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .get("systray.tooltip.no_folders"));
         } else if (event.equals(SyncStatusEvent.SYNCING)) {
-            syncing = true;
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle
-                .get()]);
-            if (trayIcon != null) {
-                trayIcon.setImage(image);
-            }
             tooltip.append(Translation
                 .get("systray.tooltip.syncing"));
             double overallSyncPercentage = getController().getUIController()
@@ -217,36 +207,55 @@ public class TrayIconManager extends PFComponent {
                     .append(Format.formatDecimal(overallSyncPercentage) + '%');
             }
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.in_sync"));
         } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.sync_incomplete"));
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.not_connected"));
         } else if (event.equals(SyncStatusEvent.LOGGING_IN)) {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                     .get("systray.tooltip.not_logged_in"));
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .get("systray.tooltip.not_logged_in"));
         } else if(event.equals(SyncStatusEvent.WARNING)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .get("systray.tooltip.warning_notice"));
         } else if(event.equals(SyncStatusEvent.INFORMATION)) {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.info_notice"));
         } else {
             logSevere("Not handling all sync states: " + event);
-            image = Icons.getImageById(Icons.QUESTION);
+        }
+
+        // PFC-3643: the same symbol as the main window status (StatusGlyph); the tooltip names the state.
+        StatusGlyph glyph = StatusGlyph.of(event, getController().getOSClient());
+        boolean syncing = glyph == StatusGlyph.SYNCING;
+        Image image;
+        switch (glyph) {
+            case SYNCED :
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
+                break;
+            case SYNCING :
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle.get()]);
+                break;
+            case PAUSED :
+                image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
+                break;
+            case WARNING :
+                image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+                break;
+            case INFORMATION :
+                image = Icons.getImageById(Icons.SYSTRAY_INFORMATION);
+                break;
+            case SETUP :
+                image = Icons.getImageById(Icons.SYSTRAY_SETUP);
+                break;
+            default :
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
         }
 
         atomicSyncing.set(syncing);

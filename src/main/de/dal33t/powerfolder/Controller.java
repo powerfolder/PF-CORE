@@ -3104,7 +3104,7 @@ public class Controller extends PFComponent {
                     logSevere("ClassCastException", e);
                 }
             } else {
-                logInfo("No notices found - probably first start of PF.");
+                logFine("No notices found - probably first start of PF.");
             }
         }
     }

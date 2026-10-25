@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -56,7 +55,6 @@ import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
@@ -281,6 +279,12 @@ public class MainFrame extends PFUIComponent {
             colSpec.append("center:pref:grow");
         }
         FormLayout layout = new FormLayout(colSpec.toString(), "pref");
+        // Equal column widths, so the items stay put when a label changes length (Pause <-> Resume).
+        int[] group = new int[items.size()];
+        for (int i = 0; i < group.length; i++) {
+            group[i] = i + 1;
+        }
+        layout.setColumnGroups(new int[][]{group});
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
         for (int i = 0; i < items.size(); i++) {
@@ -368,15 +372,18 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setSize(uiComponent.getWidth(),
             UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
 
-        GraphicsEnvironment ge = GraphicsEnvironment
-            .getLocalGraphicsEnvironment();
-        GraphicsDevice[] devices = ge.getScreenDevices();
-
-        int x = (int) ((devices[0].getDisplayMode().getWidth() - uiComponent
-            .getWidth()) / 2.0);
-        int y = (int) ((devices[0].getDisplayMode().getHeight() - uiComponent
-            .getHeight()) / 2.0);
-        uiComponent.setLocation(x, y);
+        // Centre in the usable area of the primary screen (user space, without the taskbar). The display mode is in
+        // device pixels and put the window too low - partly under the taskbar - on scaled displays (150 %).
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+            .getDefaultConfiguration();
+        Rectangle screen = gc.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        Rectangle usable = new Rectangle(screen.x + insets.left, screen.y + insets.top,
+            screen.width - insets.left - insets.right, screen.height - insets.top - insets.bottom);
+        uiComponent.setSize(Math.min(uiComponent.getWidth(), usable.width),
+            Math.min(uiComponent.getHeight(), usable.height));
+        uiComponent.setLocation(usable.x + (usable.width - uiComponent.getWidth()) / 2,
+            usable.y + (usable.height - uiComponent.getHeight()) / 2);
 
         configureInlineInfo();
         if (!getController().getNodeManager().isStarted()) {
@@ -498,7 +505,8 @@ public class MainFrame extends PFUIComponent {
         allInSyncButton.setText(null);
 
         pauseButton = new JButtonMini(new MyPauseResumeAction(getController()));
-        pauseButton.setIcon(Icons.getStatusPlayGlyph(STATUS_GLYPH_SIZE));
+        // The status shows the state (paused: || ), the bottom tray's "Resume" button the action.
+        pauseButton.setIcon(Icons.getStatusGlyph(Icons.PAUSE, STATUS_GLYPH_SIZE));
         pauseButton.setText(null);
 
         syncingButton = new SyncIconButtonMini(getController());
@@ -510,7 +518,7 @@ public class MainFrame extends PFUIComponent {
         setupButton.setIcon(Icons.getStatusGlyph(Icons.ACTION_ARROW, STATUS_GLYPH_SIZE));
         setupButton.setText(null);
 
-        notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
+        notConnectedLoggedInLabel = new JLabel(Icons.getStatusGlyph(Icons.STATUS_WAITING, STATUS_GLYPH_SIZE));
 
         MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(getController());
         noticeWarningButton = new JButtonMini(myShowNoticesAction);
@@ -772,6 +780,11 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void handleSyncTextClick() {
+        // Not logged in ("Logging in...", "Login failed", "Connecting..."): the click opens the login (or activation).
+        if (!client.isLoggedIn()) {
+            openAccount(null, false);
+            return;
+        }
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
 
@@ -818,23 +831,25 @@ public class MainFrame extends PFUIComponent {
             setupLabel.setVisible(notStartedOrNoFolders);
 
         }
-        setupButton.setVisible(notStartedOrNoFolders
-            || !client.isLoginExecuted());
         setupButton.setEnabled(getController().getOSClient()
             .isAllowedToCreateFolders());
-        // Same as client 28.0.100: tick when synchronized, spinner while syncing or not all folders in sync.
-        boolean spinning = event.equals(SyncStatusEvent.SYNCING) || event.equals(SyncStatusEvent.SYNC_INCOMPLETE);
-        allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
+        // PFC-3643: the same symbol as the tray icon (StatusGlyph); the buttons carry the clicks.
+        StatusGlyph glyph = StatusGlyph.of(event, client);
+        boolean spinning = glyph == StatusGlyph.SYNCING;
+        setupButton.setVisible(glyph == StatusGlyph.SETUP);
+        allInSyncButton.setVisible(glyph == StatusGlyph.SYNCED);
         syncingButton.setVisible(spinning);
         syncingButton.spin(spinning);
         noticeWarningButton.setVisible(event.equals(SyncStatusEvent.WARNING));
-        noticeInfoButton.setVisible(event.equals(SyncStatusEvent.INFORMATION));
-        // Warning indicator for a logged-in client that is not connected or whose
-        // login failed - so the user can tell "offline" apart from "syncing".
-        notConnectedLoggedInLabel.setVisible(
-            (event.equals(SyncStatusEvent.NOT_LOGGED_IN)
-                || event.equals(SyncStatusEvent.NOT_CONNECTED))
-            && client.isLoginExecuted());
+        noticeInfoButton.setVisible(glyph == StatusGlyph.INFORMATION);
+        // Logged in before, now offline (waiting) or the login failed (warning): no click action.
+        boolean offline = glyph == StatusGlyph.WAITING
+            || (glyph == StatusGlyph.WARNING && !event.equals(SyncStatusEvent.WARNING));
+        if (offline) {
+            notConnectedLoggedInLabel.setIcon(Icons.getStatusGlyph(
+                glyph == StatusGlyph.WAITING ? Icons.STATUS_WAITING : Icons.WARNING, STATUS_GLYPH_SIZE));
+        }
+        notConnectedLoggedInLabel.setVisible(offline);
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();

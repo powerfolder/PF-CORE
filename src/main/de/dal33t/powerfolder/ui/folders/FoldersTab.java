@@ -93,6 +93,17 @@ public class FoldersTab extends PFUIComponent {
             .get("folders_tab.new_folder"));
         newFolderActionLabel.setVisible(false);
         client = getApplicationModel().getServerClientModel().getClient();
+        // Follow the main status too: a server switch can announce the server before its connection is complete,
+        // then "Connecting..." would stay here while the status already moved on.
+        getApplicationModel().addSyncStatusListener(new de.dal33t.powerfolder.ui.event.SyncStatusListener() {
+            public void syncStatusChanged(de.dal33t.powerfolder.ui.event.SyncStatusEvent event) {
+                updateEmptyLabel();
+            }
+
+            public boolean fireInEventDispatchThread() {
+                return true;
+            }
+        });
 
         controller.getThreadPool().scheduleWithFixedDelay(() -> {
             SwingUtilities.invokeLater(() -> {

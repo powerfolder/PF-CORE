@@ -97,6 +97,8 @@ public class Icons {
     public static final String ACTION_ARROW = "action_arrow.icon";
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
+    /** Status glyph id for "connecting / waiting" (hourglass); drawn as vector only, no bitmap. */
+    public static final String STATUS_WAITING = "status_waiting";
     public static final String DEBUG = "bug.icon";
     public static final String SYSTEM_MONITOR = "system_monitor.icon";
     public static final String STOP = "stop.icon";
@@ -195,23 +197,39 @@ public class Icons {
         "systray_sync00_lowres.icon", "systray_sync01_lowres.icon", "systray_sync02_lowres.icon",
         "systray_sync03_lowres.icon", "systray_sync04_lowres.icon", "systray_sync05_lowres.icon",
         "systray_sync06_lowres.icon", "systray_sync07_lowres.icon", "systray_sync08_lowres.icon",
-        "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon"};
+        "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon",
+        "systray_sync12_lowres.icon", "systray_sync13_lowres.icon", "systray_sync14_lowres.icon",
+        "systray_sync15_lowres.icon", "systray_sync16_lowres.icon", "systray_sync17_lowres.icon",
+        "systray_sync18_lowres.icon", "systray_sync19_lowres.icon", "systray_sync20_lowres.icon",
+        "systray_sync21_lowres.icon", "systray_sync22_lowres.icon", "systray_sync23_lowres.icon"};
     private static final String[] SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES = {
-            "systray_sync00_lowres_light.icon", "systray_sync01_lowres_light.icon", "systray_sync02_lowres_light.icon",
-            "systray_sync03_lowres_light.icon", "systray_sync04_lowres_light.icon", "systray_sync05_lowres_light.icon",
-            "systray_sync06_lowres_light.icon", "systray_sync07_lowres_light.icon", "systray_sync08_lowres_light.icon",
-            "systray_sync09_lowres_light.icon", "systray_sync10_lowres_light.icon", "systray_sync11_lowres_light.icon"};
+        "systray_sync00_lowres_light.icon", "systray_sync01_lowres_light.icon", "systray_sync02_lowres_light.icon",
+        "systray_sync03_lowres_light.icon", "systray_sync04_lowres_light.icon", "systray_sync05_lowres_light.icon",
+        "systray_sync06_lowres_light.icon", "systray_sync07_lowres_light.icon", "systray_sync08_lowres_light.icon",
+        "systray_sync09_lowres_light.icon", "systray_sync10_lowres_light.icon", "systray_sync11_lowres_light.icon",
+        "systray_sync12_lowres_light.icon", "systray_sync13_lowres_light.icon", "systray_sync14_lowres_light.icon",
+        "systray_sync15_lowres_light.icon", "systray_sync16_lowres_light.icon", "systray_sync17_lowres_light.icon",
+        "systray_sync18_lowres_light.icon", "systray_sync19_lowres_light.icon", "systray_sync20_lowres_light.icon",
+        "systray_sync21_lowres_light.icon", "systray_sync22_lowres_light.icon", "systray_sync23_lowres_light.icon"};
 
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
         "systray_sync00_hires.icon", "systray_sync01_hires.icon", "systray_sync02_hires.icon",
         "systray_sync03_hires.icon", "systray_sync04_hires.icon", "systray_sync05_hires.icon",
         "systray_sync06_hires.icon", "systray_sync07_hires.icon", "systray_sync08_hires.icon",
-        "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon"};
+        "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon",
+        "systray_sync12_hires.icon", "systray_sync13_hires.icon", "systray_sync14_hires.icon",
+        "systray_sync15_hires.icon", "systray_sync16_hires.icon", "systray_sync17_hires.icon",
+        "systray_sync18_hires.icon", "systray_sync19_hires.icon", "systray_sync20_hires.icon",
+        "systray_sync21_hires.icon", "systray_sync22_hires.icon", "systray_sync23_hires.icon"};
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES = {
-            "systray_sync00_hires_light.icon", "systray_sync01_hires_light.icon", "systray_sync02_hires_light.icon",
-            "systray_sync03_hires_light.icon", "systray_sync04_hires_light.icon", "systray_sync05_hires_light.icon",
-            "systray_sync06_hires_light.icon", "systray_sync07_hires_light.icon", "systray_sync08_hires_light.icon",
-            "systray_sync09_hires_light.icon", "systray_sync10_hires_light.icon", "systray_sync11_hires_light.icon"};
+        "systray_sync00_hires_light.icon", "systray_sync01_hires_light.icon", "systray_sync02_hires_light.icon",
+        "systray_sync03_hires_light.icon", "systray_sync04_hires_light.icon", "systray_sync05_hires_light.icon",
+        "systray_sync06_hires_light.icon", "systray_sync07_hires_light.icon", "systray_sync08_hires_light.icon",
+        "systray_sync09_hires_light.icon", "systray_sync10_hires_light.icon", "systray_sync11_hires_light.icon",
+        "systray_sync12_hires_light.icon", "systray_sync13_hires_light.icon", "systray_sync14_hires_light.icon",
+        "systray_sync15_hires_light.icon", "systray_sync16_hires_light.icon", "systray_sync17_hires_light.icon",
+        "systray_sync18_hires_light.icon", "systray_sync19_hires_light.icon", "systray_sync20_hires_light.icon",
+        "systray_sync21_hires_light.icon", "systray_sync22_hires_light.icon", "systray_sync23_hires_light.icon"};
 
     public static final String SYSTRAY_SYNC_COMPLETE;
     private static final String SYSTRAY_SYNC_COMPLETE_LOW_RES = "systray_sync_complete_lowres.icon";
@@ -237,6 +255,18 @@ public class Icons {
     private static final String SYSTRAY_PAUSE_LOW_LIGHT_RES = "systray_pause_lowres_light.icon";
     private static final String SYSTRAY_PAUSE_HIGH_LIGHT_RES = "systray_pause_hires_light.icon";
 
+    public static final String SYSTRAY_INFORMATION;
+    private static final String SYSTRAY_INFORMATION_LOW_RES = "systray_information_lowres.icon";
+    private static final String SYSTRAY_INFORMATION_HIGH_RES = "systray_information_hires.icon";
+    private static final String SYSTRAY_INFORMATION_LOW_LIGHT_RES = "systray_information_lowres_light.icon";
+    private static final String SYSTRAY_INFORMATION_HIGH_LIGHT_RES = "systray_information_hires_light.icon";
+
+    public static final String SYSTRAY_SETUP;
+    private static final String SYSTRAY_SETUP_LOW_RES = "systray_setup_lowres.icon";
+    private static final String SYSTRAY_SETUP_HIGH_RES = "systray_setup_hires.icon";
+    private static final String SYSTRAY_SETUP_LOW_LIGHT_RES = "systray_setup_lowres_light.icon";
+    private static final String SYSTRAY_SETUP_HIGH_LIGHT_RES = "systray_setup_hires_light.icon";
+
     static {
         if (!TrayIconManager.isHiRes()) {
             if (!TrayIconManager.isMacMenuBarDarkMode()) {
@@ -245,6 +275,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_LOW_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_LOW_RES;
             }
             else {
                 SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES;
@@ -252,6 +284,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_LIGHT_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_LIGHT_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_LIGHT_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_LOW_LIGHT_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_LOW_LIGHT_RES;
             }
         } else {
             if (!TrayIconManager.isMacMenuBarDarkMode()) {
@@ -260,6 +294,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_HIGH_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_HIGH_RES;
             }
             else {
                 SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES;
@@ -267,6 +303,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_LIGHT_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_LIGHT_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_LIGHT_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_HIGH_LIGHT_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_HIGH_LIGHT_RES;
             }
         }
     }
@@ -511,6 +549,17 @@ public class Icons {
         return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("spin" + f, size), k -> drawSyncSpinnerFrame(f, px));
     }
 
+    /**
+     * @return the syncing status glyph turned by {@code degrees} (fine steps for a smooth animation), at
+     *         {@code size} px. The two arrows repeat every 180°.
+     */
+    public static Icon getSyncSpinnerGlyph(int degrees, int size) {
+        int d = Math.floorMod(degrees, 180);
+        final int px = size > 0 ? size : SPINNER_BASE_SIZE;
+        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("spinDeg" + d, px),
+            k -> vectorIcon(px, px, g -> paintSyncingBadge(g, 0.75, 0.75, px - 1.5, d)));
+    }
+
     private static Icon drawSyncSpinnerFrame(int frame, int size) {
         // Same as the folder badge; the two arrows repeat every 180°, so the frames step through 180°.
         double degrees = 180.0 * frame / SYNC_ANIMATION.length;
@@ -593,6 +642,20 @@ public class Icons {
                 chevron.lineTo(25, 42);
                 g.draw(chevron);
             });
+        } else if (STATUS_WAITING.equals(iconId)) {
+            return ringBadge(size, neutralBadgeColor(), g -> {
+                g.setStroke(new BasicStroke(4.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.draw(new java.awt.geom.Line2D.Double(21, 15, 39, 15));
+                g.draw(new java.awt.geom.Line2D.Double(21, 45, 39, 45));
+                java.awt.geom.Path2D.Double glass = new java.awt.geom.Path2D.Double();
+                glass.moveTo(23.5, 15);
+                glass.curveTo(23.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 23.5, 35, 23.5, 45);
+                glass.moveTo(36.5, 15);
+                glass.curveTo(36.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 36.5, 35, 36.5, 45);
+                g.draw(glass);
+            });
         } else if (PAUSE.equals(iconId)) {
             return ringBadge(size, neutralBadgeColor(), g -> {
                 g.fill(new java.awt.geom.RoundRectangle2D.Double(21, 19, 7, 22, 3, 3));
@@ -635,33 +698,6 @@ public class Icons {
             }
         }
         return new ImageIcon(out);
-    }
-
-    /**
-     * @return the paused status glyph: a white "play" triangle on the accent disc, at
-     *         {@code size} px. The paused state's action is "Resume", so the glyph is
-     *         a play arrow (not pause bars).
-     */
-    public static Icon getStatusPlayGlyph(int size) {
-        if (size <= 0) {
-            size = SPINNER_BASE_SIZE;
-        }
-        final int px = size;
-        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("play", size), k -> drawStatusPlayGlyph(px));
-    }
-
-    private static Icon drawStatusPlayGlyph(int size) {
-        return ringBadge(size, neutralBadgeColor(), g -> {
-            java.awt.geom.Path2D.Double play = new java.awt.geom.Path2D.Double();
-            // Slightly right of centre so the triangle looks optically centred.
-            play.moveTo(24.5, 19);
-            play.lineTo(24.5, 41);
-            play.lineTo(42, 30);
-            play.closePath();
-            g.fill(play);
-            g.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.draw(play);
-        });
     }
 
     /** Green of the "synced" badge ring and check. */

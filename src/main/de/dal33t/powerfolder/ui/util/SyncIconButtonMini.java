@@ -36,8 +36,12 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class SyncIconButtonMini extends JButtonMini {
 
-    private static final long ROTATION_STEP_DELAY = 200L;
+    // Smooth: the vector glyph turns 6° every 60 ms; the bitmap frames keep their old pace (every 3rd tick).
+    private static final long ROTATION_STEP_DELAY = 60L;
+    private static final int GLYPH_STEP_DEGREES = 6;
+    private static final int BITMAP_TICKS_PER_FRAME = 3;
     private int angle;
+    private int tick;
     private volatile boolean spin;
     // PFC-3643: when > 0, render the (modern blue) spinner at this px size instead
     // of the bundled base frame - e.g. the avatar-sized main status glyph.
@@ -58,21 +62,23 @@ public class SyncIconButtonMini extends JButtonMini {
 
         if (!spin) {
             Icon idle = spinnerSize > 0
-                ? Icons.getSyncSpinnerFrame(0, spinnerSize) : ICON_ZERO;
+                ? Icons.getSyncSpinnerGlyph(0, spinnerSize) : ICON_ZERO;
             if (!idle.equals(getIcon())) {
                 setIcon(idle);
             }
             return;
         }
 
-        angle++;
-        if (angle >= Icons.SYNC_ANIMATION.length) {
-            angle = 0;
+        if (spinnerSize > 0) {
+            angle = (angle + GLYPH_STEP_DEGREES) % 180;
+            setIcon(Icons.getSyncSpinnerGlyph(angle, spinnerSize));
+            return;
         }
-        Icon icon = spinnerSize > 0
-            ? Icons.getSyncSpinnerFrame(angle, spinnerSize)
-            : Icons.getIconById(Icons.SYNC_ANIMATION[angle]);
-        setIcon(icon);
+        if (++tick % BITMAP_TICKS_PER_FRAME != 0) {
+            return;
+        }
+        angle = (angle + 1) % Icons.SYNC_ANIMATION.length;
+        setIcon(Icons.getIconById(Icons.SYNC_ANIMATION[angle]));
     }
 
     public void spin(boolean b) {
@@ -83,7 +89,8 @@ public class SyncIconButtonMini extends JButtonMini {
     public void setSpinnerSize(int size) {
         spinnerSize = size;
         if (size > 0) {
-            setIcon(Icons.getSyncSpinnerFrame(angle, size));
+            angle = 0;
+            setIcon(Icons.getSyncSpinnerGlyph(angle, size));
         }
     }
 

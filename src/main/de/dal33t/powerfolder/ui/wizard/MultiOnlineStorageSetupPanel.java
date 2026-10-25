@@ -136,7 +136,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         // Labels left-aligned under the title; the network-drive link follows the fields without an extra gap.
-        FormLayout layout = new FormLayout("left:pref, 6dlu, 140dlu, 3dlu, pref, pref:grow",
+        FormLayout layout = new FormLayout("left:pref, 6dlu, fill:80dlu:grow, 3dlu, pref, 0px",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
