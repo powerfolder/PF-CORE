@@ -802,7 +802,12 @@ public class Controller extends PFComponent {
             MacUtils macUtils = MacUtils.getInstance();
             if (macUtils != null) {
                 if (isFirstStart()) {
-                    macUtils.setPFStartup(true, this);
+                    try {
+                        macUtils.setPFStartup(true, this);
+                    } catch (UnsupportedOperationException e) {
+                        // Not started from an app bundle (tests, java -jar): no start up item, but start anyway.
+                        logFine("Start up item: not set up. " + e.getMessage());
+                    }
                 }
                 macUtils.setAppReOpenedListener(this);
             }
