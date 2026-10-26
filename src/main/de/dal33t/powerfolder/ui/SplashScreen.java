@@ -98,13 +98,14 @@ public class SplashScreen extends JWindow {
         bar.setBorderPainted(false);
         bar.setStringPainted(false);
         bar.setOpaque(true);
-        bar.setPreferredSize(new java.awt.Dimension(574, 10));
-        // Light mode: white fills over the brand-accent track; dark mode: the accent fills over a light track.
+        // PFC-3652: match the bar to the splash image width so the window has no
+        // empty (white) strip beside the image, and fill it in the brand/logo
+        // accent colour on a quiet track in both light and dark mode.
+        bar.setPreferredSize(new java.awt.Dimension(image.getPreferredSize().width, 10));
         java.awt.Color accent = LookAndFeelSupport.getAccentColor();
-        java.awt.Color light = new java.awt.Color(0xEDF1F5);
         boolean dark = LookAndFeelSupport.isDarkMode();
-        bar.setForeground(dark ? accent : light);
-        bar.setBackground(dark ? light : accent);
+        bar.setForeground(accent);
+        bar.setBackground(dark ? new java.awt.Color(0x2B2B2B) : new java.awt.Color(0xEDF1F5));
         bar.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
 
         getContentPane().add(image, BorderLayout.NORTH);
