@@ -404,10 +404,10 @@ public class LoginPanel extends PFWizardPanel {
                 }
 
             } catch (SecurityException e) {
-                LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
+                LOG.log(Level.WARNING, "Problem logging in: " + e.getMessage());
                 throw e;
             } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Problem logging in: " + e, e);
+                LOG.log(Level.WARNING, "Problem logging in: " + e, e);
                 throw new SecurityException(e.getMessage() == null ? e.toString() : e.getMessage());
             }
         }

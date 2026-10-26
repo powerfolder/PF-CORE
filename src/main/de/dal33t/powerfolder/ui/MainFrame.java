@@ -1425,8 +1425,10 @@ public class MainFrame extends PFUIComponent {
         updateAvatar();
         updateAccountLinks();
 
-        noStorageText.setVisible(!ownStorage);
-        usagePB.setVisible(ownStorage);
+        // No bar while not logged in (connecting, login failed): there is no quota to show.
+        boolean loggedIn = client.isLoggedIn();
+        noStorageText.setVisible(loggedIn && !ownStorage);
+        usagePB.setVisible(loggedIn && ownStorage);
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
                 + Format.formatBytesShort(totalStorage));
