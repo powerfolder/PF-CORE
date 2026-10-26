@@ -451,7 +451,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
 
-        // Create a random file at lisa
+        // Create a random file at lisa. Its watcher would scan and sync it to bart, which then restores the dir.
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
         TestHelper.createRandomFile(dirLisa);
         try {
             Files.delete(dirBart);

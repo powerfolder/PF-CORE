@@ -621,6 +621,10 @@ public class MainFrame extends PFUIComponent {
         logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        // PFC-3652: indent the brand logo by the same 5dlu as the avatar column in
+        // createLeftMiniPanel, so the logo's left edge lines up with the avatar circle
+        // and the account/status text below it instead of hugging the window edge.
+        logoLabel.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
 
         MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
         logoLabel.addMouseListener(logoMouseListener);
@@ -1012,14 +1016,9 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
         StringBuilder title = new StringBuilder();
 
-        String appName = Translation.get("general.application.name");
-        // Unbranded/missing translation ("- key -") falls back to the product name.
-        if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
-            appName = "PowerFolder";
-        }
-        // PFC-3643: "<app name> v<version> | <nick>" on every client, without the build timestamp.
-        title.append(appName);
-        title.append(" v" + Controller.PROGRAM_VERSION);
+        // PFC-3652: show only "v<version> | <device name>" on every branded client;
+        // the branding name is already shown by the logo above the title bar.
+        title.append("v" + Controller.PROGRAM_VERSION);
         title.append(" | " + getController().getMySelf().getNick());
         /* No idea who archi is ;)
         Calendar cal = Calendar.getInstance();

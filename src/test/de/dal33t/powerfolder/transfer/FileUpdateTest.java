@@ -196,7 +196,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
     }
 
     @Test
-    public void testFileConflict() {
+    public void testFileConflict() throws IOException {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -223,7 +223,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
         TestHelper.waitMilliSeconds(2100);
-        TestHelper.changeFile(fileAtLisa);
+        // Both random sizes come from the same 1024 values - one run in a thousand they matched
+        TestHelper.changeFile(fileAtLisa, Files.size(fileAtBart) + 100);
 
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());

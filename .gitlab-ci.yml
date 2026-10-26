@@ -27,9 +27,22 @@ security-java-scan:
   image: eclipse-temurin:17-jdk
   variables:
     GIT_STRATEGY: clone
+  # The fresh clone wipes tools/, so without a cache every run re-downloads the whole NVD (400k+ records, 40+ min
+  # without NVD_API_KEY) and is that long exposed to NVD hiccups and to stray kills on the shared runner.
+  # Keyed by the dependency-check version: a new version may change the database schema.
+  cache:
+    key: dependency-check-12.1.0
+    paths:
+      - tools/dependency-check/dependency-check/
+  retry:
+    max: 1
+    when:
+      - script_failure
+      - runner_system_failure
   before_script:
     - apt-get update && apt-get install -y ant unzip curl
     - mkdir -p reports
+    - if [ -z "$NVD_API_KEY" ]; then echo "NVD_API_KEY not set - NVD download is heavily rate limited"; fi
   script:
     - ant -f security-scan.xml dependency-check
   artifacts:
@@ -49,7 +62,9 @@ test-Linux:
   tags:
     - Linux
   script:
-    - pkill -f java || true
+    # Only stale test JVMs: a bare "pkill -f java" also kills any security-java-scan (ant + dependency-check)
+    # running on the same shell runner.
+    - pkill -f 'launch\.Launcher.* run-tests|StandaloneLauncher|JUnitTestRunner' || true
     - ant run-tests
   artifacts:
     reports:
