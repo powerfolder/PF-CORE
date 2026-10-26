@@ -1056,7 +1056,11 @@ public class Icons {
         // them HiDPI variants, downscaled from a bundled "@4x" master when there is
         // one (e.g. PoweredBy@4x.png), so they stay sharp on scaled displays.
         if ((LOGO400UI.equals(id) || POWERED_BY.equals(id)) && icon instanceof ImageIcon) {
-            icon = toHiDpiIcon((ImageIcon) icon, shownPath != null ? hiResVariantURL(shownPath) : null);
+            // PFC-3652: shift the header logo left by its transparent left margin (render
+            // only, the file is untouched) so its content lines up with the avatar / login
+            // fields. Only horizontal - vertical position and the logo size stay the same.
+            icon = toHiDpiIcon((ImageIcon) icon, shownPath != null ? hiResVariantURL(shownPath) : null,
+                LOGO400UI.equals(id));
         }
         // PFC-3643: sync glyphs use the Android badges, drawn as vectors - the "syncing"
         // badge (blue arrows) rotated per frame, and the "synced" badge (green ring + check).
@@ -1078,7 +1082,7 @@ public class Icons {
      * only bicubic 2x/3x upscales are possible, which add no detail. Returns the
      * original icon on any failure.
      */
-    private static Icon toHiDpiIcon(ImageIcon src, URL hiResURL) {
+    private static Icon toHiDpiIcon(ImageIcon src, URL hiResURL, boolean shiftLeft) {
         try {
             int w = src.getIconWidth(), h = src.getIconHeight();
             if (w <= 0 || h <= 0) {
@@ -1088,7 +1092,14 @@ public class Icons {
             Graphics2D g = base.createGraphics();
             g.drawImage(src.getImage(), 0, 0, null);
             g.dispose();
+            if (shiftLeft) {
+                base = trimLeft(base);
+                w = base.getWidth();
+            }
             BufferedImage master = hiResURL != null ? javax.imageio.ImageIO.read(hiResURL) : null;
+            if (shiftLeft && master != null) {
+                master = trimLeft(master);
+            }
             if (master == null || master.getWidth() <= w * 2 || master.getHeight() <= h * 2) {
                 return new ImageIcon(new java.awt.image.BaseMultiResolutionImage(base,
                     upscale(base, 2), upscale(base, 3)));
@@ -1108,6 +1119,33 @@ public class Icons {
             log.warning(hiResURL + ": HiDPI logo variants not created. " + e);
             return src;
         }
+    }
+
+    /**
+     * PFC-3652: drop only the fully transparent columns on the left of a logo bitmap,
+     * so its content starts flush at x=0 and lines up with the avatar / login fields.
+     * Height, the right margin and the logo's drawn size are all kept, so this only
+     * shifts the logo left - it never resizes it. The source file is untouched.
+     */
+    private static BufferedImage trimLeft(BufferedImage src) {
+        int w = src.getWidth(), h = src.getHeight();
+        int minx = w;
+        for (int x = 0; x < w && minx == w; x++) {
+            for (int y = 0; y < h; y++) {
+                if (((src.getRGB(x, y) >>> 24) & 0xff) > 8) {
+                    minx = x;
+                    break;
+                }
+            }
+        }
+        if (minx <= 0 || minx >= w) {
+            return src;
+        }
+        BufferedImage out = new BufferedImage(w - minx, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = out.createGraphics();
+        g.drawImage(src, -minx, 0, null);
+        g.dispose();
+        return out;
     }
 
     /**
