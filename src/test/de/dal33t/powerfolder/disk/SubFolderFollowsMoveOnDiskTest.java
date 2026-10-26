@@ -148,6 +148,18 @@ public class SubFolderFollowsMoveOnDiskTest extends TwoControllerTestCase {
         assertNull(repository().getFolder(restricted), "A deleted subfolder is dissolved");
     }
 
+    /** Statistics ask for the archive size at any time - its Size file must not bring the deleted directory back. */
+    @Test
+    public void testArchiveSizeAfterTheDeletionStillDissolvesTheSubFolder() throws IOException {
+        FolderInfo restricted = interruptedSubFolder("area/old/restricted", "report.pdf");
+
+        PathUtils.recursiveDelete(top.getLocalBase().resolve("area/old"));
+        repository().getFolder(restricted).getFileArchiver().getSize();
+        scanFolder(top);
+
+        assertNull(repository().getFolder(restricted), "A deleted subfolder is dissolved");
+    }
+
     // Helpers ****************************************************************
 
     /** Creates the directory with one file, shares it from the top folder and interrupts its inheritance. */
