@@ -262,7 +262,19 @@ public class LockingTest extends TwoControllerTestCase {
             + testFile.getFileName().toString().substring(2));
 
         TestHelper.scanFolder(getFolderAtLisa());
-        TestHelper.waitMilliSeconds(500);
+        // The lock reaches Bart through the synced lock file in the meta folder - no fixed time on a loaded runner
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return lockingListenerLisa.locked.size() >= 1 && lockingListenerBart.locked.size() >= 1;
+            }
+
+            @Override
+            public String message() {
+                return "Office lock not seen. Locked at Lisa: " + lockingListenerLisa.locked.size() + ", at Bart: "
+                    + lockingListenerBart.locked.size();
+            }
+        });
 
         assertEquals(0, lockingListenerBart.unlocked.size());
         assertEquals(1, lockingListenerBart.locked.size());
@@ -274,7 +286,18 @@ public class LockingTest extends TwoControllerTestCase {
         // PFC-2705: Now remove the lock file
         Files.delete(officeLockFile);
         TestHelper.scanFolder(getFolderAtLisa());
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return lockingListenerLisa.unlocked.size() >= 1 && lockingListenerBart.unlocked.size() >= 1;
+            }
+
+            @Override
+            public String message() {
+                return "Office lock not removed. Unlocked at Lisa: " + lockingListenerLisa.unlocked.size()
+                    + ", at Bart: " + lockingListenerBart.unlocked.size();
+            }
+        });
 
         assertEquals(0, lockingListenerLisa.forbidden.size());
         assertEquals(1, lockingListenerLisa.unlocked.size());

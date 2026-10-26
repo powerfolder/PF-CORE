@@ -73,7 +73,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertIdenticalTestFolder();
 
         // Step 2) Remove operations
+        getContollerBart().setPaused(true);
         performRandomOperations(0, 0, 30, getFolderAtBart().getLocalBase());
+        getContollerBart().setPaused(false);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
@@ -100,7 +102,10 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         clearCompletedDownloads();
 
         // Step 3) Change operations
+        // Paused like step 1: a watcher scan in the middle of the writes made a second version of a file
+        getContollerBart().setPaused(true);
         performRandomOperations(0, 50, 0, getFolderAtBart().getLocalBase());
+        getContollerBart().setPaused(false);
         scanFolder(getFolderAtBart());
 
         waitForCompletedDownloads(50, 0, 50, 50, 50);

@@ -355,7 +355,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             {
                 fail(
                     "Premature file transfer finish. increase filesize for testfile. " +
-                            "completed uploads=" + getContollerBart().getTransferManager().countCompletedDownloads());
+                            "completed uploads="
+                            + getContollerBart().getTransferManager().getCompletedUploadsCollection().size());
             }
         }
         // Upload requested
