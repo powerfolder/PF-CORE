@@ -47,6 +47,7 @@ import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.util.UIThemeState;
 import de.dal33t.powerfolder.util.Waiter;
 
 /**
@@ -184,6 +185,14 @@ public class SplashScreen extends JWindow {
         Icon icon = Icons.getIconById(Icons.SPLASH);
         String path = Icons.getIconProperties().getProperty(Icons.SPLASH);
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        // In dark mode prefer the branding's dark splash (and its @1.5x / @2x
+        // siblings) when it ships one; light-only brandings are unaffected.
+        if (UIThemeState.isDark() && path != null && path.endsWith(".png")) {
+            String darkPath = path.substring(0, path.length() - ".png".length()) + "_dark.png";
+            if (cl.getResource(darkPath) != null) {
+                path = darkPath;
+            }
+        }
         URL baseURL = path != null && path.endsWith(".png") ? cl.getResource(path) : null;
         if (baseURL == null) {
             return icon;

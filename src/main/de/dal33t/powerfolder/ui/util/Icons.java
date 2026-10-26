@@ -1051,10 +1051,11 @@ public class Icons {
         } else {
             icon = new ImageIcon(iconURL);
         }
-        // PFC-3643: the header brand logo is a 432x100 bitmap that is excluded
-        // from the small-icon HiDPI path (> HIDPI_MAX_BASE). Give it HiDPI variants,
-        // downscaled from a bundled "@4x" master when there is one.
-        if (LOGO400UI.equals(id) && icon instanceof ImageIcon) {
+        // PFC-3643: the header brand logo and the "powered by" strip are wide
+        // bitmaps excluded from the small-icon HiDPI path (> HIDPI_MAX_BASE). Give
+        // them HiDPI variants, downscaled from a bundled "@4x" master when there is
+        // one (e.g. PoweredBy@4x.png), so they stay sharp on scaled displays.
+        if ((LOGO400UI.equals(id) || POWERED_BY.equals(id)) && icon instanceof ImageIcon) {
             icon = toHiDpiIcon((ImageIcon) icon, shownPath != null ? hiResVariantURL(shownPath) : null);
         }
         // PFC-3643: sync glyphs use the Android badges, drawn as vectors - the "syncing"
