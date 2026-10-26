@@ -889,6 +889,19 @@ public class MainFrame extends PFUIComponent {
                 .formatDecimal(overallSyncPercentage) + '%' : "...";
             upperText = Translation.get("main_frame.syncing",
                 syncingTemp);
+            // Remaining time in the text, e.g. "Synchronizing 87% (15 minutes remaining)", only between 1 s and 6 h.
+            if (syncDate != null) {
+                long remaining = syncDate.getTime() - System.currentTimeMillis();
+                if (remaining > 1000L && remaining < 6L * 3600L * 1000L) {
+                    String duration = Format.formatDeltaTime(remaining);
+                    String pattern = Translation.get("main_frame.sync_remaining");
+                    if (!pattern.startsWith("{0}") && !duration.isEmpty()) {
+                        // Mid-sentence ("noch weniger als eine Minute"): no capital first letter.
+                        duration = Character.toLowerCase(duration.charAt(0)) + duration.substring(1);
+                    }
+                    upperText += " (" + Translation.get("main_frame.sync_remaining", duration) + ")";
+                }
+            }
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
             upperText = Translation.get("main_frame.in_sync");

@@ -201,7 +201,7 @@ public class TrayIconManager extends PFComponent {
             double overallSyncPercentage = getController().getUIController()
                 .getApplicationModel().getSyncingModel()
                 .getOverallSyncPercentage();
-            if (overallSyncPercentage >= 0) {
+            if (overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d) { // never "100%" while syncing
                 tooltip.append(' ');
                 tooltip
                     .append(Format.formatDecimal(overallSyncPercentage) + '%');
@@ -284,7 +284,7 @@ public class TrayIconManager extends PFComponent {
                 double overallSyncPercentage = getController()
                     .getUIController().getApplicationModel()
                     .getSyncingModel().getOverallSyncPercentage();
-                if (overallSyncPercentage >= 0) {
+                if (overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d) { // never "100%" while syncing
                     tooltip.append(' ');
                     tooltip
                         .append(Format.formatDecimal(overallSyncPercentage) + '%');
