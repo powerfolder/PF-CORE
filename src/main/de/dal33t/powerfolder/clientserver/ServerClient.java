@@ -1855,10 +1855,10 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * PFC-3643: loads the avatar image of an account. Authenticates with the device token only; without a token the
-     * load is skipped. Must be called off the EDT.
+     * PFC-3643: loads the avatar image of an account. Authenticates with the WebDAV token from the login only; without
+     * one the load is skipped. Must be called off the EDT.
      *
-     * @return the image, or {@code null} without a device token, without a web URL or on any non-200 response.
+     * @return the image, or {@code null} without a WebDAV token, without a web URL or on any non-200 response.
      */
     public BufferedImage loadAvatar(AccountInfo aInfo) throws IOException {
         String url = aInfo != null ? getAvatarURL(aInfo, true) : null;
@@ -1882,14 +1882,15 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * The {@code Authorization} header for the avatar endpoint: the device token from the login as {@code Bearer}.
+     * The {@code Authorization} header for the avatar endpoint: the WebDAV token from the login as {@code Bearer}.
+     * The device token is bound to this node and only valid on the P2P connection - over HTTP the server answers 403.
      * Never mints a token, never sends the password.
      *
-     * @return the header value, or {@code null} without a device token.
+     * @return the header value, or {@code null} without a valid WebDAV token.
      */
     private String getAvatarAuthorization() {
-        String token = tokenSecret;
-        return StringUtils.isNotBlank(token) ? "Bearer " + token : null;
+        String token = webdavToken;
+        return StringUtils.isNotBlank(token) && !Token.isExpired(token) ? "Bearer " + token : null;
     }
 
     /** Redirects are not followed: HttpURLConnection would re-send the Authorization header to the redirect host. */

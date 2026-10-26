@@ -216,7 +216,14 @@ public class MainFrame extends PFUIComponent {
 
         // Account header in one row: avatar in the icon column, name + storage bar as one block in the text column,
         // both centred vertically (spanned rows would not centre them); notices in the row below.
-        PanelBuilder account = new PanelBuilder(new FormLayout("fill:pref:grow", "pref, 3dlu, pref"));
+        // The header must not jump when the login state changes: the name row keeps one text line while the name is
+        // still empty, the hidden bar / no-quota text keep their space.
+        JLabel textLine = new JLabel("Ag");
+        textLine.setFont(loginActionLabel.getUIComponent().getFont());
+        int lineHeight = textLine.getPreferredSize().height;
+        FormLayout accountLayout = new FormLayout("fill:pref:grow", "max(pref;" + lineHeight + "px), 3dlu, pref");
+        accountLayout.setHonorsVisibility(false);
+        PanelBuilder account = new PanelBuilder(accountLayout);
         account.add(loginActionLabel.getUIComponent(), cc.xy(1, 1));
         account.add(usagePB, cc.xy(1, 3, "left, center"));
         account.add(noStorageText, cc.xy(1, 3));
@@ -619,8 +626,15 @@ public class MainFrame extends PFUIComponent {
         MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
         logoLabel.addMouseListener(logoMouseListener);
         logoLabel.addMouseMotionListener(logoMouseListener);
-        // PFC-3643: the logo doubles as a link to the web account (a plain click; dragging the window still works).
-        logoLabel.addMouseListener(accountLoginOpener);
+        // PFC-3643: the logo links to the server's web portal (a plain click; dragging the window still works).
+        logoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1 && client.hasWebURL()) {
+                    BrowserLauncher.open(getController(), () -> client.getWebURL());
+                }
+            }
+        });
 
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
@@ -726,9 +740,10 @@ public class MainFrame extends PFUIComponent {
 
     /** PFC-3643: hand cursor on the logo, avatar and storage bar only where a click opens something. */
     private void updateAccountLinks() {
+        Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
         boolean linked = !client.isLoggedIn() || client.supportsWebLogin();
-        Cursor cursor = linked ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor();
-        logoLabel.setCursor(cursor);
+        Cursor cursor = linked ? hand : Cursor.getDefaultCursor();
+        logoLabel.setCursor(client.hasWebURL() ? hand : Cursor.getDefaultCursor());
         avatarLabel.setCursor(cursor);
         usagePB.setCursor(cursor);
         noStorageText.setCursor(cursor);
@@ -884,12 +899,11 @@ public class MainFrame extends PFUIComponent {
             || event.equals(SyncStatusEvent.SYNC_INCOMPLETE))
         {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
-            String syncingTemp = overallSyncPercentage >= 0
-                && overallSyncPercentage < 99.5d ? Format
-                .formatDecimal(overallSyncPercentage) + '%' : "...";
+            boolean percentKnown = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d;
+            String syncingTemp = percentKnown ? Format.formatDecimal(overallSyncPercentage) + '%' : "...";
             upperText = Translation.get("main_frame.syncing",
                 syncingTemp);
-            // Remaining time in the text, e.g. "Synchronizing 87% (15 minutes remaining)", only between 1 s and 6 h.
+            // With an ETA between 1 s and 6 h it replaces "Synchronizing", e.g. "87% · 15 minutes remaining".
             if (syncDate != null) {
                 long remaining = syncDate.getTime() - System.currentTimeMillis();
                 if (remaining > 1000L && remaining < 6L * 3600L * 1000L) {
@@ -899,7 +913,12 @@ public class MainFrame extends PFUIComponent {
                         // Mid-sentence ("noch weniger als eine Minute"): no capital first letter.
                         duration = Character.toLowerCase(duration.charAt(0)) + duration.substring(1);
                     }
-                    upperText += " (" + Translation.get("main_frame.sync_remaining", duration) + ")";
+                    String eta = Translation.get("main_frame.sync_remaining", duration);
+                    if (percentKnown) {
+                        upperText = syncingTemp + " · " + eta;
+                    } else {
+                        upperText = eta.isEmpty() ? eta : Character.toUpperCase(eta.charAt(0)) + eta.substring(1);
+                    }
                 }
             }
             upperMainTextActionLabel.setNeverUnderline(true);
