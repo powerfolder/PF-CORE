@@ -21,20 +21,16 @@ package de.dal33t.powerfolder.util.logging.handlers;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -64,14 +60,11 @@ public class DocumentHandler extends Handler {
     /** Created and used on the EDT only. */
     private Timer flushTimer;
 
-    // PFC-3643: per-level log colours for the debug panel, theme-aware. The old
-    // single set used Color.BLACK for INFO (invisible on the dark theme) and dark
-    // blue/green that were unreadable on a dark background. We keep one set tuned for
-    // the light theme and a brighter set for dark, and pick at render time.
-    private static final Map<String, SimpleAttributeSet> logColorsLight =
-            new HashMap<String, SimpleAttributeSet>();
-    private static final Map<String, SimpleAttributeSet> logColorsDark =
-            new HashMap<String, SimpleAttributeSet>();
+    // PFC-3643 / follow-up: all log text uses a single theme-aware colour - complete
+    // white in dark mode, complete black in light mode (no per-level colours). The whole
+    // buffer is re-coloured whenever the theme colour changes (see flushPending), so
+    // lines logged during startup before the dark theme was applied are corrected too.
+    private Color lastAppliedForeground;
 
     private static ThreadLocal<LoggingFormatter> formatterThreadLocal =
             new ThreadLocal<LoggingFormatter>() {
@@ -79,32 +72,6 @@ public class DocumentHandler extends Handler {
                     return new LoggingFormatter();
                 }
             };
-
-    private static void putColor(Map<String, SimpleAttributeSet> map,
-        Level level, Color color)
-    {
-        SimpleAttributeSet set = new SimpleAttributeSet();
-        StyleConstants.setForeground(set, color);
-        map.put(level.getName(), set);
-    }
-
-    static {
-        // Light theme: all log text black, regardless of level.
-        putColor(logColorsLight, Level.SEVERE, Color.BLACK);
-        putColor(logColorsLight, Level.WARNING, Color.BLACK);
-        putColor(logColorsLight, Level.INFO, Color.BLACK);
-        putColor(logColorsLight, Level.FINE, Color.BLACK);
-        putColor(logColorsLight, Level.FINER, Color.BLACK);
-
-        // Dark theme: all log text white (matches the client's text foreground),
-        // regardless of level.
-        Color white = UIThemeState.DARK_FOREGROUND;
-        putColor(logColorsDark, Level.SEVERE, white);
-        putColor(logColorsDark, Level.WARNING, white);
-        putColor(logColorsDark, Level.INFO, white);
-        putColor(logColorsDark, Level.FINE, white);
-        putColor(logColorsDark, Level.FINER, white);
-    }
 
     public void close() throws SecurityException {
     }
@@ -128,7 +95,7 @@ public class DocumentHandler extends Handler {
         } catch (RuntimeException e) {
             return;
         }
-        pending.add(new Pending(record.getLevel().getName(), formattedMessage));
+        pending.add(new Pending(formattedMessage));
         // Bounded: older records would be trimmed from the document anyway.
         if (pendingCount.incrementAndGet() > MAX_PENDING_RECORDS && pending.poll() != null) {
             pendingCount.decrementAndGet();
@@ -151,28 +118,32 @@ public class DocumentHandler extends Handler {
     private void flushPending() {
         // Reset first: a record queued while draining schedules the next flush.
         flushScheduled.set(false);
-        Map<String, SimpleAttributeSet> colors = UIThemeState.isDark() ? logColorsDark : logColorsLight;
+        // One theme-aware colour for every level: complete white in dark mode, complete
+        // black in light mode.
+        Color fg = UIThemeState.isDark() ? UIThemeState.DARK_FOREGROUND : Color.BLACK;
+        SimpleAttributeSet themeSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(themeSet, fg);
         StringBuilder run = new StringBuilder();
-        MutableAttributeSet runSet = null;
         try {
             synchronized (logBuffer) {
                 Pending p;
                 while ((p = pending.poll()) != null) {
                     pendingCount.decrementAndGet();
-                    MutableAttributeSet set = colors.get(p.level);
-                    if (run.length() > 0 && set != runSet) {
-                        logBuffer.insertString(logBuffer.getLength(), run.toString(), runSet);
-                        run.setLength(0);
-                    }
-                    runSet = set;
                     run.append(p.message);
                 }
                 if (run.length() > 0) {
-                    logBuffer.insertString(logBuffer.getLength(), run.toString(), runSet);
+                    logBuffer.insertString(logBuffer.getLength(), run.toString(), themeSet);
                 }
                 int rem = logBuffer.getLength() - numberOfLogCharacters;
                 if (rem > 0) {
                     logBuffer.remove(0, rem);
+                }
+                // Re-colour the whole buffer when the theme colour changed. Startup lines
+                // are logged before the dark theme is applied, so without this they would
+                // stay black; this also handles a live light/dark switch.
+                if (!fg.equals(lastAppliedForeground) && logBuffer.getLength() > 0) {
+                    logBuffer.setCharacterAttributes(0, logBuffer.getLength(), themeSet, true);
+                    lastAppliedForeground = fg;
                 }
             }
         } catch (RuntimeException e) {
@@ -184,11 +155,9 @@ public class DocumentHandler extends Handler {
 
     /** A formatted record waiting for the next flush. */
     private static final class Pending {
-        private final String level;
         private final String message;
 
-        private Pending(String level, String message) {
-            this.level = level;
+        private Pending(String message) {
             this.message = message;
         }
     }
