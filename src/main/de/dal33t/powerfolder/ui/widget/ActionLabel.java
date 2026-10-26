@@ -20,12 +20,16 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -172,23 +176,29 @@ public class ActionLabel extends PFComponent {
 
     public void displayText() {
         if (enabled) {
-            if (!neverUnderline && (mouseOver || underline)) {
-                if (StringUtils.isNotBlank(text)) {
-                    Color color = ColorUtil.getTextForegroundColor();
-                    String rgb = ColorUtil.getRgbForColor(color);
-                    putText("<html><font color=\"" + rgb + "\"><a href=\"#\">"
-                        + text + "</a></font></html>");
-                } else {
-                    putText(" ");
-                }
-
-            } else {
-                uiComponent.setForeground(ColorUtil.getTextForegroundColor());
-                putText(text);
-            }
+            // PFC-3643: underline through the font, not as HTML link - HTML has another line height and baseline,
+            // so the text jumped on hover.
+            uiComponent.setForeground(ColorUtil.getTextForegroundColor());
+            setUnderlined(!neverUnderline && (mouseOver || underline) && StringUtils.isNotBlank(text));
+            putText(StringUtils.isNotBlank(text) || !mouseOver ? text : " ");
         } else {
             uiComponent.setForeground(ColorUtil.getTextInactiveColor());
+            setUnderlined(false);
             putText(text);
+        }
+    }
+
+    private void setUnderlined(boolean underlined) {
+        Font font = uiComponent.getFont();
+        if (font == null) {
+            return;
+        }
+        Object current = font.getAttributes().get(TextAttribute.UNDERLINE);
+        boolean isUnderlined = TextAttribute.UNDERLINE_ON.equals(current);
+        if (isUnderlined != underlined) {
+            Map<TextAttribute, Object> attributes = new HashMap<>();
+            attributes.put(TextAttribute.UNDERLINE, underlined ? TextAttribute.UNDERLINE_ON : null);
+            uiComponent.setFont(font.deriveFont(attributes));
         }
     }
 

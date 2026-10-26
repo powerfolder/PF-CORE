@@ -121,7 +121,6 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private JLabel noStorageText;
-    private ActionLabel noticesActionLabel;
     /** PFC-3643: account header - avatar (from server, initials fallback). */
     private AvatarLabel avatarLabel;
     /** OID of the account whose avatar is loaded, being loaded or failed to load; null = none. */
@@ -199,7 +198,7 @@ public class MainFrame extends PFUIComponent {
         // PFC-3643 feedback: the icon->text gap must match the folder rows (3dlu)
         // so the account name / status text lines up flush with the folder names.
         FormLayout layout = new FormLayout("pref, 3dlu, 160dlu",
-            "pref, 2dlu, pref, 10dlu, pref");
+            "pref, 10dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
 
@@ -215,7 +214,7 @@ public class MainFrame extends PFUIComponent {
         b.add(noticeInfoButton, cc.xy(1, 1));
 
         // Account header in one row: avatar in the icon column, name + storage bar as one block in the text column,
-        // both centred vertically (spanned rows would not centre them); notices in the row below.
+        // both centred vertically (spanned rows would not centre them). Unread notices show in the status row.
         // The header must not jump when the login state changes: the name row keeps one text line while the name is
         // still empty, the hidden bar / no-quota text keep their space.
         JLabel textLine = new JLabel("Ag");
@@ -230,11 +229,10 @@ public class MainFrame extends PFUIComponent {
         account.getPanel().setOpaque(false);
         builder.add(avatarLabel, cc.xy(1, 1, "center, center"));
         builder.add(account.getPanel(), cc.xy(3, 1, "fill, center"));
-        builder.add(noticesActionLabel.getUIComponent(), cc.xy(3, 3));
 
         // Folder sync status in one row (its height is the taller of glyph and text; spanned rows would collapse):
         // glyph centred under the avatar in the icon column, status text in the text column.
-        builder.add(b.getPanel(), cc.xy(1, 5, "center, center"));
+        builder.add(b.getPanel(), cc.xy(1, 3, "center, center"));
         // Status text centred next to the glyph; the last check / ETA is its tooltip, the setup link sits below.
         JPanel statusText = new JPanel();
         statusText.setLayout(new BoxLayout(statusText, BoxLayout.Y_AXIS));
@@ -249,7 +247,7 @@ public class MainFrame extends PFUIComponent {
             setup.setAlignmentX(Component.LEFT_ALIGNMENT);
             statusText.add(setup);
         }
-        builder.add(statusText, cc.xy(3, 5, "fill, center"));
+        builder.add(statusText, cc.xy(3, 3, "fill, center"));
 
         return builder.getPanel();
     }
@@ -402,24 +400,27 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Show notices link if there are notices available.
+     * PFC-3643: the unread notices count lives in the status row ("1 notification") while a notice status is shown.
      */
     private void updateNoticesLabel() {
-        int unreadCount = (Integer) getController().getUIController()
-                .getApplicationModel().getNoticesModel()
-                .getUnreadNoticesCountVM().getValue();
-        if (unreadCount == 0) {
-            noticesActionLabel.setVisible(false);
-        } else if (unreadCount == 1) {
-            noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.get(
-                    "main_frame.unread_notices.single.text"));
-        } else {
-            noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.get(
-                "main_frame.unread_notices.plural.text",
-                String.valueOf(unreadCount)));
+        if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
+            String text = getUnreadNoticesText();
+            if (text != null) {
+                upperMainTextActionLabel.setText(text);
+            }
         }
+    }
+
+    /** @return "1 notification" / "3 notifications", or {@code null} without unread notices. */
+    private String getUnreadNoticesText() {
+        int unreadCount = (Integer) getController().getUIController().getApplicationModel().getNoticesModel()
+            .getUnreadNoticesCountVM().getValue();
+        if (unreadCount <= 0) {
+            return null;
+        }
+        return unreadCount == 1
+            ? Translation.get("main_frame.unread_notices.single.text")
+            : Translation.get("main_frame.unread_notices.plural.text", String.valueOf(unreadCount));
     }
 
     /**
@@ -559,8 +560,6 @@ public class MainFrame extends PFUIComponent {
                 openAccount(e, false);
             }
         });
-        noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));
-        updateNoticesLabel();
 
         // PFC-3643: the avatar, logo and storage bar link to the web account (see openAccount).
         MouseListener accountLoginOpener = new MouseAdapter() {
@@ -935,10 +934,12 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.get("main_frame.log_in_failed.text");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.WARNING)) {
-            upperText = Translation.get("main_frame.warning_notice.text");
+            String notices = getUnreadNoticesText();
+            upperText = notices != null ? notices : Translation.get("main_frame.warning_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else if (event.equals(SyncStatusEvent.INFORMATION)) {
-            upperText = Translation.get("main_frame.info_notice.text");
+            String notices = getUnreadNoticesText();
+            upperText = notices != null ? notices : Translation.get("main_frame.info_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else {
             logSevere("Not handling all sync states: " + event);
