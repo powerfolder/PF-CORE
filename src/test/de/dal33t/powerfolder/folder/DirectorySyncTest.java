@@ -451,8 +451,11 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
 
-        // Create a random file at lisa. Its watcher would scan and sync it to bart, which then restores the dir.
+        // Create a random file at lisa. Any scan at lisa syncs it to bart, which then restores the dir (version 2):
+        // mute her watcher and let her pending maintenance (the initial scan after joining) run first.
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+        TestHelper.waitForCondition(5,
+            () -> !getFolderAtLisa().isMaintenanceRequired() && !getFolderAtLisa().isScanning());
         TestHelper.createRandomFile(dirLisa);
         try {
             Files.delete(dirBart);

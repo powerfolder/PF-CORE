@@ -223,11 +223,12 @@ public class FolderStatistic extends PFComponent {
         current = calculating;
         calculating = null;
 
-        if (writeToDisk && !folder.isDeviceDisconnected()) {
-            Path tempFile = folder.getSystemSubDir().resolve(
-                Folder.FOLDER_STATISTIC + ".writing");
-            Path file = folder.getSystemSubDir().resolve(
-                Folder.FOLDER_STATISTIC);
+        // PFS-5926: never recreates the system subdir - on Windows that failed deleting the folder's directory
+        Path systemSubDir = writeToDisk && folder.isStarted() && !folder.isDeviceDisconnected()
+            ? folder.getExistingSystemSubDir() : null;
+        if (systemSubDir != null) {
+            Path tempFile = systemSubDir.resolve(Folder.FOLDER_STATISTIC + ".writing");
+            Path file = systemSubDir.resolve(Folder.FOLDER_STATISTIC);
             /* What is in that file is what this folder wrote last, and that is remembered. Reading
                it back deserialized the file on every run of every folder, only to compare it with
                something already in memory. */

@@ -5743,6 +5743,15 @@ public class Folder extends PFComponent {
         return systemSubDir;
     }
 
+    /**
+     * @return the system subdir if it exists, else {@code null} - never creates it. For writers in the background: a
+     *         missing one is being deleted with the folder's directory, and bringing it back fails that deletion.
+     */
+    Path getExistingSystemSubDir() {
+        Path systemSubDir = getSystemSubDir0();
+        return Files.isDirectory(systemSubDir) ? systemSubDir : null;
+    }
+
     private Path getSystemSubDir0() {
         if (localBase.toString().contains(Constants.FOLDER_WEBDAV_SUFFIX)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)

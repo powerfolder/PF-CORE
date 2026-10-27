@@ -393,6 +393,36 @@ public class UIUtil {
         }
     }
 
+    /**
+     * PFC-3096: brand the Linux window-manager class so GNOME/KDE match the
+     * window to our {@code .desktop} file (icon + name) instead of falling back
+     * to the Java main class ("de.dal33t.Start"). OpenJDK ignores
+     * {@code -Dawt.appName} for the X11 WM_CLASS (JDK-6528430), so set the
+     * X11 toolkit's {@code awtAppClassName} field directly. Must run before the
+     * first window is shown. Needs {@code --add-opens java.desktop/sun.awt.X11=
+     * ALL-UNNAMED}; without it this is a harmless no-op and the .desktop's
+     * StartupWMClass match still applies.
+     *
+     * @param appClassName the WM_CLASS to use, e.g. the branded binary name.
+     */
+    public static void setLinuxAppClassName(String appClassName) {
+        if (!OSUtil.isLinux()) {
+            return;
+        }
+        if (appClassName == null || appClassName.trim().isEmpty()) {
+            return;
+        }
+        try {
+            java.awt.Toolkit xToolkit = java.awt.Toolkit.getDefaultToolkit();
+            java.lang.reflect.Field field = xToolkit.getClass()
+                .getDeclaredField("awtAppClassName");
+            field.setAccessible(true);
+            field.set(xToolkit, appClassName);
+        } catch (Throwable t) {
+            log.fine("Could not set the X11 application class name: " + t);
+        }
+    }
+
     public static void setMacDockImage(Image img) {
         if (!OSUtil.isMacOS()) {
             return;
