@@ -42,6 +42,9 @@ import de.dal33t.powerfolder.util.Translation;
 
 public class ProblemsTable extends JTable {
 
+    /** PFC-3643: problem column glyph size (the status ring badges). */
+    private static final int PROBLEM_ICON_SIZE = 18;
+
     private final Controller controller;
 
     public ProblemsTable(ProblemsTableModel model, Controller controller) {
@@ -51,7 +54,7 @@ public class ProblemsTable extends JTable {
         setShowGrid(false);
 
         setupColumns();
-        setRowHeight(Icons.getIconById(Icons.PROBLEMS).getIconHeight() + 4);
+        setRowHeight(PROBLEM_ICON_SIZE + 6);
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
@@ -71,7 +74,7 @@ public class ProblemsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(ProblemsTableModel.COL_ICON));
-        column.setPreferredWidth(Icons.getIconById(Icons.PROBLEMS).getIconWidth() + 4);
+        column.setPreferredWidth(PROBLEM_ICON_SIZE + 10);
         column = getColumn(getColumnName(ProblemsTableModel.COL_DESCRIPTION));
         column.setPreferredWidth(350);
         column = getColumn(getColumnName(ProblemsTableModel.COL_SOLUTION));
@@ -94,7 +97,7 @@ public class ProblemsTable extends JTable {
             if (value instanceof Problem) {
                 Problem problem = (Problem) value;
                 if (column == ProblemsTableModel.COL_ICON) {
-                    setIcon(Icons.getIconById(Icons.WARNING));
+                    setIcon(Icons.getStatusGlyph(Icons.WARNING, PROBLEM_ICON_SIZE));
                     setText("");
                 } else if (column == ProblemsTableModel.COL_DESCRIPTION) {
                     setIcon(null);

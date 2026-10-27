@@ -1121,13 +1121,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (folder != null && folder.countProblems() > 0) {
                 // Got a problem.
                 stopFolderSpin();
-                primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
+                primaryButton.setIcon(Icons.getFolderWithStatusBadge(Icons.WARNING));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_problem_text"));
             } else if (getController().isPaused() && incomplete) {
                 // Sync is in pause
                 stopFolderSpin();
-                primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
+                primaryButton.setIcon(Icons.getFolderWithStatusBadge(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
             } else if (folder.isTransferring()) {

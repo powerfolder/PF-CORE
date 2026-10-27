@@ -579,17 +579,22 @@ public class Icons {
      * {@code symbol} (drawn on the 60-unit grid, pen already in {@code color}), at {@code size} px.
      */
     private static Icon ringBadge(int size, Color color, java.util.function.Consumer<Graphics2D> symbol) {
-        return vectorIcon(size, size, g -> {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.translate(0.75, 0.75);
-            g2.scale((size - 1.5) / 60.0, (size - 1.5) / 60.0);
-            g2.setColor(badgeBacking());
-            g2.fill(new java.awt.geom.Ellipse2D.Double(3, 3, 54, 54));
-            g2.setColor(color);
-            g2.fill(badgeRing());
-            symbol.accept(g2);
-            g2.dispose();
-        });
+        return vectorIcon(size, size, g -> paintRingBadge(g, 0.75, 0.75, size - 1.5, color, symbol));
+    }
+
+    /** The ring badge of {@link #ringBadge} in the box ({@code x}, {@code y}, {@code s}). */
+    private static void paintRingBadge(Graphics2D g, double x, double y, double s, Color color,
+        java.util.function.Consumer<Graphics2D> symbol)
+    {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.translate(x, y);
+        g2.scale(s / 60.0, s / 60.0);
+        g2.setColor(badgeBacking());
+        g2.fill(new java.awt.geom.Ellipse2D.Double(3, 3, 54, 54));
+        g2.setColor(color);
+        g2.fill(badgeRing());
+        symbol.accept(g2);
+        g2.dispose();
     }
 
     /**
@@ -623,44 +628,9 @@ public class Icons {
 
     private static Icon drawStatusGlyph(String iconId, int size) {
         // PFC-3643: the known states as ring badges like the folder badges; symbols on the 60-unit grid.
-        if (WARNING.equals(iconId)) {
-            return ringBadge(size, WARNING_BADGE_AMBER, g -> {
-                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 15, 7, 21, 7, 7));
-                g.fill(new java.awt.geom.Ellipse2D.Double(26, 39.5, 8, 8));
-            });
-        } else if (INFORMATION.equals(iconId)) {
-            return ringBadge(size, SYNCING_BADGE_BLUE, g -> {
-                g.fill(new java.awt.geom.Ellipse2D.Double(26, 13, 8, 8));
-                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 25, 7, 21, 7, 7));
-            });
-        } else if (ACTION_ARROW.equals(iconId)) {
-            return ringBadge(size, neutralBadgeColor(), g -> {
-                g.setStroke(new BasicStroke(6.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                java.awt.geom.Path2D.Double chevron = new java.awt.geom.Path2D.Double();
-                chevron.moveTo(25, 18);
-                chevron.lineTo(37, 30);
-                chevron.lineTo(25, 42);
-                g.draw(chevron);
-            });
-        } else if (STATUS_WAITING.equals(iconId)) {
-            return ringBadge(size, neutralBadgeColor(), g -> {
-                g.setStroke(new BasicStroke(4.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g.draw(new java.awt.geom.Line2D.Double(21, 15, 39, 15));
-                g.draw(new java.awt.geom.Line2D.Double(21, 45, 39, 45));
-                java.awt.geom.Path2D.Double glass = new java.awt.geom.Path2D.Double();
-                glass.moveTo(23.5, 15);
-                glass.curveTo(23.5, 25, 30, 26, 30, 30);
-                glass.curveTo(30, 34, 23.5, 35, 23.5, 45);
-                glass.moveTo(36.5, 15);
-                glass.curveTo(36.5, 25, 30, 26, 30, 30);
-                glass.curveTo(30, 34, 36.5, 35, 36.5, 45);
-                g.draw(glass);
-            });
-        } else if (PAUSE.equals(iconId)) {
-            return ringBadge(size, neutralBadgeColor(), g -> {
-                g.fill(new java.awt.geom.RoundRectangle2D.Double(21, 19, 7, 22, 3, 3));
-                g.fill(new java.awt.geom.RoundRectangle2D.Double(32, 19, 7, 22, 3, 3));
-            });
+        java.util.function.Consumer<Graphics2D> symbol = statusBadgeSymbol(iconId);
+        if (symbol != null) {
+            return ringBadge(size, statusBadgeColor(iconId), symbol);
         }
         // Symbols without a vector shape fall back to the whitened bitmap on the accent disc.
         Icon white = whitenedIcon(iconId);
@@ -672,6 +642,61 @@ public class Icons {
                     (int) Math.round(gs), (int) Math.round(gs), null);
             }
         });
+    }
+
+    /** @return the ring colour of the status badge {@code iconId}. */
+    private static Color statusBadgeColor(String iconId) {
+        if (WARNING.equals(iconId) || PROBLEMS.equals(iconId)) {
+            return WARNING_BADGE_AMBER;
+        }
+        return INFORMATION.equals(iconId) ? SYNCING_BADGE_BLUE : neutralBadgeColor();
+    }
+
+    /**
+     * PFC-3643: the symbol of a status ring badge on the 60-unit grid (pen already in the ring colour), or
+     * {@code null} if {@code iconId} has no vector shape.
+     */
+    private static java.util.function.Consumer<Graphics2D> statusBadgeSymbol(String iconId) {
+        if (WARNING.equals(iconId) || PROBLEMS.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 15, 7, 21, 7, 7));
+                g.fill(new java.awt.geom.Ellipse2D.Double(26, 39.5, 8, 8));
+            };
+        } else if (INFORMATION.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.Ellipse2D.Double(26, 13, 8, 8));
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 25, 7, 21, 7, 7));
+            };
+        } else if (ACTION_ARROW.equals(iconId)) {
+            return g -> {
+                g.setStroke(new BasicStroke(6.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                java.awt.geom.Path2D.Double chevron = new java.awt.geom.Path2D.Double();
+                chevron.moveTo(25, 18);
+                chevron.lineTo(37, 30);
+                chevron.lineTo(25, 42);
+                g.draw(chevron);
+            };
+        } else if (STATUS_WAITING.equals(iconId)) {
+            return g -> {
+                g.setStroke(new BasicStroke(4.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.draw(new java.awt.geom.Line2D.Double(21, 15, 39, 15));
+                g.draw(new java.awt.geom.Line2D.Double(21, 45, 39, 45));
+                java.awt.geom.Path2D.Double glass = new java.awt.geom.Path2D.Double();
+                glass.moveTo(23.5, 15);
+                glass.curveTo(23.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 23.5, 35, 23.5, 45);
+                glass.moveTo(36.5, 15);
+                glass.curveTo(36.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 36.5, 35, 36.5, 45);
+                g.draw(glass);
+            };
+        } else if (PAUSE.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(21, 19, 7, 22, 3, 3));
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(32, 19, 7, 22, 3, 3));
+            };
+        }
+        return null;
     }
 
     /** @return the bitmap icon {@code iconId} drawn white, or {@code null} if unknown. */
@@ -791,35 +816,50 @@ public class Icons {
     }
 
     /**
-     * PFC-3643: the monochrome "open folder" glyph (former Folder.png) as vectors on its 24-unit grid, scaled
-     * to {@code size} px in {@code color}.
+     * PFC-3643: the monochrome folder glyph as vectors on a 24-unit grid (closed folder with tab and a gap below
+     * the lid), scaled to {@code size} px in {@code color}. {@code knockout} (px, may be null) is cut out of the
+     * folder, so a badge on it gets a clean gap instead of covering it.
      */
-    private static void paintFolderGlyph(Graphics2D g, double size, Color color) {
+    private static void paintFolderGlyph(Graphics2D g, double size, Color color, java.awt.geom.Ellipse2D knockout) {
+        java.awt.geom.Path2D.Double body = new java.awt.geom.Path2D.Double();
+        body.moveTo(2.0, 6.5);
+        body.curveTo(2.0, 5.1, 3.1, 4.0, 4.5, 4.0);
+        body.lineTo(8.6, 4.0);
+        body.curveTo(9.3, 4.0, 9.9, 4.3, 10.3, 4.8);
+        body.lineTo(11.6, 6.5);
+        body.lineTo(19.5, 6.5);
+        body.curveTo(20.9, 6.5, 22.0, 7.6, 22.0, 9.0);
+        body.lineTo(22.0, 17.5);
+        body.curveTo(22.0, 18.9, 20.9, 20.0, 19.5, 20.0);
+        body.lineTo(4.5, 20.0);
+        body.curveTo(3.1, 20.0, 2.0, 18.9, 2.0, 17.5);
+        body.closePath();
+        java.awt.geom.Area folder = new java.awt.geom.Area(body);
+        // Gap between the lid and the front.
+        folder.subtract(new java.awt.geom.Area(new java.awt.geom.Rectangle2D.Double(2.0, 8.7, 20.0, 1.3)));
+        folder.transform(java.awt.geom.AffineTransform.getScaleInstance(size / 24.0, size / 24.0));
+        if (knockout != null) {
+            folder.subtract(new java.awt.geom.Area(knockout));
+        }
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.scale(size / 24.0, size / 24.0);
         g2.setColor(color);
-        // Back: tab, top bar and the left wall that tapers along the front panel.
-        java.awt.geom.Path2D.Double back = new java.awt.geom.Path2D.Double();
-        back.moveTo(1.0, 6.0);
-        back.curveTo(1.0, 4.9, 1.9, 4.0, 3.0, 4.0);
-        back.lineTo(7.9, 4.0);
-        back.lineTo(8.9, 5.7);
-        back.lineTo(15.8, 5.7);
-        back.quadTo(16.35, 5.7, 16.35, 6.25);
-        back.lineTo(16.35, 8.15);
-        back.lineTo(4.6, 8.15);
-        back.lineTo(1.0, 16.2);
-        back.closePath();
-        g2.fill(back);
-        // Front: the slanted panel.
-        java.awt.geom.Path2D.Double front = new java.awt.geom.Path2D.Double();
-        front.moveTo(5.47, 9.3);
-        front.lineTo(22.75, 9.3);
-        front.lineTo(18.5, 20.0);
-        front.lineTo(1.25, 20.0);
-        front.closePath();
-        g2.fill(front);
+        g2.fill(folder);
         g2.dispose();
+    }
+
+    /** Badge on the folder glyph: its size and the free gap around it, as fractions of the folder size. */
+    private static final double FOLDER_BADGE_SIZE = 0.56;
+    private static final double FOLDER_BADGE_GAP = 0.06;
+
+    /** @return the badge box offset on a {@code size} px folder: bottom right, 0.75 px off the edges. */
+    private static double folderBadgeOffset(double size) {
+        return size - size * FOLDER_BADGE_SIZE - 0.75;
+    }
+
+    /** @return the area cut out of the folder around its badge. */
+    private static java.awt.geom.Ellipse2D folderBadgeKnockout(double size) {
+        double bs = size * FOLDER_BADGE_SIZE, gap = size * FOLDER_BADGE_GAP, bxy = folderBadgeOffset(size);
+        return new java.awt.geom.Ellipse2D.Double(bxy - gap, bxy - gap, bs + 2 * gap, bs + 2 * gap);
     }
 
     /** @return the folder glyph colour: black, white in dark mode. */
@@ -851,7 +891,7 @@ public class Icons {
         }
         Color color = folderGlyphColor();
         Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE,
-            g -> paintFolderGlyph(g, FOLDER_ICON_SIZE, color));
+            g -> paintFolderGlyph(g, FOLDER_ICON_SIZE, color, null));
         FOLDER_ICON_MAP.put(key, result);
         return result;
     }
@@ -878,10 +918,34 @@ public class Icons {
             return cached;
         }
         Color color = folderGlyphColor();
-        double size = FOLDER_ICON_SIZE, bs = size * 0.66, bxy = size - bs - 0.75;
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
         Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
-            paintFolderGlyph(g, size, color);
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
             paintSyncingBadge(g, bxy, bxy, bs, d);
+        });
+        FOLDER_BADGE_MAP.put(key, result);
+        return result;
+    }
+
+    /**
+     * PFC-3643: the folder icon with a status ring badge ({@link #WARNING} / {@link #PROBLEMS}, {@link #PAUSE},
+     * {@link #INFORMATION}), like the sync badges.
+     */
+    public static Icon getFolderWithStatusBadge(String iconId) {
+        java.util.function.Consumer<Graphics2D> symbol = statusBadgeSymbol(iconId);
+        if (symbol == null) {
+            return getFolderIcon();
+        }
+        String key = "status:" + iconId + '|' + darkMode;
+        Icon cached = FOLDER_BADGE_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Color color = folderGlyphColor(), ring = statusBadgeColor(iconId);
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
+        Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
+            paintRingBadge(g, bxy, bxy, bs, ring, symbol);
         });
         FOLDER_BADGE_MAP.put(key, result);
         return result;
@@ -902,11 +966,11 @@ public class Icons {
         }
         Color color = folderGlyphColor();
         // The badge keeps 0.75 px off the right/bottom edge so its antialiased ring is never clipped (150 %).
-        double size = FOLDER_ICON_SIZE, bs = size * 0.66, bxy = size - bs - 0.75;
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
         double degrees = SYNC_ANIMATION_IDS.contains(badgeIconId)
             ? 360.0 * syncFrameIndex(badgeIconId) / SYNC_ANIMATION.length : 0;
         Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
-            paintFolderGlyph(g, size, color);
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
             if (SYNC_COMPLETE.equals(badgeIconId)) {
                 paintSyncedBadge(g, bxy, bxy, bs);
             } else if (vectorBadge) {

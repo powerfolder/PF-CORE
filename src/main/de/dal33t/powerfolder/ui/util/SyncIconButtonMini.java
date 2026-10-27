@@ -53,6 +53,8 @@ public class SyncIconButtonMini extends JButtonMini {
         super(ICON_ZERO, Translation
             .get("sync_icon_button_mini.tip"));
         angle = 0;
+        // PFC-3643: the vector spinner at the size of the former bitmap frames, sharp at any scale.
+        setSpinnerSize(Math.max(ICON_ZERO.getIconWidth(), 16));
         // TODO Possible memory leak
         controller.scheduleAndRepeat(new MyUpdateTask(this),
             ROTATION_STEP_DELAY);

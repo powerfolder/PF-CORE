@@ -48,13 +48,16 @@ import de.dal33t.powerfolder.util.Format;
  */
 public class NoticesTable extends JTable {
 
+    /** PFC-3643: severity column glyph size (the status ring badges). */
+    private static final int SEVERITY_ICON_SIZE = 18;
+
     public NoticesTable(NoticesTableModel tableModel) {
         super(tableModel);
         setShowGrid(false);
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setDefaultRenderer(Notice.class, new MyDefaultTreeCellRenderer());
 
-        setRowHeight(Icons.getIconById(Icons.INFORMATION).getIconHeight() + 3);
+        setRowHeight(SEVERITY_ICON_SIZE + 6);
 
         // add sorting
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -98,10 +101,10 @@ public class NoticesTable extends JTable {
                         Icon icon;
                         if (notice.getNoticeSeverity() == NoticeSeverity.INFORMATION)
                         {
-                            icon = Icons.getIconById(Icons.INFORMATION);
+                            icon = Icons.getStatusGlyph(Icons.INFORMATION, SEVERITY_ICON_SIZE);
                         } else if (notice.getNoticeSeverity() == NoticeSeverity.WARNING)
                         {
-                            icon = Icons.getIconById(Icons.WARNING);
+                            icon = Icons.getStatusGlyph(Icons.WARNING, SEVERITY_ICON_SIZE);
                         } else {
                             icon = Icons.getIconById(Icons.BLANK);
                         }
@@ -175,7 +178,7 @@ public class NoticesTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        int size = Icons.getIconById(Icons.INFORMATION).getIconHeight() + 3;
+        int size = SEVERITY_ICON_SIZE + 10;
         column.setPreferredWidth(size);
         column.setMinWidth(size);
         column.setMaxWidth(size);
