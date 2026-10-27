@@ -35,8 +35,15 @@ import javax.persistence.*;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
@@ -65,6 +72,17 @@ public class FileLink implements Serializable {
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
     public static final String PROPERTYNAME_CREATION_DATE = "creationDate";
     public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
+
+    /* A link password is an Argon2 hash (64 MB, ~1 s CPU) and a single thumbnail or editor request checks it up
+     * to six times. A correct password is remembered for a while - keyed by a peppered digest, never in clear. */
+    private static final Map<String, Long> VERIFIED_PASSWORDS = new ConcurrentHashMap<>();
+    private static final long VERIFIED_PASSWORD_TTL_MS = 10L * 60 * 1000;
+    private static final int VERIFIED_PASSWORDS_MAX = 10_000;
+    private static final byte[] VERIFIED_PASSWORD_PEPPER = new byte[16];
+
+    static {
+        new SecureRandom().nextBytes(VERIFIED_PASSWORD_PEPPER);
+    }
 
     @Id
     private String id;
@@ -289,11 +307,14 @@ public class FileLink implements Serializable {
             return false;
         }
 
-        // Password check
-        if (isPasswordProtected()
-                && !isCorrectPassword(optionalPasswordOrToken)
-                && !isCorrectToken(optionalPasswordOrToken)) {
-            return false;
+        // Password check - one verification: a token decodes to this link's id followed by the password
+        if (isPasswordProtected()) {
+            boolean correct = isNotBlank(optionalPasswordOrToken) && (looksLikeToken(optionalPasswordOrToken)
+                ? isCorrectToken(optionalPasswordOrToken)
+                : isCorrectPassword(optionalPasswordOrToken));
+            if (!correct) {
+                return false;
+            }
         }
 
         /* Folder must match. PFC-3543: a location inside a subfolder with interrupted inheritance is
@@ -461,7 +482,48 @@ public class FileLink implements Serializable {
     }
 
     public boolean isCorrectPassword(String password) {
-        return LoginUtil.matches(Util.toCharArray(password), this.password);
+        if (password == null || isBlank(this.password)) {
+            return LoginUtil.matches(Util.toCharArray(password), this.password);
+        }
+        String key = verifiedPasswordKey(password);
+        Long expires = VERIFIED_PASSWORDS.get(key);
+        long now = System.currentTimeMillis();
+        if (expires != null && expires > now) {
+            return true;
+        }
+        if (!LoginUtil.matches(Util.toCharArray(password), this.password)) {
+            return false;
+        }
+        if (VERIFIED_PASSWORDS.size() >= VERIFIED_PASSWORDS_MAX) {
+            VERIFIED_PASSWORDS.clear();
+        }
+        VERIFIED_PASSWORDS.put(key, now + VERIFIED_PASSWORD_TTL_MS);
+        return true;
+    }
+
+    /** Bound to the stored hash: a changed or removed password never matches an old entry. */
+    private String verifiedPasswordKey(String candidate) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(VERIFIED_PASSWORD_PEPPER);
+            digest.update(this.password.getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+            digest.update(candidate.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private boolean looksLikeToken(String candidate) {
+        if (isBlank(candidate) || isBlank(id)) {
+            return false;
+        }
+        try {
+            return new String(Base58.decode(candidate)).startsWith(id);
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public String getToken(String password) {
