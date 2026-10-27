@@ -65,4 +65,36 @@ public class SimpleCacheTest {
         assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(0, TimeUnit.SECONDS));
         assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(-1, TimeUnit.SECONDS));
     }
+
+    /** INT-1809: a bounded cache drops the expired entries first, then any but the new one - never beyond its limit. */
+    @Test
+    public void testMaxEntries() {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 3);
+        for (int i = 0; i < 10; i++) {
+            cache.put("key" + i, "value" + i);
+            assertTrue(cache.size() <= 3, "Size " + cache.size() + " after " + (i + 1) + " puts");
+            assertEquals("value" + i, cache.getValidEntry("key" + i), "The entry just added stays");
+        }
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(1, TimeUnit.HOURS, 0));
+    }
+
+    @Test
+    public void testMaxEntriesShrinksWithRoomToSpare() {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 100);
+        for (int i = 0; i <= 100; i++) {
+            cache.put("key" + i, "value" + i);
+        }
+        assertEquals(90, cache.size(), "Over the limit the cache shrinks to 90 % - not one entry per put");
+    }
+
+    @Test
+    public void testMaxEntriesDropsExpiredFirst() {
+        SimpleCache<String, String> cache = new SimpleCache<>(50, TimeUnit.MILLISECONDS, 2);
+        cache.put("old1", "x");
+        cache.put("old2", "x");
+        TestHelper.waitMilliSeconds(100);
+        cache.put("new", "y");
+        assertEquals(1, cache.size(), "Both expired entries are gone, the new one stays");
+        assertEquals("y", cache.getValidEntry("new"));
+    }
 }

@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SimpleCache<K, E> extends Loggable {
     private long entryTimeout;
+    /** INT-1809: most entries kept, 0 = unbounded */
+    private int maxEntries;
     private Map<K, Pair<Date, E>> cache;
     private AtomicInteger cacheHits = new AtomicInteger();
     private AtomicInteger cacheMisses = new AtomicInteger();
@@ -44,6 +47,16 @@ public class SimpleCache<K, E> extends Loggable {
     public SimpleCache(long duration, TimeUnit unit)
     {
         this(Util.createConcurrentHashMap(), duration, unit);
+    }
+
+    /**
+     * INT-1809: A cache of at most maxEntries - beyond that the expired entries go, then any (no LRU) down to 90 %,
+     * the entry just added kept. An expired entry is otherwise only removed when its key is asked for again.
+     */
+    public SimpleCache(long duration, TimeUnit unit, int maxEntries) {
+        this(duration, unit);
+        Reject.ifFalse(maxEntries > 0, "Illegal max entries");
+        this.maxEntries = maxEntries;
     }
 
     public SimpleCache(Map<K, Pair<Date, E>> backingMap, long duration,
@@ -68,7 +81,28 @@ public class SimpleCache<K, E> extends Loggable {
         Reject.ifNull(key, "Key is null. Not supported");
         Reject.ifNull(entry, "Value is null. Not supported");
         Pair<Date, E> previousEntry = cache.put(key, new Pair<>(new Date(), entry));
+        if (maxEntries > 0 && cache.size() > maxEntries) {
+            shrink(key);
+        }
         return previousEntry != null ? previousEntry.getSecond() : null;
+    }
+
+    /** Down to 90 % - a full cache would otherwise scan all entries on every put. */
+    private void shrink(K added) {
+        long now = System.currentTimeMillis();
+        cache.values().removeIf(p -> now - p.getFirst().getTime() > entryTimeout);
+        int target = maxEntries - maxEntries / 10;
+        Iterator<K> keys = cache.keySet().iterator();
+        while (cache.size() > target && keys.hasNext()) {
+            if (!added.equals(keys.next())) {
+                keys.remove();
+            }
+        }
+    }
+
+    /** @return the number of entries, expired ones included */
+    public int size() {
+        return cache.size();
     }
 
     /**
