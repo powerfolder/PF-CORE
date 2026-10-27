@@ -40,8 +40,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -92,7 +90,6 @@ public class LoginUtil {
                 return size() > VERIFIED_PASSWORDS_MAX;
             }
         }), 10, TimeUnit.MINUTES);
-    private static final Map<String, CompletableFuture<Boolean>> VERIFYING_PASSWORDS = new ConcurrentHashMap<>();
     private static final byte[] VERIFIED_PASSWORD_PEPPER = new byte[16];
     /** Test hook: verifications run by matchesCached. */
     static final AtomicInteger VERIFICATIONS = new AtomicInteger();
@@ -266,8 +263,8 @@ public class LoginUtil {
 
     /**
      * PFS-5980: {@link #matches(char[], String)} that remembers a correct password for a while, keyed by a peppered
-     * digest of hash and candidate - never in clear, and a changed hash never matches an old entry. Parallel checks
-     * of the same candidate wait for one verification. Wrong passwords are never remembered.
+     * digest of hash and candidate - never in clear, and a changed hash never matches an old entry. Wrong passwords
+     * are never remembered.
      */
     public static boolean matchesCached(String pwCandidate, String hashedPW) {
         if (pwCandidate == null || StringUtils.isBlank(hashedPW)) {
@@ -277,24 +274,11 @@ public class LoginUtil {
         if (VERIFIED_PASSWORDS.getValidEntry(key) != null) {
             return true;
         }
-        CompletableFuture<Boolean> own = new CompletableFuture<>();
-        CompletableFuture<Boolean> running = VERIFYING_PASSWORDS.putIfAbsent(key, own);
-        if (running != null) {
-            return running.join();
+        boolean correct = verify(pwCandidate, hashedPW);
+        if (correct) {
+            VERIFIED_PASSWORDS.put(key, Boolean.TRUE);
         }
-        try {
-            boolean correct = VERIFIED_PASSWORDS.getValidEntry(key) != null || verify(pwCandidate, hashedPW);
-            if (correct) {
-                VERIFIED_PASSWORDS.put(key, Boolean.TRUE);
-            }
-            own.complete(correct);
-            return correct;
-        } catch (RuntimeException e) {
-            own.completeExceptionally(e);
-            throw e;
-        } finally {
-            VERIFYING_PASSWORDS.remove(key, own);
-        }
+        return correct;
     }
 
     private static boolean verify(String pwCandidate, String hashedPW) {

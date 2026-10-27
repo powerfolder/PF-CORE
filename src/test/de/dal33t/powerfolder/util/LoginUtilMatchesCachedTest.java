@@ -22,13 +22,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -81,31 +74,5 @@ public class LoginUtilMatchesCachedTest {
         assertFalse(LoginUtil.matchesCached(null, hash));
         assertFalse(LoginUtil.matchesCached("secret", null));
         assertFalse(LoginUtil.matchesCached("secret", ""));
-    }
-
-    @Test
-    public void testParallelChecksShareOneVerification() throws Exception {
-        LoginUtil.setUseArgon2(true);
-        String hash = LoginUtil.hashAndSalt("secret");
-        int threads = 8;
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-        try {
-            CountDownLatch start = new CountDownLatch(1);
-            List<Future<Boolean>> results = new ArrayList<>();
-            int before = LoginUtil.VERIFICATIONS.get();
-            for (int i = 0; i < threads; i++) {
-                results.add(executor.submit(() -> {
-                    start.await();
-                    return LoginUtil.matchesCached("secret", hash);
-                }));
-            }
-            start.countDown();
-            for (Future<Boolean> result : results) {
-                assertTrue(result.get());
-            }
-            assertEquals(1, LoginUtil.VERIFICATIONS.get() - before);
-        } finally {
-            executor.shutdownNow();
-        }
     }
 }
