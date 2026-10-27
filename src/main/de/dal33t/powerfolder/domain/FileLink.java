@@ -35,17 +35,8 @@ import javax.persistence.*;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
@@ -74,22 +65,6 @@ public class FileLink implements Serializable {
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
     public static final String PROPERTYNAME_CREATION_DATE = "creationDate";
     public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
-
-    /* A link password is an Argon2 hash (64 MB, ~1 s CPU) and a single thumbnail or editor request checks it up
-     * to six times. A correct password is remembered for a while - keyed by a peppered digest, never in clear. */
-    private static final int VERIFIED_PASSWORDS_MAX = 10_000;
-    private static final SimpleCache<String, Boolean> VERIFIED_PASSWORDS = new SimpleCache<>(
-        Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<String, Pair<Date, Boolean>> eldest) {
-                return size() > VERIFIED_PASSWORDS_MAX;
-            }
-        }), 10, TimeUnit.MINUTES);
-    private static final byte[] VERIFIED_PASSWORD_PEPPER = new byte[16];
-
-    static {
-        new SecureRandom().nextBytes(VERIFIED_PASSWORD_PEPPER);
-    }
 
     @Id
     private String id;
@@ -316,10 +291,10 @@ public class FileLink implements Serializable {
 
         // Password check - one verification: a token decodes to this link's id followed by the password
         if (isPasswordProtected()) {
-            boolean correct = isNotBlank(optionalPasswordOrToken) && (looksLikeToken(optionalPasswordOrToken)
-                ? isCorrectToken(optionalPasswordOrToken)
-                : isCorrectPassword(optionalPasswordOrToken));
-            if (!correct) {
+            String tokenPassword = passwordOfToken(optionalPasswordOrToken);
+            if (isBlank(optionalPasswordOrToken)
+                || !isCorrectPassword(tokenPassword != null ? tokenPassword : optionalPasswordOrToken))
+            {
                 return false;
             }
         }
@@ -488,43 +463,22 @@ public class FileLink implements Serializable {
         return isNotBlank(password);
     }
 
+    /* A link password is an Argon2 hash (64 MB, ~1 s CPU) and a single thumbnail or editor request checks it up
+     * to six times - LoginUtil remembers a correct one for a while. */
     public boolean isCorrectPassword(String password) {
-        if (password == null || isBlank(this.password)) {
-            return LoginUtil.matches(Util.toCharArray(password), this.password);
-        }
-        String key = verifiedPasswordKey(password);
-        if (VERIFIED_PASSWORDS.getValidEntry(key) != null) {
-            return true;
-        }
-        if (!LoginUtil.matches(Util.toCharArray(password), this.password)) {
-            return false;
-        }
-        VERIFIED_PASSWORDS.put(key, Boolean.TRUE);
-        return true;
+        return LoginUtil.matchesCached(password, this.password);
     }
 
-    /** Bound to the stored hash: a changed or removed password never matches an old entry. */
-    private String verifiedPasswordKey(String candidate) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(VERIFIED_PASSWORD_PEPPER);
-            digest.update(this.password.getBytes(StandardCharsets.UTF_8));
-            digest.update((byte) 0);
-            digest.update(candidate.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private boolean looksLikeToken(String candidate) {
+    /** @return the password inside a token of this link, null if the input is no such token. */
+    private String passwordOfToken(String candidate) {
         if (isBlank(candidate) || isBlank(id)) {
-            return false;
+            return null;
         }
         try {
-            return new String(Base58.decode(candidate)).startsWith(id);
+            String decoded = new String(Base58.decode(candidate));
+            return decoded.startsWith(id) ? decoded.substring(id.length()) : null;
         } catch (RuntimeException e) {
-            return false;
+            return null;
         }
     }
 
@@ -538,11 +492,9 @@ public class FileLink implements Serializable {
     public boolean isCorrectToken(String token) {
         if (!isPasswordProtected()) {
             return true;
-        } else if (isBlank(token)) {
-            return false;
         }
-        final String decoded = new String(Base58.decode(token)).replace(getId(), "");
-        return isCorrectPassword(decoded);
+        String password = passwordOfToken(token);
+        return password != null && isCorrectPassword(password);
     }
 
     @Override

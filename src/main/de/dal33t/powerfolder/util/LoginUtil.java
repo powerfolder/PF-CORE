@@ -31,11 +31,19 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,6 +82,24 @@ public class LoginUtil {
     private static final int ARGON2_PARALLELISM = 1;
     private static final int ARGON2_HASH_LENGTH = 32;
     private static final int ARGON2_SALT_LENGTH = 16;
+
+    // PFS-5980: correct passwords remembered by matchesCached
+    private static final int VERIFIED_PASSWORDS_MAX = 10_000;
+    private static final SimpleCache<String, Boolean> VERIFIED_PASSWORDS = new SimpleCache<>(
+        Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Pair<Date, Boolean>> eldest) {
+                return size() > VERIFIED_PASSWORDS_MAX;
+            }
+        }), 10, TimeUnit.MINUTES);
+    private static final Map<String, CompletableFuture<Boolean>> VERIFYING_PASSWORDS = new ConcurrentHashMap<>();
+    private static final byte[] VERIFIED_PASSWORD_PEPPER = new byte[16];
+    /** Test hook: verifications run by matchesCached. */
+    static final AtomicInteger VERIFICATIONS = new AtomicInteger();
+
+    static {
+        new SecureRandom().nextBytes(VERIFIED_PASSWORD_PEPPER);
+    }
     /**
      * PFS-862: OTP validity
      */
@@ -236,6 +262,62 @@ public class LoginUtil {
             return expectedHash.equals(actualHash);
         }
         return false;
+    }
+
+    /**
+     * PFS-5980: {@link #matches(char[], String)} that remembers a correct password for a while, keyed by a peppered
+     * digest of hash and candidate - never in clear, and a changed hash never matches an old entry. Parallel checks
+     * of the same candidate wait for one verification. Wrong passwords are never remembered.
+     */
+    public static boolean matchesCached(String pwCandidate, String hashedPW) {
+        if (pwCandidate == null || StringUtils.isBlank(hashedPW)) {
+            return matches(Util.toCharArray(pwCandidate), hashedPW);
+        }
+        String key = verifiedPasswordKey(pwCandidate, hashedPW);
+        if (VERIFIED_PASSWORDS.getValidEntry(key) != null) {
+            return true;
+        }
+        CompletableFuture<Boolean> own = new CompletableFuture<>();
+        CompletableFuture<Boolean> running = VERIFYING_PASSWORDS.putIfAbsent(key, own);
+        if (running != null) {
+            return running.join();
+        }
+        try {
+            boolean correct = VERIFIED_PASSWORDS.getValidEntry(key) != null || verify(pwCandidate, hashedPW);
+            if (correct) {
+                VERIFIED_PASSWORDS.put(key, Boolean.TRUE);
+            }
+            own.complete(correct);
+            return correct;
+        } catch (RuntimeException e) {
+            own.completeExceptionally(e);
+            throw e;
+        } finally {
+            VERIFYING_PASSWORDS.remove(key, own);
+        }
+    }
+
+    private static boolean verify(String pwCandidate, String hashedPW) {
+        VERIFICATIONS.incrementAndGet();
+        return matches(pwCandidate.toCharArray(), hashedPW);
+    }
+
+    /** Test hook: forget all remembered passwords. */
+    static void clearVerifiedPasswords() {
+        VERIFIED_PASSWORDS.invalidateAll();
+    }
+
+    private static String verifiedPasswordKey(String pwCandidate, String hashedPW) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance(SHA256_HASH_DIGEST);
+            digest.update(VERIFIED_PASSWORD_PEPPER);
+            digest.update(hashedPW.getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+            digest.update(pwCandidate.getBytes(StandardCharsets.UTF_8));
+            return java.util.Base64.getEncoder().encodeToString(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static boolean matchesArgon2(char[] pwCandidate, String saltBase64, String expectedHashBase64) {
