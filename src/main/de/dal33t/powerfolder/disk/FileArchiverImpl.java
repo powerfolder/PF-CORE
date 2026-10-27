@@ -1027,9 +1027,8 @@ public class FileArchiverImpl implements FileArchiver {
             }
             return;
         }
-        // The directory holding the archive is gone with its folder - writing would recreate the deleted directories
-        Path holder = archiveDirectory.getParent();
-        if (holder != null && Files.notExists(holder)) {
+        // Archiving a version creates the directory - the size alone must not bring back one deleted with its folder
+        if (Files.notExists(archiveDirectory)) {
             return;
         }
         ByteArrayInputStream bin = new ByteArrayInputStream(String.valueOf(size).getBytes());

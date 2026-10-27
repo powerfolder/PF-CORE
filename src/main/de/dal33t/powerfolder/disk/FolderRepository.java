@@ -3605,7 +3605,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 if (atomic) {
-                    Files.move(sourceDirectory, targetPath);
+                    moveDirectory(sourceDirectory, targetPath);
                 } else {
                     PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
                 }
@@ -3613,7 +3613,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {
-                if (!atomic) {
+                if (atomic) {
+                    logWarning(folder + ": Unable to move to " + targetPath + ". " + e);
+                } else {
                     // Use fallback copy + delete
                     if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
                         // Delete empty target target path. Might have been created through resolveTargetDirectory
@@ -3709,6 +3711,29 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         return moved ? folder : null;
+    }
+
+    /**
+     * Windows refuses to rename a directory while anything below it is open, and a virus scanner or indexer opens
+     * freshly written files for a moment - so a refused rename is tried again for up to three seconds.
+     */
+    private static void moveDirectory(Path source, Path target) throws IOException {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                Files.move(source, target);
+                return;
+            } catch (AccessDeniedException e) {
+                if (attempt >= 30) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
