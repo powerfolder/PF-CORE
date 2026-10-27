@@ -41,9 +41,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
@@ -75,9 +77,14 @@ public class FileLink implements Serializable {
 
     /* A link password is an Argon2 hash (64 MB, ~1 s CPU) and a single thumbnail or editor request checks it up
      * to six times. A correct password is remembered for a while - keyed by a peppered digest, never in clear. */
-    private static final Map<String, Long> VERIFIED_PASSWORDS = new ConcurrentHashMap<>();
-    private static final long VERIFIED_PASSWORD_TTL_MS = 10L * 60 * 1000;
     private static final int VERIFIED_PASSWORDS_MAX = 10_000;
+    private static final SimpleCache<String, Boolean> VERIFIED_PASSWORDS = new SimpleCache<>(
+        Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Pair<Date, Boolean>> eldest) {
+                return size() > VERIFIED_PASSWORDS_MAX;
+            }
+        }), 10, TimeUnit.MINUTES);
     private static final byte[] VERIFIED_PASSWORD_PEPPER = new byte[16];
 
     static {
@@ -486,18 +493,13 @@ public class FileLink implements Serializable {
             return LoginUtil.matches(Util.toCharArray(password), this.password);
         }
         String key = verifiedPasswordKey(password);
-        Long expires = VERIFIED_PASSWORDS.get(key);
-        long now = System.currentTimeMillis();
-        if (expires != null && expires > now) {
+        if (VERIFIED_PASSWORDS.getValidEntry(key) != null) {
             return true;
         }
         if (!LoginUtil.matches(Util.toCharArray(password), this.password)) {
             return false;
         }
-        if (VERIFIED_PASSWORDS.size() >= VERIFIED_PASSWORDS_MAX) {
-            VERIFIED_PASSWORDS.clear();
-        }
-        VERIFIED_PASSWORDS.put(key, now + VERIFIED_PASSWORD_TTL_MS);
+        VERIFIED_PASSWORDS.put(key, Boolean.TRUE);
         return true;
     }
 
