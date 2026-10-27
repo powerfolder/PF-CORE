@@ -51,6 +51,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1590,11 +1591,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
-        // testfile
-        Path fileBart = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 20 * 1024 * 1024);
-        Files.setLastModifiedTime(fileBart,
-            FileTime.fromMillis(System.currentTimeMillis() - 1000L * 60 * 60));
+        // testfile. Gets its old mtime before it is moved in, else a scan in between publishes a second version.
+        Path tmpFile = TestHelper.createRandomFile(TestHelper.getTestDir(), 20 * 1024 * 1024);
+        Files.setLastModifiedTime(tmpFile, FileTime.fromMillis(System.currentTimeMillis() - 1000L * 60 * 60));
+        Path fileBart = Files.move(tmpFile, getFolderAtBart().getLocalBase().resolve(tmpFile.getFileName()),
+            StandardCopyOption.ATOMIC_MOVE);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());

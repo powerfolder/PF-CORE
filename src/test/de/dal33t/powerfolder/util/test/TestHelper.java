@@ -473,12 +473,20 @@ public class TestHelper {
         do {
             randomFile = directory.resolve(createRandomFilename());
         } while (Files.exists(randomFile));
-        try (OutputStream fOut = new BufferedOutputStream(
-            Files.newOutputStream(randomFile, StandardOpenOption.CREATE))) {
-            for (int i = 0; i < size; i++) {
-                fOut.write((int) (Math.random() * 256));
+        try {
+            // Written outside and moved in at once: a scan during the write would publish a partial version.
+            Path tmpDir = getTestDir() != null ? getTestDir() : directory;
+            Path tmpFile = Files.createTempFile(tmpDir, "random-", ".tmp");
+            try (OutputStream fOut = new BufferedOutputStream(Files.newOutputStream(tmpFile))) {
+                for (int i = 0; i < size; i++) {
+                    fOut.write((int) (Math.random() * 256));
+                }
             }
-
+            try {
+                Files.move(tmpFile, randomFile, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tmpFile, randomFile);
+            }
             if (Files.notExists(randomFile)) {
                 throw new IOException("Could not create random file '"
                     + randomFile.toAbsolutePath() + "'");
@@ -527,11 +535,13 @@ public class TestHelper {
             size = 10;
         }
 
-        try (OutputStream fOut = new BufferedOutputStream(
-            Files.newOutputStream(file))) {
-            for (int i = 0; i < size; i++) {
-                fOut.write((int) (Math.random() * 256));
-            }
+        // Content first, then one write: keeps the window in which a scan sees a half-written file short.
+        byte[] content = new byte[(int) size];
+        for (int i = 0; i < content.length; i++) {
+            content[i] = (byte) (Math.random() * 256);
+        }
+        try {
+            Files.write(file, content);
             if (Files.notExists(file)) {
                 throw new IOException("Could not create random file '"
                     + file.toAbsolutePath() + "'");
