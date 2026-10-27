@@ -19,15 +19,23 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
@@ -62,6 +70,15 @@ public class ProblemsTable extends JTable {
         SortedTableHeaderRenderer.associateHeaderRenderer(
                 model, getColumnModel(), 0, true);
 
+        // The check-box column carries a select-all box in its header; keep it
+        // in sync when individual boxes are (un)ticked.
+        getColumnModel().getColumn(ProblemsTableModel.COL_CHECK)
+            .setHeaderRenderer(new HeaderCheckBoxRenderer());
+        model.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                getTableHeader().repaint();
+            }
+        });
     }
 
     private void setupColumns() {
@@ -70,14 +87,81 @@ public class ProblemsTable extends JTable {
         // Otherwise the table header is not visible.
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
-        TableColumn column = getColumn(getColumnName(ProblemsTableModel.COL_ICON));
-        column.setPreferredWidth(Icons.getIconById(Icons.PROBLEMS).getIconWidth() + 4);
-        column = getColumn(getColumnName(ProblemsTableModel.COL_DESCRIPTION));
-        column.setPreferredWidth(350);
-        column = getColumn(getColumnName(ProblemsTableModel.COL_SOLUTION));
-        column.setPreferredWidth(300);
-        column = getColumn(getColumnName(ProblemsTableModel.COL_DATE));
-        column.setPreferredWidth(100);
+        // Address the check-box and icon columns by index: both have an empty
+        // header name, so looking them up by name would be ambiguous.
+        int checkWidth = 30;
+        TableColumn checkColumn = getColumnModel().getColumn(
+            ProblemsTableModel.COL_CHECK);
+        checkColumn.setPreferredWidth(checkWidth);
+        checkColumn.setMinWidth(checkWidth);
+        checkColumn.setMaxWidth(checkWidth);
+        checkColumn.setCellRenderer(new CheckBoxRenderer());
+
+        getColumnModel().getColumn(ProblemsTableModel.COL_ICON)
+            .setPreferredWidth(Icons.getIconById(Icons.PROBLEMS).getIconWidth() + 4);
+        getColumnModel().getColumn(ProblemsTableModel.COL_DESCRIPTION)
+            .setPreferredWidth(350);
+        getColumnModel().getColumn(ProblemsTableModel.COL_SOLUTION)
+            .setPreferredWidth(300);
+        getColumnModel().getColumn(ProblemsTableModel.COL_DATE)
+            .setPreferredWidth(100);
+    }
+
+    /**
+     * Renders the check-box column as a centred check box, following the table's
+     * row striping and selection colours.
+     */
+    private static class CheckBoxRenderer extends JCheckBox implements
+        TableCellRenderer
+    {
+        CheckBoxRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setBorderPainted(false);
+            setOpaque(true);
+        }
+
+        public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column)
+        {
+            setSelected(Boolean.TRUE.equals(value));
+            setBackground(isSelected
+                ? table.getSelectionBackground()
+                : (row % 2 == 0
+                    ? ColorUtil.getEvenTableRowColor()
+                    : ColorUtil.getOddTableRowColor()));
+            return this;
+        }
+    }
+
+    /**
+     * Header renderer for the check-box column: a select-all check box that
+     * reflects whether every problem is currently ticked, styled like a header.
+     */
+    private static class HeaderCheckBoxRenderer extends JCheckBox implements
+        TableCellRenderer
+    {
+        HeaderCheckBoxRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setBorderPainted(false);
+            setOpaque(true);
+        }
+
+        public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column)
+        {
+            setSelected(table.getModel() instanceof ProblemsTableModel
+                && ((ProblemsTableModel) table.getModel()).isAllChecked());
+            JTableHeader header = table.getTableHeader();
+            if (header != null) {
+                setBackground(header.getBackground());
+                setForeground(header.getForeground());
+                setFont(header.getFont());
+            }
+            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+            return this;
+        }
     }
 
     private class ProblemTableCellRenderer extends DefaultTableCellRenderer {
@@ -134,6 +218,13 @@ public class ProblemsTable extends JTable {
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof ProblemsTableModel) {
                     ProblemsTableModel problemsTableModel = (ProblemsTableModel) model;
+                    // The check-box column: its header toggles select-all.
+                    if (modelColumnNo == ProblemsTableModel.COL_CHECK) {
+                        problemsTableModel.setAllChecked(
+                            !problemsTableModel.isAllChecked());
+                        tableHeader.repaint();
+                        return;
+                    }
                     problemsTableModel.sortBy(modelColumnNo);
                 }
             }

@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -32,6 +33,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -70,10 +73,20 @@ public class ProblemsTab extends PFUIComponent {
         super(controller);
         problemsTableModel = new ProblemsTableModel(controller);
         problemsTable = new ProblemsTable(problemsTableModel, controller);
+        // PFC-3657: the leading check-box column is how several problems are
+        // picked to repair at once; row selection stays single (Open/double-click).
         problemsTable.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
         problemsTable.getSelectionModel().addListSelectionListener(
             new MySelectionListener());
+        // Ticking boxes must also refresh the Resolve button state.
+        problemsTableModel.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                if (uiComponent != null) {
+                    enableOnSelection();
+                }
+            }
+        });
         problemsTable.addMouseListener(new TableMouseListener());
     }
 
@@ -176,25 +189,43 @@ public class ProblemsTab extends PFUIComponent {
     private void enableOnSelection() {
         getUIComponent();
         int selectedRow = problemsTable.getSelectedRow();
-        if (selectedRow >= 0) {
-            selectedProblem = (Problem) problemsTableModel.getValueAt(
-                problemsTable.getSelectedRow(), 0);
-            if (selectedProblem.getWikiLinkKey() == null) {
-                openProblemAction.setEnabled(false);
-            } else {
-                openProblemAction.setEnabled(true);
-            }
-            resolveProblemAction
-                .setEnabled(selectedProblem instanceof ResolvableProblem);
-            logFiner("Selected row: " + problemsTable.getSelectedRow()
-                + ". Problem: " + selectedProblem);
-        } else {
-            selectedProblem = null;
-            openProblemAction.setEnabled(false);
-            resolveProblemAction.setEnabled(false);
-        }
+        selectedProblem = problemsTableModel.getProblemAt(selectedRow);
+        openProblemAction.setEnabled(selectedProblem != null
+            && selectedProblem.getWikiLinkKey() != null);
+        // Enable Resolve as soon as at least one target problem is resolvable,
+        // so a whole ticked set (or the selected row) can be repaired at once.
+        resolveProblemAction.setEnabled(hasResolvableTarget());
         // Always enable cleanup
         cleanupProblemAction.setEnabled(true);
+    }
+
+    /**
+     * The problems a bulk action should act on: the ticked ones, or - when none
+     * are ticked - the single selected row (preserving the old one-at-a-time
+     * behaviour). Order follows the table.
+     */
+    private List<Problem> getTargetProblems() {
+        List<Problem> checked = problemsTableModel.getCheckedProblems();
+        if (!checked.isEmpty()) {
+            return checked;
+        }
+        List<Problem> result = new ArrayList<>(1);
+        if (selectedProblem != null) {
+            result.add(selectedProblem);
+        }
+        return result;
+    }
+
+    /**
+     * Whether at least one target problem can be repaired.
+     */
+    private boolean hasResolvableTarget() {
+        for (Problem problem : getTargetProblems()) {
+            if (problem instanceof ResolvableProblem) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // /////////////////
@@ -220,17 +251,23 @@ public class ProblemsTab extends PFUIComponent {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (selectedProblem != null
-                && selectedProblem instanceof ResolvableProblem)
-            {
-                ResolvableProblem resolvableProblem = (ResolvableProblem) selectedProblem;
-                SwingUtilities.invokeLater(resolvableProblem
-                    .resolution(getController()));
-                resolvableProblem.getFolder(getController()).removeProblem(resolvableProblem);
-            } else {
-                logSevere("Tried to resolve a non-resolvable problem "
-                    + (selectedProblem == null ? null : selectedProblem
-                        .getClass().getName()));
+            // Repair every resolvable target problem, so the user can tick
+            // several (or all) and fix them in one action. Collect first, then
+            // resolve, since resolving removes rows and shifts indices.
+            List<Problem> targets = getTargetProblems();
+            boolean resolvedAny = false;
+            for (Problem problem : targets) {
+                if (problem instanceof ResolvableProblem) {
+                    ResolvableProblem resolvableProblem = (ResolvableProblem) problem;
+                    SwingUtilities.invokeLater(resolvableProblem
+                        .resolution(getController()));
+                    resolvableProblem.getFolder(getController())
+                        .removeProblem(resolvableProblem);
+                    resolvedAny = true;
+                }
+            }
+            if (!resolvedAny) {
+                logSevere("Tried to resolve with no resolvable problem targeted");
             }
         }
     }
@@ -256,14 +293,21 @@ public class ProblemsTab extends PFUIComponent {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // If a single problem is selected, clean it up
-            if (selectedProblem != null) {
+            List<Problem> checked = problemsTableModel.getCheckedProblems();
+            // Ticked problems: clean up each of them.
+            if (!checked.isEmpty()) {
+                for (Problem problem : checked) {
+                    cleanup(problem);
+                }
+            }
+            // Else a single selected row: clean that one up.
+            else if (selectedProblem != null) {
                 cleanup(selectedProblem);
             }
-            // If no problem is selected, clean all problems up
+            // Else nothing selected: clean all problems up.
             else {
                 while (problemsTableModel.getRowCount() > 0) {
-                    cleanup((Problem)problemsTableModel.getValueAt(0, 0));
+                    cleanup(problemsTableModel.getProblemAt(0));
                 }
             }
         }
@@ -299,9 +343,11 @@ public class ProblemsTab extends PFUIComponent {
     }
 
     public void resolveProblem() {
-        int selectedRow = problemsTable.getSelectedRow();
-        Problem problem = (Problem) problemsTableModel.getValueAt(selectedRow,
-            0);
+        Problem problem = problemsTableModel.getProblemAt(
+            problemsTable.getSelectedRow());
+        if (problem == null) {
+            return;
+        }
         String wikiArticleURL = Help.getWikiArticleURL(getController(),
             problem.getWikiLinkKey());
         if (StringUtils.isNotBlank(wikiArticleURL)) {

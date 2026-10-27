@@ -22,8 +22,10 @@ package de.dal33t.powerfolder.ui.information.notices;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -43,10 +45,15 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
  */
 public class NoticesTableModel implements TableModel, SortedTableModel {
 
+    /** PFC-3657: leading check-box column to tick notices for a bulk action. */
+    public static final int COL_CHECK = 0;
+
     private final Controller controller;
     private final List<Notice> notices = new ArrayList<Notice>();
+    /** The notices the user has ticked in the check-box column. */
+    private final Set<Notice> checked = new LinkedHashSet<Notice>();
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private final NoticeComparator[] columComparators = {
+    private final NoticeComparator[] columComparators = {null,
         NoticeComparator.BY_SEVERITY, NoticeComparator.BY_DATE,
         NoticeComparator.BY_SUMMARY};
     private NoticeComparator comparator;
@@ -54,14 +61,14 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private boolean sortAscending;
     private int sortColumn;
 
-    private static final String[] COLUMN_NAMES = {"",
+    private static final String[] COLUMN_NAMES = {"", "",
         Translation.get("notices_table.date"),
         Translation.get("notices_table.summary")};
 
     public NoticesTableModel(Controller controller) {
         this.controller = controller;
         sortAscending = false;
-        sortBy(1);
+        sortBy(2);
         reset();
     }
 
@@ -72,6 +79,7 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 notices.clear();
+                checked.clear();
                 List<Notice> allNotices = controller.getUIController()
                     .getApplicationModel().getNoticesModel().getAllNotices();
                 notices.addAll(allNotices);
@@ -88,6 +96,9 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     }
 
     public Class<?> getColumnClass(int columnIndex) {
+        if (columnIndex == COL_CHECK) {
+            return Boolean.class;
+        }
         return Notice.class;
     }
 
@@ -103,18 +114,27 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
         return Math.max(notices.size(), 1);
     }
 
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        int i = 0;
-        for (Notice notice : notices) {
-            if (i++ == rowIndex) {
-                return notice;
-            }
+    /**
+     * The notice at a row, or null for the placeholder row of an empty table.
+     */
+    public Notice getNoticeAt(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < notices.size()) {
+            return notices.get(rowIndex);
         }
         return null;
     }
 
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Notice notice = getNoticeAt(rowIndex);
+        if (columnIndex == COL_CHECK) {
+            return Boolean.valueOf(notice != null && checked.contains(notice));
+        }
+        return notice;
+    }
+
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
+        // Only the check-box column is editable, and only on real notice rows.
+        return columnIndex == COL_CHECK && getNoticeAt(rowIndex) != null;
     }
 
     public void removeTableModelListener(TableModelListener l) {
@@ -122,7 +142,51 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        if (columnIndex == COL_CHECK) {
+            Notice notice = getNoticeAt(rowIndex);
+            if (notice != null) {
+                if (Boolean.TRUE.equals(aValue)) {
+                    checked.add(notice);
+                } else {
+                    checked.remove(notice);
+                }
+                fireModelChanged();
+            }
+            return;
+        }
         throw new IllegalStateException("not editable");
+    }
+
+    /**
+     * The ticked notices, in table order. Empty if nothing is ticked.
+     */
+    public List<Notice> getCheckedNotices() {
+        List<Notice> result = new ArrayList<Notice>();
+        for (Notice notice : notices) {
+            if (checked.contains(notice)) {
+                result.add(notice);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Whether every notice is ticked (and there is at least one). Drives the
+     * select-all check box in the column header.
+     */
+    public boolean isAllChecked() {
+        return !notices.isEmpty() && checked.containsAll(notices);
+    }
+
+    /**
+     * Ticks or unticks every notice at once (the header select-all check box).
+     */
+    public void setAllChecked(boolean value) {
+        checked.clear();
+        if (value) {
+            checked.addAll(notices);
+        }
+        fireModelChanged();
     }
 
     private void fireModelStructureChanged() {

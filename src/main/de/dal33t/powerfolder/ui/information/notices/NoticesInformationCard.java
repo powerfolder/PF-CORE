@@ -25,6 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -173,9 +174,8 @@ public class NoticesInformationCard extends InformationCard {
     private void activateNotice() {
         int row = noticesTable.getSelectedRow();
         if (row >= 0) {
-            Object at = noticesTableModel.getValueAt(row, 0);
-            if (at != null && at instanceof Notice) {
-                Notice notice = (Notice) at;
+            Notice notice = noticesTableModel.getNoticeAt(row);
+            if (notice != null) {
                 model.activateNotice(notice);
             }
         }
@@ -192,16 +192,15 @@ public class NoticesInformationCard extends InformationCard {
         }
 
         public void actionPerformed(ActionEvent e) {
-            int row = noticesTable.getSelectedRow();
-            if (row < 0) {
-                getController().getUIController().getApplicationModel()
-                    .getNoticesModel().clearAll();
+            NoticesModel noticesModel = getController().getUIController()
+                .getApplicationModel().getNoticesModel();
+            // Mark the ticked notices read; if none are ticked, the whole list.
+            List<Notice> ticked = noticesTableModel.getCheckedNotices();
+            if (ticked.isEmpty()) {
+                noticesModel.clearAll();
             } else {
-                Object at = noticesTableModel.getValueAt(row, 0);
-                if (at != null && at instanceof Notice) {
-                    Notice notice = (Notice) at;
-                    getController().getUIController().getApplicationModel()
-                        .getNoticesModel().clearNotice(notice);
+                for (Notice notice : ticked) {
+                    noticesModel.clearNotice(notice);
                 }
             }
         }
@@ -216,9 +215,8 @@ public class NoticesInformationCard extends InformationCard {
         public void actionPerformed(ActionEvent e) {
             int row = noticesTable.getSelectedRow();
             if (row >= 0) {
-                Object at = noticesTableModel.getValueAt(row, 0);
-                if (at != null && at instanceof Notice) {
-                    Notice notice = (Notice) at;
+                Notice notice = noticesTableModel.getNoticeAt(row);
+                if (notice != null) {
                     model.activateNotice(notice);
                 }
             }

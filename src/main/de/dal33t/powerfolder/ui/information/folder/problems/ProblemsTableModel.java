@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.event.TableModelEvent;
@@ -45,19 +47,24 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     SortedTableModel
 {
 
-    public static final int COL_ICON = 0;
-    public static final int COL_DESCRIPTION = 1;
-    public static final int COL_SOLUTION = 2;
-    public static final int COL_DATE = 3;
+    /** PFC-3657: leading check-box column to tick problems for a bulk action. */
+    public static final int COL_CHECK = 0;
+    public static final int COL_ICON = 1;
+    public static final int COL_DESCRIPTION = 2;
+    public static final int COL_SOLUTION = 3;
+    public static final int COL_DATE = 4;
 
     private String[] columnHeaders = {
-        "", // 0 Icon
-        Translation.get("folder_problem.table_model.description"), // 1
+        "", // 0 Check box
+        "", // 1 Icon
+        Translation.get("folder_problem.table_model.description"), // 2
         Translation.get("folder_problem.table_model.solution"), // 3
-        Translation.get("folder_problem.table_model.date") // 2
+        Translation.get("folder_problem.table_model.date") // 4
         };
 
     private final List<Problem> problems;
+    /** The problems the user has ticked in the check-box column. */
+    private final Set<Problem> checked = new LinkedHashSet<Problem>();
 
     private final List<TableModelListener> listeners;
 
@@ -83,20 +90,82 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     }
 
     public Class<?> getColumnClass(int columnIndex) {
+        if (columnIndex == COL_CHECK) {
+            return Boolean.class;
+        }
         return Problem.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
+        // Only the check-box column is editable.
+        return columnIndex == COL_CHECK && getProblemAt(rowIndex) != null;
+    }
+
+    /**
+     * The problem at a row, or null if the row is out of range.
+     */
+    public Problem getProblemAt(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < problems.size()) {
+            return problems.get(rowIndex);
+        }
+        return null;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return problems.get(rowIndex);
+        Problem problem = getProblemAt(rowIndex);
+        if (columnIndex == COL_CHECK) {
+            return Boolean.valueOf(problem != null && checked.contains(problem));
+        }
+        return problem;
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        if (columnIndex == COL_CHECK) {
+            Problem problem = getProblemAt(rowIndex);
+            if (problem != null) {
+                if (Boolean.TRUE.equals(aValue)) {
+                    checked.add(problem);
+                } else {
+                    checked.remove(problem);
+                }
+                modelChanged(new TableModelEvent(this, rowIndex, rowIndex));
+            }
+            return;
+        }
         throw new IllegalStateException(
             "Unable to set value in ProblemTableModel; not editable");
+    }
+
+    /**
+     * The ticked problems, in table order. Empty if nothing is ticked.
+     */
+    public List<Problem> getCheckedProblems() {
+        List<Problem> result = new ArrayList<Problem>();
+        for (Problem problem : problems) {
+            if (checked.contains(problem)) {
+                result.add(problem);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Whether every problem is ticked (and there is at least one). Drives the
+     * select-all check box in the column header.
+     */
+    public boolean isAllChecked() {
+        return !problems.isEmpty() && checked.containsAll(problems);
+    }
+
+    /**
+     * Ticks or unticks every problem at once (the header select-all check box).
+     */
+    public void setAllChecked(boolean value) {
+        checked.clear();
+        if (value) {
+            checked.addAll(problems);
+        }
+        modelChanged(new TableModelEvent(this));
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -152,6 +221,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
 
     public void updateProblems(List<Problem> problemList) {
         problems.clear();
+        checked.clear();
         problems.addAll(problemList);
         modelChanged(new TableModelEvent(this));
     }
