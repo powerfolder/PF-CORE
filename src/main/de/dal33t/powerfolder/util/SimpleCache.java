@@ -51,9 +51,9 @@ public class SimpleCache<K, E> extends Loggable {
     {
         super();
         Reject.ifNull(backingMap, "Backing map");
-        Reject.ifFalse(entryTimeout <= 0, "Illegal timeout value");
         this.cache = backingMap;
         this.entryTimeout = unit.toMillis(duration);
+        Reject.ifFalse(entryTimeout > 0, "Illegal timeout value");
     }
 
     /**

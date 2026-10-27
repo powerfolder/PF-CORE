@@ -59,4 +59,10 @@ public class SimpleCacheTest {
         assertEquals(1000, cache.getCacheHits());
         assertEquals(1000, cache.getCacheMisses());
     }
+
+    @Test
+    public void testIllegalTimeout() {
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(0, TimeUnit.SECONDS));
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(-1, TimeUnit.SECONDS));
+    }
 }
