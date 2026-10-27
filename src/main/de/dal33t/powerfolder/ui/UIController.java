@@ -173,6 +173,17 @@ public class UIController extends PFComponent {
             UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
         }
 
+        if (OSUtil.isLinux()) {
+            // PFC-3096: brand the X11 WM_CLASS (before the splash) so GNOME/KDE
+            // show our icon and name instead of "de.dal33t.Start". Use the
+            // branded binary name the launcher passes in awt.appName.
+            String appName = System.getProperty("awt.appName");
+            UIUtil.setLinuxAppClassName(
+                appName != null && !appName.trim().isEmpty()
+                    ? appName
+                    : "PowerFolder");
+        }
+
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
         if (!controller.isStartMinimized()) {
