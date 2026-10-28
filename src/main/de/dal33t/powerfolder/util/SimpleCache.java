@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A simple, unlimited cache for short term and low volume
+ * A simple cache for short term and low volume - unbounded unless constructed with max entries
  * 
  * @author sprajc
  * @param <K>
@@ -37,10 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *            the class of the cache entries
  */
 public class SimpleCache<K, E> extends Loggable {
-    private long entryTimeout;
+    private final long entryTimeout;
     /** INT-1809: most entries kept, 0 = unbounded */
-    private int maxEntries;
-    private Map<K, Pair<Date, E>> cache;
+    private final int maxEntries;
+    private final Map<K, Pair<Date, E>> cache;
     private AtomicInteger cacheHits = new AtomicInteger();
     private AtomicInteger cacheMisses = new AtomicInteger();
 
@@ -54,18 +54,22 @@ public class SimpleCache<K, E> extends Loggable {
      * the entry just added kept. An expired entry is otherwise only removed when its key is asked for again.
      */
     public SimpleCache(long duration, TimeUnit unit, int maxEntries) {
-        this(duration, unit);
+        this(Util.createConcurrentHashMap(), duration, unit, maxEntries);
         Reject.ifFalse(maxEntries > 0, "Illegal max entries");
-        this.maxEntries = maxEntries;
     }
 
     public SimpleCache(Map<K, Pair<Date, E>> backingMap, long duration,
         TimeUnit unit)
     {
+        this(backingMap, duration, unit, 0);
+    }
+
+    private SimpleCache(Map<K, Pair<Date, E>> backingMap, long duration, TimeUnit unit, int maxEntries) {
         super();
         Reject.ifNull(backingMap, "Backing map");
         this.cache = backingMap;
         this.entryTimeout = unit.toMillis(duration);
+        this.maxEntries = maxEntries;
         Reject.ifFalse(entryTimeout > 0, "Illegal timeout value");
     }
 
@@ -87,16 +91,24 @@ public class SimpleCache<K, E> extends Loggable {
         return previousEntry != null ? previousEntry.getSecond() : null;
     }
 
-    /** Down to 90 % - a full cache would otherwise scan all entries on every put. */
+    /**
+     * Down to 90 % - a full cache would otherwise scan all entries on every put. Valid entries dropped are logged: a
+     * limit below the entries in use makes the cache miss.
+     */
     private void shrink(K added) {
         long now = System.currentTimeMillis();
         cache.values().removeIf(p -> now - p.getFirst().getTime() > entryTimeout);
         int target = maxEntries - maxEntries / 10;
+        int dropped = 0;
         Iterator<K> keys = cache.keySet().iterator();
         while (cache.size() > target && keys.hasNext()) {
             if (!added.equals(keys.next())) {
                 keys.remove();
+                dropped++;
             }
+        }
+        if (dropped > 0) {
+            logWarning("Cache full at " + maxEntries + " entries: " + dropped + " valid entries dropped");
         }
     }
 

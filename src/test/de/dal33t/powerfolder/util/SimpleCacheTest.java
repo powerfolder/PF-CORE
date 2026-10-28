@@ -22,9 +22,14 @@ package de.dal33t.powerfolder.util;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -85,6 +90,31 @@ public class SimpleCacheTest {
             cache.put("key" + i, "value" + i);
         }
         assertEquals(90, cache.size(), "Over the limit the cache shrinks to 90 % - not one entry per put");
+    }
+
+    /** Logins of many request threads fill the cache at once - it must neither fail nor outgrow its limit by much. */
+    @Test
+    public void testMaxEntriesUnderConcurrentPuts() throws Exception {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 1000);
+        int threads = 8;
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        try {
+            List<Future<?>> puts = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                String prefix = "thread" + t + "-";
+                puts.add(pool.submit(() -> {
+                    for (int i = 0; i < 5000; i++) {
+                        cache.put(prefix + i, "value");
+                    }
+                }));
+            }
+            for (Future<?> put : puts) {
+                put.get(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+        assertTrue(cache.size() <= 1000 + threads, "Size " + cache.size());
     }
 
     @Test
