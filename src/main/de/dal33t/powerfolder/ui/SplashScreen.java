@@ -232,15 +232,8 @@ public class SplashScreen extends JWindow {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
                     bar.setValue(absPerc);
-                    // draw version number only once (cannot do in init, no yet
-                    // Graphics there)
-
-                    Graphics g = image.getGraphics();
-                    if (g == null) {
-                        return;
-                    }
-                    String version = Controller.PROGRAM_VERSION;
-                    g.drawString(version, 20, getHeight() - 25);
+                    // PFC-3652: no version number drawn on the splash - the branded splash
+                    // mirrors the login page and the version is shown in the window title.
                 }
             });
         } catch (InterruptedException e) {
