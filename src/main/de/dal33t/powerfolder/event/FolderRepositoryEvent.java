@@ -31,6 +31,8 @@ public class FolderRepositoryEvent extends EventObject {
     private FolderInfo folderInfo;
     // PFS-2227
     private Folder oldFolder;
+    // PFS-5976
+    private String oldLocationPath;
 
     /** create a FolderRepositoryEvent */
     public FolderRepositoryEvent(FolderRepository source) {
@@ -46,6 +48,16 @@ public class FolderRepositoryEvent extends EventObject {
     public FolderRepositoryEvent(FolderRepository source, Folder folder, Folder oldFolder) {
         this(source, folder);
         this.oldFolder = oldFolder;
+    }
+
+    /**
+     * PFS-5976: a folder whose mount moved its location to where its data is.
+     *
+     * @param oldLocationPath the location before, {@code null} if it did not move
+     */
+    public FolderRepositoryEvent(FolderRepository source, Folder folder, String oldLocationPath) {
+        this(source, folder);
+        this.oldLocationPath = oldLocationPath;
     }
 
     /**
@@ -88,5 +100,10 @@ public class FolderRepositoryEvent extends EventObject {
 
     public Folder getOldFolder() {
         return oldFolder;
+    }
+
+    /** PFS-5976: the location a mount moved the folder away from - to store the new one; {@code null} if none. */
+    public String getOldLocationPath() {
+        return oldLocationPath;
     }
 }

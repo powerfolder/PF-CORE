@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
@@ -65,6 +66,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.*;
@@ -1707,6 +1709,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * its data: content reads come from the wrong directory, and the top folder scans the real
      * directory forever because the path-based interrupted-subfolder guard compares the configured
      * base. Correcting it here also heals such persisted damage on the next mount.
+     * <p>
+     * PFS-5976: the one exception is a base that holds the data and identity of the subfolder while its location
+     * holds none - there the location follows the data first ({@link #locationOfData}, servers only).
      *
      * @return the settings with the corrected base dir, or the given settings when nothing diverges
      *         (top folders, unmounted top folder)
@@ -1731,6 +1736,70 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFS-5976: a subfolder whose configured base holds its data and identity while its location names a place
+     * without data - a rename that failed halfway - takes the place of its data as its location. Deriving the base
+     * from the location detached it from its data instead, and the barrier of an interrupted one guarded nothing.
+     * Servers only: a client follows the location of its server, which alone stores the moved one.
+     *
+     * @return the location of its data in top-folder coordinates, {@code null} if it stays where it is
+     */
+    private String locationOfData(FolderInfo folderInfo, FolderSettings folderSettings) {
+        Path configured = folderSettings.getLocalBaseDir();
+        Folder topFolder = folderInfo.isSubFolder() ? getFolder(folderInfo.getTopFolder()) : null;
+        if (topFolder == null || configured == null || folderInfo.getLocation() == null
+            || !getMySelf().isServer())
+        {
+            return null;
+        }
+        Path topBase = topFolder.getLocalBase().toAbsolutePath().normalize();
+        Path base = configured.toAbsolutePath().normalize();
+        Path derived = topBase.resolve(folderInfo.getLocation().getRelativeName());
+        if (base.equals(derived) || base.equals(topBase) || !base.startsWith(topBase)
+            || !keepsBase(folderInfo, base, derived))
+        {
+            return null;
+        }
+        return topBase.relativize(base).toString().replace(base.getFileSystem().getSeparator(), "/");
+    }
+
+    /**
+     * PFS-5976: whether a subfolder belongs at its configured base instead of the one derived from its location - the
+     * configured one holds data and the identity of this very folder, the derived one neither data nor archived
+     * versions.
+     */
+    public static boolean keepsBase(FolderInfo folderInfo, Path configured, Path derived) {
+        if (configured == null || !Files.isDirectory(configured) || !PathUtils.hasFiles(configured)) {
+            return false;
+        }
+        FolderInfo onDisk = FolderInfoFactory.readFrom(configured);
+        return onDisk != null && onDisk.getId().equals(folderInfo.getId())
+            && (derived == null || !Files.isDirectory(derived) || !holdsDataOrVersions(derived));
+    }
+
+    /**
+     * PFS-5976: files, or archived versions of deleted ones - an emptied folder still has those (default archive
+     * directory). Unreadable counts as holding some: nothing moves on a guess.
+     */
+    private static boolean holdsDataOrVersions(Path dir) {
+        try (Stream<Path> paths = Files.walk(dir)) {
+            return paths.anyMatch(path -> Files.isRegularFile(path) && dataOrVersion(dir.relativize(path)));
+        } catch (IOException | UncheckedIOException e) {
+            return true;
+        }
+    }
+
+    /** Outside a system directory, or in its archive. */
+    private static boolean dataOrVersion(Path relative) {
+        for (int i = 0; i < relative.getNameCount() - 1; i++) {
+            if (Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(relative.getName(i).toString())) {
+                return ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getDefaultValue()
+                    .equals(relative.getName(i + 1).toString());
+            }
+        }
+        return true;
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -1746,9 +1815,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // PF-1790/PFC-3543: a subfolder's base IS its location inside the top folder, and the
                 // directory usually exists WITH content - that content is the subfolder's own.
                 // Sidestepping to a "Name (2)" twin would detach the folder from its data and let the
-                // top folder scan the real directory forever.
-                folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
-                Files.createDirectories(folderSettings.getLocalBaseDir());
+                // top folder scan the real directory forever. mountFolder settles the base - PFS-5976: once, where
+                // the data may move the location as well - and creates the directory there.
             } else if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
                     .getValueBoolean(getController())) {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
@@ -1822,7 +1890,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         // PF-1790/PFC-3543: the common path of ALL folder creations corrects a subfolder's base dir,
         // so a divergent persisted path (e.g. a previously uniquified "Name (2)" twin) heals on the
         // next mount no matter which caller mounts it.
+        String oldLocationPath = null;
+        String location = locationOfData(folderInfo, folderSettings);
+        if (location != null) {
+            oldLocationPath = folderInfo.locationPath();
+            logWarning(folderInfo + ": Moving location from " + oldLocationPath + " to " + location
+                + " - its data is there");
+            folderInfo = Folder.atLocation(getFolder(folderInfo.getTopFolder()), folderInfo, location);
+        }
         folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
+        if (folderInfo.isSubFolder()) {
+            try {
+                Files.createDirectories(folderSettings.getLocalBaseDir());
+            } catch (IOException e) {
+                logWarning(folderInfo + ": Unable to create " + folderSettings.getLocalBaseDir() + ". " + e);
+            }
+        }
 
         if (hasJoinedFolder(folderInfo)) {
             Folder existingFolder = folders.get(folderInfo);
@@ -2024,7 +2107,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Fire event
         if (fireEvent) {
-            fireFolderCreated(folder);
+            fireFolderCreated(folder, oldLocationPath);
         }
 
         if (isFine()) {
@@ -3530,7 +3613,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderSettings fs = FolderSettings.load(getController(), folder.getConfigEntryId()).changeBaseDir(newBase);
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
             removeFolder(folder, false, false);
-            Folder rebased = createFolder(folder.getInfo().intern(), fs, false);
+            Folder rebased;
+            try {
+                rebased = createFolder(folder.getInfo().intern(), fs, false);
+            } catch (RuntimeException e) {
+                // PFS-5976: configured at the new place - the next mount finds it there, also a static one
+                saveFolderConfig(folder.getInfo(), fs);
+                throw e;
+            }
             for (String pattern : patterns) {
                 rebased.addPattern(pattern);
             }
@@ -3976,9 +4066,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     // Event support **********************************************************
 
-    private void fireFolderCreated(Folder folder) {
+    private void fireFolderCreated(Folder folder, String oldLocationPath) {
         folderRepositoryListenerSupport
-                .folderCreated(new FolderRepositoryEvent(this, folder));
+                .folderCreated(new FolderRepositoryEvent(this, folder, oldLocationPath));
     }
 
     private void fireFolderRemoved(Folder folder) {

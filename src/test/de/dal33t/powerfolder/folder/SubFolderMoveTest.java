@@ -18,12 +18,16 @@
  */
 package de.dal33t.powerfolder.folder;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -35,7 +39,10 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -167,6 +174,29 @@ public class SubFolderMoveTest extends ControllerTestCase {
         assertTrue(after.getVersion() > before.getVersion(), "...one version further, so peers take it");
     }
 
+    /**
+     * PFS-5976: the old names are deleted, not gone. A device that still had the files offered them again - unknown
+     * to the server, which took them, and the old directory came back.
+     */
+    @Test
+    public void testMovingLeavesTheOldNamesDeleted() throws IOException {
+        Folder subFolder = shareSubDirectory(SHARED_DIR);
+        TestHelper.createRandomFile(subFolder.getLocalBase(), "content.txt");
+        scanFolder(getFolder());
+        FileInfo before = getFolder().getFileInfo(SHARED_DIR + "/content.txt");
+
+        subFolder.move("moved");
+
+        FileInfo old = getFolder().getDAO().find(FileInfoFactory.lookupInstance(getFolder().getInfo(),
+            SHARED_DIR + "/content.txt"), null);
+        assertNotNull(old, "The old name is still known");
+        assertTrue(old.isDeleted(), "...as deleted");
+        assertTrue(old.getVersion() > before.getVersion(), "...one version further, so peers delete their copy");
+        FileInfo moved = getFolder().getFileInfo("moved/content.txt");
+        assertFalse(moved.isDeleted(), "The moved one is alive");
+        assertTrue(moved.getVersion() > old.getVersion(), "...and newer than the deletion of its old name");
+    }
+
     /** A move onto an existing directory is refused, and refusing must leave everything as it was. */
     @Test
     public void testMoveOntoAnExistingDirectoryChangesNothing() throws IOException {
@@ -219,6 +249,175 @@ public class SubFolderMoveTest extends ControllerTestCase {
             mounted.getLocalBase().toAbsolutePath(),
             "...at the new place");
         assertTrue(Files.exists(mounted.getLocalBase().resolve("deep.txt")), "...where its content is");
+    }
+
+    /**
+     * PFS-5976: a share inside an interrupted one borrows that one's database. Moving the outer share
+     * remounted the inheriting one while the fileInfos it reads still named the old place - "FileInfo not in
+     * subfolder", the remaining nested shares were never rebased and the database never learned the move.
+     */
+    @Test
+    public void testMovingCarriesSharesNestedBehindABarrier() throws IOException {
+        Folder outer = shareSubDirectory(SHARED_DIR);
+        Folder barrier = shareSubDirectory(SHARED_DIR + "/barrier");
+        TestHelper.createRandomFile(barrier.getLocalBase(), "restricted.txt");
+        // Several, so that one of them comes before the barrier - the repository hands them out in hash order
+        List<Folder> inners = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            Folder inner = shareSubDirectory(SHARED_DIR + "/barrier/inner" + i);
+            TestHelper.createRandomFile(inner.getLocalBase(), "deep.txt");
+            inners.add(inner);
+        }
+        scanFolder(getFolder());
+        barrier.setInheritsPermissions(false);
+        scanFolder(getController().getFolderRepository().getFolder(barrier.getInfo()));
+
+        assertNotNull(outer.move("moved"), "The move must not be refused");
+
+        FolderRepository repository = getController().getFolderRepository();
+        Path movedBase = getFolder().getLocalBase().resolve("moved");
+        Folder movedBarrier = repository.getFolder(barrier.getInfo());
+        assertNotNull(movedBarrier, "The interrupted share stays mounted");
+        assertEquals(movedBase.resolve("barrier").toAbsolutePath(), movedBarrier.getLocalBase().toAbsolutePath());
+        assertNotNull(movedBarrier.getFileInfo("restricted.txt"), "...and reads its fileInfos");
+        for (Folder inner : inners) {
+            Folder movedInner = repository.getFolder(inner.getInfo());
+            assertNotNull(movedInner, inner + ": the share behind the barrier stays mounted");
+            assertEquals(movedBase.resolve("barrier/" + inner.getName()).toAbsolutePath(),
+                movedInner.getLocalBase().toAbsolutePath(), inner + ": at the new place");
+            assertNotNull(movedInner.getFileInfo("deep.txt"), inner + ": still reads its fileInfos");
+        }
+    }
+
+    /**
+     * PFS-5976: the open search index of an interrupted share below holds a file inside the directory - Windows
+     * refused to rename it, and the move of the share around it with it.
+     */
+    @Test
+    public void testAnOpenIndexBelowDoesNotBlockTheMove() throws IOException {
+        ConfigurationEntry.SEARCH_INDEX_ENABLED.setValue(getController(), true);
+        Folder outer = shareSubDirectory(SHARED_DIR);
+        Folder barrier = shareSubDirectory(SHARED_DIR + "/barrier");
+        TestHelper.createRandomFile(barrier.getLocalBase(), "restricted.txt");
+        scanFolder(getFolder());
+        barrier.setInheritsPermissions(false);
+        Folder interrupted = getController().getFolderRepository().getFolder(barrier.getInfo());
+        assertTrue(interrupted.getSearchIndexManager().isSearchable(), "Precondition: its index is open");
+
+        assertNotNull(outer.move("moved"), "The move must not be refused");
+        Folder moved = getController().getFolderRepository().getFolder(barrier.getInfo());
+        assertNotNull(moved.getSearchIndexManager(), "The share below has its index again");
+    }
+
+    /**
+     * PFS-5976: a nested share that cannot be rebased is unmounted - the others are rebased all the same, its
+     * identity names the new place for the server to store, and the barrier of an interrupted one guards the new
+     * place instead of the old one that is gone.
+     */
+    @Test
+    public void testANestedShareThatCannotBeRebasedStaysGuardedAtTheNewPlace() throws IOException {
+        Folder outer = shareSubDirectory(SHARED_DIR);
+        Folder failing = shareSubDirectory(SHARED_DIR + "/failing");
+        TestHelper.createRandomFile(failing.getLocalBase(), "restricted.txt");
+        Folder other = shareSubDirectory(SHARED_DIR + "/other");
+        scanFolder(getFolder());
+        failing.setInheritsPermissions(false);
+        FolderRepository repository = getController().getFolderRepository();
+        Folder interrupted = repository.getFolder(failing.getInfo());
+        // Without its settings the rebase throws
+        FolderSettings.removeEntries(getController().getConfig(), interrupted.getConfigEntryId());
+
+        assertNotNull(outer.move("moved"), "The move goes through");
+
+        Path movedBase = getFolder().getLocalBase().resolve("moved");
+        assertEquals(movedBase.resolve("other").toAbsolutePath(),
+            repository.getFolder(other.getInfo()).getLocalBase().toAbsolutePath(), "The others are rebased");
+        assertNull(repository.getFolder(failing.getInfo()), "The failing one is unmounted");
+        assertEquals("moved/failing", interrupted.getInfo().locationPath(), "...its identity names the new place");
+        assertTrue(getFolder().isInInterruptedSubFolder(movedBase.resolve("failing/restricted.txt")),
+            "...and its barrier guards it there");
+    }
+
+    /**
+     * PFS-5976: a share whose location names a place without data while its configured base holds the data and its
+     * identity - a rename that failed halfway. Mounted, it takes the place of its data as its location: the barrier
+     * and the base agree again, and the next mount does not ask once more.
+     */
+    @Test
+    public void testAShareMountsWhereItsDataIs() throws IOException {
+        getController().getMySelf().setServer(true);
+        Folder share = shareSubDirectory(SHARED_DIR);
+        TestHelper.createRandomFile(share.getLocalBase(), "kept.txt");
+        FolderRepository repository = getController().getFolderRepository();
+        FolderSettings settings = FolderSettings.load(getController(), share.getConfigEntryId());
+        FolderInfo info = share.getInfo();
+        Path oldBase = share.getLocalBase();
+        repository.removeFolder(share, false);
+        Path data = getFolder().getLocalBase().resolve(PARENT_DIR + "/renamed");
+        Files.move(oldBase, data);
+        List<FolderRepositoryEvent> created = new CopyOnWriteArrayList<>();
+        repository.addFolderRepositoryListener(new FolderRepositoryAdapter() {
+            @Override
+            public void folderCreated(FolderRepositoryEvent e) {
+                created.add(e);
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        });
+
+        Folder mounted = repository.createFolder(info, settings.changeBaseDir(data));
+
+        assertEquals(PARENT_DIR + "/renamed", mounted.getInfo().locationPath(), "The location follows the data");
+        assertEquals(data.toAbsolutePath(), mounted.getLocalBase().toAbsolutePath(), "...the base stays with it");
+        assertFalse(Files.exists(oldBase), "No empty directory at the old place");
+        assertEquals(1, created.size(), "Mounted once");
+        assertEquals(SHARED_DIR, created.get(0).getOldLocationPath(), "The server is told where the share was");
+
+        repository.removeFolder(mounted, false);
+        repository.createFolder(mounted.getInfo(), settings.changeBaseDir(data));
+        assertNull(created.get(1).getOldLocationPath(), "...and only when it moved");
+    }
+
+    /**
+     * PFS-5976: a rebase that fails after the unmount kept nothing of the share - without its config entry the static
+     * mounter never mounted it again. It stays configured at the new place.
+     */
+    @Test
+    public void testARebaseThatFailsKeepsTheShareConfiguredAtTheNewPlace() throws IOException {
+        Folder share = shareSubDirectory(SHARED_DIR);
+        FolderRepository repository = getController().getFolderRepository();
+        Path newBase = Files.createDirectories(getFolder().getLocalBase().resolve(PARENT_DIR + "/elsewhere"));
+        // Refuses every mount below the top folder
+        ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(getController(), true);
+        try {
+            assertThrows(IllegalStateException.class, () -> repository.rebaseLocalFolder(share, newBase));
+        } finally {
+            ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(getController(), false);
+        }
+
+        FolderSettings kept = FolderSettings.load(getController(), share.getConfigEntryId());
+        assertNotNull(kept, "The share stays configured");
+        assertEquals(newBase.toAbsolutePath(), kept.getLocalBaseDir().toAbsolutePath(), "...at the new place");
+    }
+
+    /** PFS-5976: a client follows the location of its server - only the server can store a moved one. */
+    @Test
+    public void testAClientKeepsTheLocationOfItsServer() throws IOException {
+        Folder share = shareSubDirectory(SHARED_DIR);
+        TestHelper.createRandomFile(share.getLocalBase(), "kept.txt");
+        FolderRepository repository = getController().getFolderRepository();
+        FolderSettings settings = FolderSettings.load(getController(), share.getConfigEntryId());
+        FolderInfo info = share.getInfo();
+        repository.removeFolder(share, false);
+        Path data = getFolder().getLocalBase().resolve(PARENT_DIR + "/renamed");
+        Files.move(share.getLocalBase(), data);
+
+        Folder mounted = repository.createFolder(info, settings.changeBaseDir(data));
+
+        assertEquals(info.locationPath(), mounted.getInfo().locationPath(), "The location stays");
     }
 
     /**
