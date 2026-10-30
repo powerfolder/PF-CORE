@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.disk.dao;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Data Access Object for FolderInfo objects.
@@ -137,6 +139,28 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
             }
         }
         return null;
+    }
+
+    /**
+     * PFS-5976: the subfolders at a location of the tree and below it, from the database - mounted or not.
+     *
+     * @param topFolderInfo the top folder of the tree
+     * @param location      the location inside it, as {@link FolderInfo#locationPath()} writes it
+     */
+    default Collection<FolderInfo> getSubFoldersAt(FolderInfo topFolderInfo, String location) {
+        List<FolderInfo> at = new ArrayList<>();
+        for (FolderInfo subFolder : getSubFolders(topFolderInfo)) {
+            if (isAt(subFolder, location)) {
+                at.add(subFolder);
+            }
+        }
+        return at;
+    }
+
+    /** PFS-5976: whether the subfolder is at the location or below it. */
+    static boolean isAt(FolderInfo subFolder, String location) {
+        String subLocation = subFolder.locationPath();
+        return subLocation != null && (subLocation.equals(location) || subLocation.startsWith(location + '/'));
     }
 
     /**
