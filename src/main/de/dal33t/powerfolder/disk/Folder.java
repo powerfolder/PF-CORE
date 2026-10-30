@@ -2809,24 +2809,23 @@ public class Folder extends PFComponent {
             return rows;
         }
         List<FileInfo> movedRows = new ArrayList<>(rows.size());
-        List<FileInfo> deleted = new ArrayList<>(rows.size());
-        Date now = new Date();
+        List<FileInfo> removed = new ArrayList<>(rows.size());
         for (FileInfo row : rows) {
+            removed.add(row);
             if (row.isDeleted()) {
-                // Stays a deletion where it is - moved, it came back to life at the new place
+                // PFS-5976: a deletion is not re-addressed - written as an existing file, it came back to life
                 continue;
             }
             String name = newLocation + row.getRelativeName().substring(oldLocation.length());
-            // Two versions further - past the deletion of its old name, so the moved one stays the newest of the OID
             movedRows.add(FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), name, row.getOID(),
                 row.getSize(), row.getModifiedBy(), row.getModifiedByAccount(), row.getModifiedDate(),
-                row.getVersion() + 2, row.getHashes(), row.isDiretory(), row.getTags()));
-            // PFS-5976: deleted, not gone - a device still holding the old name offered it again, unknown to the server
-            deleted.add(FileInfoFactory.deletedFile(row, getMySelf().getInfo(), getMySelf().getAccountInfo(), now));
+                row.getVersion() + 1, row.getHashes(), row.isDiretory(), row.getTags()));
         }
         Folder newOwner = ownerOfLocation(topFolder, newLocation);
         newOwner.getDAO().store(null, inCoordinatesOf(newOwner, topFolder, movedRows));
-        owner.getDAO().store(null, inCoordinatesOf(owner, topFolder, deleted));
+        for (FileInfo row : inCoordinatesOf(owner, topFolder, removed)) {
+            owner.getDAO().delete(null, row);
+        }
         owner.setDBDirty();
         newOwner.setDBDirty();
         return movedRows;

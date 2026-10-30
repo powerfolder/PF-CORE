@@ -175,26 +175,29 @@ public class SubFolderMoveTest extends ControllerTestCase {
     }
 
     /**
-     * PFS-5976: the old names are deleted, not gone. A device that still had the files offered them again - unknown
-     * to the server, which took them, and the old directory came back.
+     * PFS-5976: the old names go; a deletion among them is not re-addressed - written as an existing file at the new
+     * place, it came back to life.
      */
     @Test
-    public void testMovingLeavesTheOldNamesDeleted() throws IOException {
+    public void testMovingDropsTheOldNamesAndDoesNotReviveADeletion() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "content.txt");
+        Path gone = TestHelper.createRandomFile(subFolder.getLocalBase(), "gone.txt");
         scanFolder(getFolder());
-        FileInfo before = getFolder().getFileInfo(SHARED_DIR + "/content.txt");
+        Files.delete(gone);
+        scanFolder(getFolder());
+        FileInfo deletion = getFolder().getDAO().find(FileInfoFactory.lookupInstance(getFolder().getInfo(),
+            SHARED_DIR + "/gone.txt"), null);
+        assertTrue(deletion != null && deletion.isDeleted(), "Sanity: the deletion is recorded");
 
         subFolder.move("moved");
 
-        FileInfo old = getFolder().getDAO().find(FileInfoFactory.lookupInstance(getFolder().getInfo(),
-            SHARED_DIR + "/content.txt"), null);
-        assertNotNull(old, "The old name is still known");
-        assertTrue(old.isDeleted(), "...as deleted");
-        assertTrue(old.getVersion() > before.getVersion(), "...one version further, so peers delete their copy");
-        FileInfo moved = getFolder().getFileInfo("moved/content.txt");
-        assertFalse(moved.isDeleted(), "The moved one is alive");
-        assertTrue(moved.getVersion() > old.getVersion(), "...and newer than the deletion of its old name");
+        assertNull(getFolder().getDAO().find(FileInfoFactory.lookupInstance(getFolder().getInfo(),
+            SHARED_DIR + "/content.txt"), null), "The old name is gone");
+        assertFalse(getFolder().getFileInfo("moved/content.txt").isDeleted(), "The moved one is alive");
+        FileInfo revived = getFolder().getDAO().find(FileInfoFactory.lookupInstance(getFolder().getInfo(),
+            "moved/gone.txt"), null);
+        assertTrue(revived == null || revived.isDeleted(), "A deleted file does not come back at the new place");
     }
 
     /** A move onto an existing directory is refused, and refusing must leave everything as it was. */
