@@ -1119,7 +1119,8 @@ public class Icons {
         // bitmaps excluded from the small-icon HiDPI path (> HIDPI_MAX_BASE). Give
         // them HiDPI variants, downscaled from a bundled "@4x" master when there is
         // one (e.g. PoweredBy@4x.png), so they stay sharp on scaled displays.
-        if ((LOGO400UI.equals(id) || POWERED_BY.equals(id)) && icon instanceof ImageIcon) {
+        // The small logo of the notification toast gets the same treatment (Icon32x32@4x.png).
+        if ((LOGO400UI.equals(id) || POWERED_BY.equals(id) || SMALL_LOGO.equals(id)) && icon instanceof ImageIcon) {
             // PFC-3652: shift the header logo left by its transparent left margin (render
             // only, the file is untouched) so its content lines up with the avatar / login
             // fields. Only horizontal - vertical position and the logo size stay the same.
