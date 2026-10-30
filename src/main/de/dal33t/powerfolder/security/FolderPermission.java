@@ -59,8 +59,14 @@ public abstract class FolderPermission
 
     public abstract AccessMode getMode();
 
+    /**
+     * PFM-837: A permission keeps the folder as it was granted. A rename or a tag change puts a new instance into the
+     * pool, which this permission does not get to see - the folder is handed out as the repository holds it now.
+     *
+     * @return the folder as it is now
+     */
     public final FolderInfo getFolder() {
-        return folder;
+        return folder != null ? folder.latest() : null;
     }
 
     @Override
@@ -343,7 +349,7 @@ public abstract class FolderPermission
         PermissionInfoProto.PermissionInfo.Builder builder = PermissionInfoProto.PermissionInfo.newBuilder();
         builder.setClazzName("PermissionInfo");
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
-        builder.addObjects(com.google.protobuf.Any.pack(this.folder.toD2D()));
+        builder.addObjects(com.google.protobuf.Any.pack(getFolder().toD2D()));
         // Set permission enum
         if (this instanceof FolderAdminPermission) {
             builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_ADMIN);
