@@ -227,6 +227,24 @@ public class AccountTest {
         assertEquals("Test2", group.getAllFolders().iterator().next().getName());
     }
 
+    /**
+     * PFM-837: A permission received from the server can already carry the renamed folder while the pool here still
+     * holds the old one - a client the rename has not reached yet. The newer one counts.
+     */
+    @Test
+    public void testPermissionWithNewerFolderThanPoolKeepsItsName() {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Test1").intern();
+        FolderInfo renamed = FolderInfoFactory.rename(folder, "Test2");
+        Account account = new Account();
+        account.grant(FolderPermission.owner(renamed));
+
+        // The pool falls back to the old version, as on a client the rename has not reached
+        assertSame(folder, folder.intern(true));
+
+        assertEquals("Test2", account.getDirectPermissionFor(folder).getFolder().getName());
+        assertEquals("Test2", account.getFolders().iterator().next().getName());
+    }
+
     @Test
     public void testLEU() {
         // 1. Arrange

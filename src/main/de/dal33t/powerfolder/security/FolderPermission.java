@@ -60,13 +60,19 @@ public abstract class FolderPermission
     public abstract AccessMode getMode();
 
     /**
-     * PFM-837: A permission keeps the folder as it was granted. A rename or a tag change puts a new instance into the
-     * pool, which this permission does not get to see - the folder is handed out as the repository holds it now.
+     * PFM-837: A permission keeps the folder as it was granted - a snapshot. A rename, a tag change or a move
+     * (PFS-5926) puts a new instance into the pool, which this permission does not get to see - the folder is handed
+     * out as the repository holds it now. A permission received from elsewhere may already carry a newer version than
+     * the pool here (a client before the rename reached it): then that one counts.
      *
      * @return the folder as it is now
      */
     public final FolderInfo getFolder() {
-        return folder != null ? folder.latest() : null;
+        if (folder == null) {
+            return null;
+        }
+        FolderInfo held = folder.latest();
+        return held.getVersion() >= folder.getVersion() ? held : folder;
     }
 
     @Override
@@ -222,10 +228,10 @@ public abstract class FolderPermission
             return false;
         }
 
-        // PFS-5926: a permission carries a snapshot of its folder - the location and the inheritance flag count as
-        // they are now, which is what the barriers below are compared against.
-        FolderInfo thisFolder = getFolder().latest();
-        FolderInfo otherFolder = otherPermission.getFolder().latest();
+        // PFS-5926: the location and the inheritance flag count as they are now (see getFolder()), which is what the
+        // barriers below are compared against.
+        FolderInfo thisFolder = getFolder();
+        FolderInfo otherFolder = otherPermission.getFolder();
 
         // Respect explicit opt-out on target subfolders: a non-inheriting subfolder must not receive
         // permissions by INHERITANCE from an ancestor. This must NOT block a permission granted
@@ -311,7 +317,7 @@ public abstract class FolderPermission
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + folder;
+        return getClass().getSimpleName() + " on " + getFolder();
     }
 
     /** initFromD2DMessage
