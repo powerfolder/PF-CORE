@@ -373,24 +373,82 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static void loginSuccess(OutputStream out) throws IOException {
-        String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
-        String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                "Content-Type: text/html; charset=UTF-8\r\n" +
-                "Content-Length: " + html.length() + "\r\n" +
-                "Connection: close\r\n" +
-                "\r\n" + html;
-        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+    private void loginSuccess(OutputStream out) throws IOException {
+        writeLoginPage(out, "200 OK", Translation.get("login.saml.browser_success"), true);
     }
 
-    private static void loginFailed(OutputStream out) throws IOException {
-        String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
-        String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
+    private void loginFailed(OutputStream out) throws IOException {
+        writeLoginPage(out, "400 Bad Request", Translation.get("login.saml.browser_failed"), false);
+    }
+
+    private void writeLoginPage(OutputStream out, String status, String message, boolean success) throws IOException {
+        byte[] html = loginPage(message, success).getBytes(StandardCharsets.UTF_8);
+        String header = "HTTP/1.1 " + status + "\r\n" +
                 "Content-Type: text/html; charset=UTF-8\r\n" +
-                "Content-Length: " + html.length() + "\r\n" +
+                "Content-Length: " + html.length + "\r\n" +
                 "Connection: close\r\n" +
-                "\r\n" + html;
-        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+                "\r\n";
+        out.write(header.getBytes(StandardCharsets.UTF_8));
+        out.write(html);
+    }
+
+    /**
+     * The browser page after a web login, laid out like the login of the web portal: its stylesheets, wallpaper and
+     * logo come from the server, so the page carries the server branding. Without a web URL a plain card remains.
+     */
+    private String loginPage(String message, boolean success) {
+        String webURL = getController().getOSClient().getWebURL();
+        String title = escapeHTML(getController().getDistribution().getName());
+        StringBuilder html = new StringBuilder("<!DOCTYPE html><html><head><meta charset=\"utf-8\"/>");
+        html.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>");
+        html.append("<title>").append(title).append("</title>");
+        if (StringUtils.isNotBlank(webURL)) {
+            String base = escapeHTML(Util.removeLastSlashFromURI(webURL));
+            html.append("<link rel=\"icon\" href=\"").append(base).append("/favicon.ico\"/>");
+            String[] styles = {"/css/bootstrap/bootstrap.min.css", "/css/picasso.css", "/branding/web.css"};
+            for (String css : styles) {
+                html.append("<link rel=\"stylesheet\" href=\"").append(base).append(css).append("\"/>");
+            }
+        }
+        // Fallback without the server stylesheets; the portal styles win where they apply.
+        html.append("<style>")
+            .append("html,body{height:100%;margin:0}")
+            .append("body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background-color:#f2f4f7}")
+            .append(".pf-login-result{text-align:center;padding:0 0 16px}")
+            .append(".pf-login-result svg{width:56px;height:56px;margin-bottom:22px}")
+            .append(".pf-login-result p{font-size:1.1rem;line-height:1.5;margin:0}")
+            .append("#pica_logo_big{min-height:100px}")
+            .append("</style></head>");
+        html.append("<body class=\"wallpaper\"><main><div class=\"container\"><div class=\"row\">")
+            .append("<div class=\"d-none d-sm-block col-sm-2 col-md-3 col-lg-3\"></div>")
+            .append("<div class=\"col-12 col-sm-8 col-md-6 col-lg-6 pica-relative\">")
+            .append("<div class=\"pica-dialog\"><div><div>");
+        if (StringUtils.isNotBlank(webURL)) {
+            html.append("<div id=\"pica_logo_big\" class=\"pica-space\"></div>");
+        }
+        html.append("<div class=\"pf-login-result\">");
+        if (success) {
+            html.append(statusGlyph("#2e9e48", "M7 12.5l3.2 3.2L17 9"));
+        } else {
+            html.append(statusGlyph("#d9822b", "M12 7v6.5M12 16.6v.1"));
+        }
+        html.append("<p>").append(escapeHTML(message)).append("</p></div>");
+        html.append("</div></div></div></div></div></div></main></body></html>");
+        return html.toString();
+    }
+
+    /** A ring with a stroked symbol inside (check mark / exclamation mark), as on the client status. */
+    private static String statusGlyph(String color, String path) {
+        String stroke = " fill=\"none\" stroke=\"" + color + "\" stroke-linecap=\"round\" stroke-linejoin=\"round\"";
+        return "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\"" + stroke
+            + " stroke-width=\"1.6\"/><path d=\"" + path + "\"" + stroke + " stroke-width=\"1.8\"/></svg>";
+    }
+
+    private static String escapeHTML(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     /**

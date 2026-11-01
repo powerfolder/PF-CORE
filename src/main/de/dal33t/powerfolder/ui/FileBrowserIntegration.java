@@ -41,9 +41,11 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Locking;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
+import de.dal33t.powerfolder.ui.cloudproviders.CloudProvidersIntegration;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayIndex;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayUpdateListener;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
@@ -59,6 +61,8 @@ public class FileBrowserIntegration extends PFComponent {
     private IconOverlayHandler iconOverlayHandler;
     private IconOverlayUpdateListener updateListener;
     private FileIconControl iconControl;
+    /** PFC-3643: Linux file-manager integration (libcloudproviders). */
+    private CloudProvidersIntegration cloudProviders;
 
     public FileBrowserIntegration(Controller controller) {
         super(controller);
@@ -74,6 +78,16 @@ public class FileBrowserIntegration extends PFComponent {
      */
     public boolean start() {
         logFine("Starting file browser integration");
+
+        // PFC-3643: Linux has no liferay-nativity shell-overlay support (it needs
+        // a native Nautilus extension we do not ship). Use the freedesktop
+        // libcloudproviders D-Bus integration instead, which shows the base dir's
+        // sync status in the file-manager sidebar (GNOME Files, KDE Dolphin, ...).
+        if (OSUtil.isLinux()) {
+            logFine("Connect file browser integration to Linux (libcloudproviders)");
+            return fbLinux();
+        }
+
         if (nc == null) {
             nc = NativityControlUtil.getNativityControl();
 
@@ -256,10 +270,63 @@ public class FileBrowserIntegration extends PFComponent {
     }
 
     /**
+     * Start the Linux file-manager integration via libcloudproviders (PFC-3643).
+     * Exposes the PowerFolders base directory as a cloud-provider account whose
+     * sync status is shown in the file-manager sidebar. Pure D-Bus, no native
+     * libraries; unlike Windows/macOS this does not use liferay-nativity.
+     *
+     * @return {@code true} if the integration started.
+     */
+    private boolean fbLinux() {
+        try {
+            Path baseDir = getController().getFolderRepository()
+                .getFoldersBasedir();
+            if (baseDir == null) {
+                logFine("No folders base directory; skipping cloud providers");
+                return false;
+            }
+            String basePath = baseDir.toAbsolutePath().toString();
+            String name = Translation.get("general.application.name");
+            if (name == null || name.trim().isEmpty() || name.startsWith("- ")) {
+                name = "PowerFolder";
+            }
+            // Icon-theme name for the account entry. The launcher sets awt.appName
+            // to the branded binary name (which is also the installed hicolor icon
+            // name); fall back to the generic "folder" icon otherwise.
+            String icon = System.getProperty("awt.appName");
+            if (icon == null || icon.trim().isEmpty()) {
+                icon = "folder";
+            }
+            cloudProviders = new CloudProvidersIntegration(getController(), name,
+                basePath, icon);
+            if (!cloudProviders.start()) {
+                cloudProviders = null;
+                return false;
+            }
+            logInfo("Started Linux file-manager integration (libcloudproviders)");
+            return true;
+        } catch (Throwable t) {
+            logWarning("Could not start Linux cloud providers integration. " + t);
+            cloudProviders = null;
+            return false;
+        }
+    }
+
+    /**
      * Lifecycle management. Removes the listeners and visitors.<br />
      * Should be called, when shutting down the client.
      */
     public void shutdown() {
+        // PFC-3643: Linux libcloudproviders path uses none of the liferay state.
+        if (cloudProviders != null) {
+            cloudProviders.dispose();
+            cloudProviders = null;
+            return;
+        }
+        if (nc == null) {
+            return;
+        }
+
         FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
             .disableFileIcons();
 

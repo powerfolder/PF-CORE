@@ -18,6 +18,7 @@
  *
  */
 package de.dal33t.powerfolder.ui.widget;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -171,7 +172,7 @@ public class FilterTextField {
     private void clearHint() {
         if (!hasExternalText()) {
             textField.setText("");
-            textField.setForeground(SystemColor.textText);
+            textField.setForeground(ColorUtil.getTextForegroundColor());
         }
     }
 

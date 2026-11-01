@@ -30,17 +30,22 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.util.Date;
 
 /**
  * This class delegates responsibility for processing metaFolder fileInfo
  * 'events' to relevant classes.
  */
 public class MetaFolderDataHandler extends PFComponent {
+
+    /** PFS-5842: how long after a lock was removed its former holder is still offered to take it again. */
+    private static final long RELOCK_OFFER_MAX_AGE = 24L * 60 * 60 * 1000;
 
     public MetaFolderDataHandler(Controller controller) {
         super(controller);
@@ -124,26 +129,65 @@ public class MetaFolderDataHandler extends PFComponent {
                 overrideBy = Translation.get("estimation.unknown");
             }
             final String overrideByFinal = overrideBy;
+            // PFS-5842: the deleted lock file names who removed the lock and when (Locking#unlock records the
+            // remover); the lock itself names the content file and so its folder.
+            final FileInfo contentFInfo = lock.getFileInfo();
+            final String folderName = contentFInfo != null
+                ? contentFInfo.getFolderInfo().getLocalizedName() : "";
+            final Date removedAt = fileInfo.getModifiedDate();
+            final String removedAtText = removedAt != null
+                ? Format.formatDateShort(removedAt) : Translation.get("estimation.unknown");
+            // A removal that is old news by now - typically seen after a long time offline - is told, not undone:
+            // somebody may well have been working on the file since.
+            final boolean offerRelock = contentFInfo != null && removedAt != null
+                && System.currentTimeMillis() - removedAt.getTime() < RELOCK_OFFER_MAX_AGE;
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
-                    logWarning("Overwriting lock for " + fileInfo + " set by " +
-                            lockMember.getNick() + " removed by " +
-                            remoteMember.getNick());
+                    logInfo("Lock for file " + fileInfo.toDetailString() + " of " +
+                            lockMember.getNick() + " removed by " + overrideByFinal);
 
-                    DialogFactory
-                            .genericDialog(
-                                    getController(),
-                                    Translation.get("dialog.lock.removed_by_other_member.title"),
-                                    Translation.get("dialog.lock.removed_by_other_member.message",
-                                            fileInfo.getFilenameOnly(), overrideByFinal),
-                                    new String[]{"OK"},
-                                    0, GenericDialogType.WARN);
-
+                    String[] options = offerRelock
+                            ? new String[]{
+                                Translation.get("dialog.lock.removed_by_other_member.lock_again"),
+                                Translation.get("general.ok")}
+                            : new String[]{Translation.get("general.ok")};
+                    int choice = DialogFactory.genericDialog(
+                            getController(),
+                            Translation.get("dialog.lock.removed_by_other_member.title"),
+                            Translation.get("dialog.lock.removed_by_other_member.message",
+                                    fileInfo.getFilenameOnly(), overrideByFinal, folderName, removedAtText),
+                            options,
+                            options.length - 1, GenericDialogType.WARN);
+                    if (offerRelock && choice == 0) {
+                        relock(contentFInfo, fileInfo.getFilenameOnly());
+                    }
                     return null;
                 }
             };
             worker.execute();
         }
+    }
+
+    /**
+     * PFS-5842: takes the lock again - unless somebody has taken it since the removal. Decided at the click,
+     * not when the dialog opened: it may have stood open for hours, and Locking#lock overwrites any lock.
+     */
+    private void relock(FileInfo contentFInfo, String fileName) {
+        Lock current = contentFInfo.getLock(getController());
+        boolean takenByOther = current != null ? !isMine(current) : contentFInfo.isLocked(getController());
+        if (takenByOther || !contentFInfo.lock(getController())) {
+            String holder = current != null && StringUtils.isNotBlank(current.getAccountDisplayName())
+                ? current.getAccountDisplayName() : Translation.get("estimation.unknown");
+            DialogFactory.genericDialog(getController(),
+                Translation.get("dialog.lock.relock_failed.title"),
+                Translation.get("dialog.lock.relock_failed.message", fileName, holder),
+                new String[]{Translation.get("general.ok")}, 0, GenericDialogType.WARN);
+        }
+    }
+
+    /** Whether {@code lock} was taken by this very device - the old lock, if its file is not gone yet. */
+    private boolean isMine(Lock lock) {
+        return lock.getMemberInfo() != null && lock.getMemberInfo().equals(getController().getMySelf().getInfo());
     }
 }

@@ -32,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -224,11 +225,13 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
             Plugin plugin = plugins.get(row);
             boolean enabled = getController().getPluginManager().isEnabled(
                 plugin);
-            if (enabled) {
-                setForeground(Color.BLACK);
-            } else {
-                setForeground(Color.LIGHT_GRAY);
-            }
+            // PFC-3643: use theme-aware foregrounds so enabled rows aren't black
+            // (unreadable on the dark theme's table). Enabled = normal table text,
+            // disabled = the dimmed disabled-label colour; both adapt to light/dark.
+            Color fg = UIManager.getColor(enabled
+                ? "Table.foreground" : "Label.disabledForeground");
+            setForeground(fg != null ? fg
+                : (enabled ? Color.BLACK : Color.LIGHT_GRAY));
 
             int columnInModel = UIUtil.toModel(table, column);
             String newValue;

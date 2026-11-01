@@ -304,7 +304,34 @@ public class UIUtil {
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
-        window.setOpacity(opacity);
+        if (window == null || opacity == null) {
+            return;
+        }
+        // PFC-3643: Window.setOpacity() throws IllegalComponentStateException on a
+        // DECORATED Frame/Dialog (overall translucency needs an undecorated window).
+        // After the FlatLaf migration the wizard dialog is decorated, so the fade
+        // animation crashed on every open. Skip the fade for decorated windows
+        // instead of crashing; undecorated windows (e.g. the notification slider)
+        // still fade. The try/catch guards any remaining platform limitation.
+        if (opacity < 1f) {
+            if (window instanceof java.awt.Dialog
+                && !((java.awt.Dialog) window).isUndecorated())
+            {
+                return;
+            }
+            if (window instanceof java.awt.Frame
+                && !((java.awt.Frame) window).isUndecorated())
+            {
+                return;
+            }
+        }
+        try {
+            window.setOpacity(opacity);
+        } catch (java.awt.IllegalComponentStateException
+            | UnsupportedOperationException ex)
+        {
+            // Translucency not available for this window - skip the effect.
+        }
     }
 
     /**
@@ -363,6 +390,36 @@ public class UIUtil {
         }
         if (dialog.getY() > screenSize.height) {
             dialog.setLocation(0, screenSize.height - dialog.getHeight());
+        }
+    }
+
+    /**
+     * PFC-3096: brand the Linux window-manager class so GNOME/KDE match the
+     * window to our {@code .desktop} file (icon + name) instead of falling back
+     * to the Java main class ("de.dal33t.Start"). OpenJDK ignores
+     * {@code -Dawt.appName} for the X11 WM_CLASS (JDK-6528430), so set the
+     * X11 toolkit's {@code awtAppClassName} field directly. Must run before the
+     * first window is shown. Needs {@code --add-opens java.desktop/sun.awt.X11=
+     * ALL-UNNAMED}; without it this is a harmless no-op and the .desktop's
+     * StartupWMClass match still applies.
+     *
+     * @param appClassName the WM_CLASS to use, e.g. the branded binary name.
+     */
+    public static void setLinuxAppClassName(String appClassName) {
+        if (!OSUtil.isLinux()) {
+            return;
+        }
+        if (appClassName == null || appClassName.trim().isEmpty()) {
+            return;
+        }
+        try {
+            java.awt.Toolkit xToolkit = java.awt.Toolkit.getDefaultToolkit();
+            java.lang.reflect.Field field = xToolkit.getClass()
+                .getDeclaredField("awtAppClassName");
+            field.setAccessible(true);
+            field.set(xToolkit, appClassName);
+        } catch (Throwable t) {
+            log.fine("Could not set the X11 application class name: " + t);
         }
     }
 

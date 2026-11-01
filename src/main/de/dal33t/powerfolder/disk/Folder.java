@@ -500,6 +500,15 @@ public class Folder extends PFComponent {
         }
     }
 
+    /** PFS-5976: closes the search index, its files stay - {@link #initSearchIndex} opens it again. */
+    private void closeSearchIndex() {
+        LuceneIndexManager index = searchIndexManager;
+        searchIndexManager = null;
+        if (index != null) {
+            index.shutdown();
+        }
+    }
+
     public LuceneIndexManager getSearchIndexManager() {
         return searchIndexManager;
     }
@@ -1373,7 +1382,12 @@ public class Folder extends PFComponent {
                 if (isFiner()) {
                     logFiner(this + ": Scan of local filesystem is done by " + holder + ", whose database holds the rows");
                 }
-                return holder.scanLocalFiles();
+                // Count the holder's scan as our own, else autoScanRequired() asks for it again on every maintenance.
+                boolean scanned = holder.scanLocalFiles();
+                if (scanned) {
+                    lastScan = new Date();
+                }
+                return scanned;
             }
         }
         checkIfDeviceDisconnected();
@@ -2708,6 +2722,10 @@ public class Folder extends PFComponent {
                     entry.getKey().updateInfo(entry.getValue());
                 }
 
+                // PFS-5976: the open index of a share below holds a file inside - Windows refuses the rename then
+                for (Folder child : nested.keySet()) {
+                    child.closeSearchIndex();
+                }
                 Folder moved = repository.moveLocalFolder(this, newBase, true);
                 if (moved == null || !isMountedAt(moved, newBase)) {
                     // Nothing moved: put the identity back, one version further so peers accept it.
@@ -2716,15 +2734,38 @@ public class Folder extends PFComponent {
                             + moved.getLocalBase() + ", not at the place its identity"
                             + " now names, so the move did not happen."));
                     restoreLocation(topFolder, oldLocation, nestedBefore);
+                    for (Folder child : nested.keySet()) {
+                        child.initSearchIndex();
+                    }
                     return null;
                 }
                 // PFS-5926: the nested ones moved with the directory, their base still names the old place
-                for (Folder child : nested.keySet()) {
+                int failed = 0;
+                for (Folder child : rebaseOrder(nested.keySet())) {
                     Path childBase = topFolder.getLocalBase().resolve(child.getInfo().locationPath());
-                    repository.rebaseLocalFolder(child, childBase);
+                    try {
+                        repository.rebaseLocalFolder(child, childBase);
+                    } catch (RuntimeException e) {
+                        // PFS-5976: one that fails must not leave the others behind. Unmounted, it mounts again from
+                        // its new location, which the caller stores - its barrier guards the new place meanwhile.
+                        failed++;
+                        logWarning(child + ": Unable to rebase to " + childBase + ", unmounting it. " + e, e);
+                        if (repository.getFolder(child.getInfo()) != null) {
+                            repository.removeFolder(child, false);
+                        }
+                        if (!child.getInfo().inheritsPermissions()) {
+                            repository.seedInterruptedSubFolders(Collections.singletonMap(child.getInfo(), childBase));
+                        }
+                    }
                 }
-                logInfo(moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
-                    + movedRows.size() + " rows re-addressed, " + nested.size() + " nested subfolder(s)");
+                String summary = moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
+                    + movedRows.size() + " fileInfos re-addressed, " + (nested.size() - failed) + " of "
+                    + nested.size() + " nested subfolder(s) rebased";
+                if (failed > 0) {
+                    logWarning(summary);
+                } else {
+                    logInfo(summary);
+                }
                 return moved;
             } finally {
                 repository.setMoving(currentInfo, false);
@@ -2760,6 +2801,18 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * PFS-5976: the folders with a database of their own first, then the inheriting ones - each in order of depth.
+     * An inheriting one reads the fileInfos of the interrupted one above it while it is built, and those must
+     * already be at the new place; the same holds for an interrupted one inside another.
+     */
+    private static List<Folder> rebaseOrder(Collection<Folder> folders) {
+        List<Folder> ordered = new ArrayList<>(folders);
+        ordered.sort(Comparator.comparing((Folder f) -> f.getInfo().inheritsPermissions())
+            .thenComparingLong(f -> f.getInfo().locationPath().chars().filter(c -> c == '/').count()));
+        return ordered;
+    }
+
+    /**
      * Re-addresses the rows of this subfolder's subtree in the database that owns them, keeping their
      * identity: same OID, same content, one version further. An interrupted subfolder owns its rows in
      * its own coordinates - they are location-independent and nothing is done here.
@@ -2778,11 +2831,15 @@ public class Folder extends PFComponent {
         List<FileInfo> movedRows = new ArrayList<>(rows.size());
         List<FileInfo> removed = new ArrayList<>(rows.size());
         for (FileInfo row : rows) {
+            removed.add(row);
+            if (row.isDeleted()) {
+                // PFS-5976: a deletion is not re-addressed - written as an existing file, it came back to life
+                continue;
+            }
             String name = newLocation + row.getRelativeName().substring(oldLocation.length());
             movedRows.add(FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), name, row.getOID(),
                 row.getSize(), row.getModifiedBy(), row.getModifiedByAccount(), row.getModifiedDate(),
                 row.getVersion() + 1, row.getHashes(), row.isDiretory(), row.getTags()));
-            removed.add(row);
         }
         Folder newOwner = ownerOfLocation(topFolder, newLocation);
         newOwner.getDAO().store(null, inCoordinatesOf(newOwner, topFolder, movedRows));
@@ -2841,8 +2898,11 @@ public class Folder extends PFComponent {
         }
     }
 
-    /** The given folder info re-pointed at {@code location}, as a new version. */
-    private static FolderInfo atLocation(Folder topFolder, FolderInfo info, String location) {
+    /**
+     * The given folder info re-pointed at {@code location}, as a new version. PFS-5976: also for a subfolder that is
+     * not mounted and moves in the database alone.
+     */
+    public static FolderInfo atLocation(Folder topFolder, FolderInfo info, String location) {
         String parentPath = FileInfo.parentOfRelativeName(location);
         DirectoryInfo parent = FileInfoFactory.lookupDirectory(topFolder.getInfo(), parentPath);
         String name = parentPath.isEmpty() ? location : location.substring(parentPath.length() + 1);
@@ -5766,6 +5826,15 @@ public class Folder extends PFComponent {
             }
         }
         return systemSubDir;
+    }
+
+    /**
+     * @return the system subdir if it exists, else {@code null} - never creates it. For writers in the background: a
+     *         missing one is being deleted with the folder's directory, and bringing it back fails that deletion.
+     */
+    Path getExistingSystemSubDir() {
+        Path systemSubDir = getSystemSubDir0();
+        return Files.isDirectory(systemSubDir) ? systemSubDir : null;
     }
 
     private Path getSystemSubDir0() {

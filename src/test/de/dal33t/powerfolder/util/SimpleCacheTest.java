@@ -22,9 +22,14 @@ package de.dal33t.powerfolder.util;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -58,5 +63,68 @@ public class SimpleCacheTest {
         }
         assertEquals(1000, cache.getCacheHits());
         assertEquals(1000, cache.getCacheMisses());
+    }
+
+    @Test
+    public void testIllegalTimeout() {
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(0, TimeUnit.SECONDS));
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(-1, TimeUnit.SECONDS));
+    }
+
+    /** INT-1809: a bounded cache drops the expired entries first, then any but the new one - never beyond its limit. */
+    @Test
+    public void testMaxEntries() {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 3);
+        for (int i = 0; i < 10; i++) {
+            cache.put("key" + i, "value" + i);
+            assertTrue(cache.size() <= 3, "Size " + cache.size() + " after " + (i + 1) + " puts");
+            assertEquals("value" + i, cache.getValidEntry("key" + i), "The entry just added stays");
+        }
+        assertThrows(IllegalArgumentException.class, () -> new SimpleCache<String, String>(1, TimeUnit.HOURS, 0));
+    }
+
+    @Test
+    public void testMaxEntriesShrinksWithRoomToSpare() {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 100);
+        for (int i = 0; i <= 100; i++) {
+            cache.put("key" + i, "value" + i);
+        }
+        assertEquals(90, cache.size(), "Over the limit the cache shrinks to 90 % - not one entry per put");
+    }
+
+    /** Logins of many request threads fill the cache at once - it must neither fail nor outgrow its limit by much. */
+    @Test
+    public void testMaxEntriesUnderConcurrentPuts() throws Exception {
+        SimpleCache<String, String> cache = new SimpleCache<>(1, TimeUnit.HOURS, 1000);
+        int threads = 8;
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        try {
+            List<Future<?>> puts = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                String prefix = "thread" + t + "-";
+                puts.add(pool.submit(() -> {
+                    for (int i = 0; i < 5000; i++) {
+                        cache.put(prefix + i, "value");
+                    }
+                }));
+            }
+            for (Future<?> put : puts) {
+                put.get(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+        assertTrue(cache.size() <= 1000 + threads, "Size " + cache.size());
+    }
+
+    @Test
+    public void testMaxEntriesDropsExpiredFirst() {
+        SimpleCache<String, String> cache = new SimpleCache<>(50, TimeUnit.MILLISECONDS, 2);
+        cache.put("old1", "x");
+        cache.put("old2", "x");
+        TestHelper.waitMilliSeconds(100);
+        cache.put("new", "y");
+        assertEquals(1, cache.size(), "Both expired entries are gone, the new one stays");
+        assertEquals("y", cache.getValidEntry("new"));
     }
 }

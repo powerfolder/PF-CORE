@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="PowerFolder-Toolchain" default="provision" basedir=".">
 
-    <property name="jdk.release" value="jdk-21.0.10+7" />
-    <property name="jdk.version.expected" value="21.0.10" />
+    <property name="jdk.release" value="jdk-25.0.4.1+1" />
+    <property name="jdk.version.expected" value="25.0.4.1" />
     <property name="ant.version.expected" value="1.10.17" />
 
     <property name="toolchain.dir" location="${basedir}/.toolchain" />
@@ -42,22 +42,21 @@
         </loadresource>
 
         <property name="jdk.archive"
-                  value="OpenJDK21U-jdk_${jdk.arch}_${jdk.os}_hotspot_${jdk.file.version}.${jdk.ext}" />
+                  value="OpenJDK25U-jdk_${jdk.arch}_${jdk.os}_hotspot_${jdk.file.version}.${jdk.ext}" />
         <property name="jdk.url"
-                  value="https://github.com/adoptium/temurin21-binaries/releases/download/${jdk.release}/${jdk.archive}" />
+                  value="https://github.com/adoptium/temurin25-binaries/releases/download/${jdk.release}/${jdk.archive}" />
 
-        <condition property="jdk.sha256" value="ea3b9bd464d6dd253e9a7accf59f7ccd2a36e4aa69640b7251e3370caef896a4">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz" /></condition>
-        <condition property="jdk.sha256" value="357fee29fb0d5c079f6730db98b28942df13a6eed426f6c61cd4ad703ab27b9a">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.10_7.tar.gz" /></condition>
-        <condition property="jdk.sha256" value="7484d5d4cdb02fc17a842ab86ddac2524a0365066659c46b2e258c64152379cd">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_mac_hotspot_21.0.10_7.tar.gz" /></condition>
-        <condition property="jdk.sha256" value="01ca390455216ca27bdddf8cfad51aaedb4f90e1e23aad9bfd9e90caaa2c5f1b">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.10_7.tar.gz" /></condition>
-        <condition property="jdk.sha256" value="08cae782814f027f8b159d6b68823f0f87422eb475c1a0ea1abc7a4357aaf11f">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_x64_windows_hotspot_21.0.10_7.zip" /></condition>
-        <condition property="jdk.sha256" value="0e1f016cd74c05ab4fe2b2a839f6439e3dc516c9bb201bfb75d12b3fb2a63334">
-            <equals arg1="${jdk.archive}" arg2="OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.10_7.zip" /></condition>
+        <!-- Temurin 25.0.4.1+1 has no Windows aarch64 build. -->
+        <condition property="jdk.sha256" value="dbb698396d478e7fa2b1e50f4103324b2a99b90569ee27c33f2261f9215cf41e">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK25U-jdk_x64_linux_hotspot_25.0.4.1_1.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="69df11a02cfa3ef7d7ca645e03edce6778ec090e100f6ae2b42097865730ac52">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK25U-jdk_aarch64_linux_hotspot_25.0.4.1_1.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="e6229d9504f7922053ab31821b9e6bee8761daf7b026a3476d1a027563009880">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK25U-jdk_x64_mac_hotspot_25.0.4.1_1.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="61979887f7506a24a57439ff99adb8b3a7fc89977d9cfe3b8984f58a981b7b9d">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK25U-jdk_aarch64_mac_hotspot_25.0.4.1_1.tar.gz" /></condition>
+        <condition property="jdk.sha256" value="00c847d804f4a78e9f04f2683faf14fed898535b177b7fc704486cb0284e9283">
+            <equals arg1="${jdk.archive}" arg2="OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.zip" /></condition>
 
         <fail unless="jdk.sha256"
               message="No pinned checksum for ${jdk.archive} (os=${os.name} arch=${os.arch}). Add it from the Adoptium API before this platform can be used." />

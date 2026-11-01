@@ -289,11 +289,14 @@ public class FileLink implements Serializable {
             return false;
         }
 
-        // Password check
-        if (isPasswordProtected()
-                && !isCorrectPassword(optionalPasswordOrToken)
-                && !isCorrectToken(optionalPasswordOrToken)) {
-            return false;
+        // Password check - one verification: a token decodes to this link's id followed by the password
+        if (isPasswordProtected()) {
+            String tokenPassword = passwordOfToken(optionalPasswordOrToken);
+            if (isBlank(optionalPasswordOrToken)
+                || !isCorrectPassword(tokenPassword != null ? tokenPassword : optionalPasswordOrToken))
+            {
+                return false;
+            }
         }
 
         /* Folder must match. PFC-3543: a location inside a subfolder with interrupted inheritance is
@@ -460,8 +463,23 @@ public class FileLink implements Serializable {
         return isNotBlank(password);
     }
 
+    /* A link password is an Argon2 hash (64 MB, ~1 s CPU) and a single thumbnail or editor request checks it up
+     * to six times - LoginUtil remembers a correct one for a while. */
     public boolean isCorrectPassword(String password) {
-        return LoginUtil.matches(Util.toCharArray(password), this.password);
+        return LoginUtil.matchesCached(password, this.password);
+    }
+
+    /** @return the password inside a token of this link, null if the input is no such token. */
+    private String passwordOfToken(String candidate) {
+        if (isBlank(candidate) || isBlank(id)) {
+            return null;
+        }
+        try {
+            String decoded = new String(Base58.decode(candidate));
+            return decoded.startsWith(id) ? decoded.substring(id.length()) : null;
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     public String getToken(String password) {
@@ -474,11 +492,9 @@ public class FileLink implements Serializable {
     public boolean isCorrectToken(String token) {
         if (!isPasswordProtected()) {
             return true;
-        } else if (isBlank(token)) {
-            return false;
         }
-        final String decoded = new String(Base58.decode(token)).replace(getId(), "");
-        return isCorrectPassword(decoded);
+        String password = passwordOfToken(token);
+        return password != null && isCorrectPassword(password);
     }
 
     @Override

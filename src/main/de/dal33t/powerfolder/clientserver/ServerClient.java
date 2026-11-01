@@ -50,6 +50,7 @@ import org.ietf.jgss.*;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -841,7 +842,11 @@ public class ServerClient extends PFComponent {
             return null;
         }
         StringBuilder url = new StringBuilder();
-        url.append("/avatars/user/");
+        // The server (ThumbnailServlet) treats everything after "/avatars/" as the
+        // account OID (findByID). A "user/" path segment would make the OID
+        // "user/<oid>" -> no match -> 403, so the avatar never loads. Match the
+        // server and the Android client: /avatars/<oid>.
+        url.append("/avatars/");
         url.append(aInfo.getOID());
         if (thumbnail) {
             url.append("?thumbnail=true");
@@ -1532,10 +1537,10 @@ public class ServerClient extends PFComponent {
                     logInfo("Switching to new server: " + server);
                     try {
                         setServer(server, allowServerChange);
-                        if (!wasConnected) {
-                            // PFC-2676
-                            primaryServerConnected(server);
-                        }
+                        // PFC-2676: announce the new primary server. Also when it was already connected: its
+                        // handshake ran while it was not the primary, so nobody announced it - no status update,
+                        // no login wizard (first start against a cluster whose configured server is not reachable).
+                        primaryServerConnected(server);
                         break;
                     } catch (Exception e) {
                         logWarning("Unable to switch server to "
@@ -1847,6 +1852,58 @@ public class ServerClient extends PFComponent {
 
     public String getDeviceToken() {
         return tokenSecret;
+    }
+
+    /**
+     * PFC-3643: loads the avatar image of an account. Authenticates with the WebDAV token from the login only; without
+     * one the load is skipped. Must be called off the EDT.
+     *
+     * @return the image, or {@code null} without a WebDAV token, without a web URL or on any non-200 response.
+     */
+    public BufferedImage loadAvatar(AccountInfo aInfo) throws IOException {
+        String url = aInfo != null ? getAvatarURL(aInfo, true) : null;
+        String authorization = getAvatarAuthorization();
+        if (url == null || authorization == null) {
+            return null;
+        }
+        HttpURLConnection con = openAvatarConnection(url, "GET", 10_000, authorization);
+        try {
+            int code = con.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                logFine(aInfo + ": Avatar not loaded, HTTP " + code);
+                return null;
+            }
+            try (InputStream in = con.getInputStream()) {
+                return javax.imageio.ImageIO.read(in);
+            }
+        } finally {
+            con.disconnect();
+        }
+    }
+
+    /**
+     * The {@code Authorization} header for the avatar endpoint: the WebDAV token from the login as {@code Bearer}.
+     * The device token is bound to this node and only valid on the P2P connection - over HTTP the server answers 403.
+     * Never mints a token, never sends the password.
+     *
+     * @return the header value, or {@code null} without a valid WebDAV token.
+     */
+    private String getAvatarAuthorization() {
+        String token = webdavToken;
+        return StringUtils.isNotBlank(token) && !Token.isExpired(token) ? "Bearer " + token : null;
+    }
+
+    /** Redirects are not followed: HttpURLConnection would re-send the Authorization header to the redirect host. */
+    private static HttpURLConnection openAvatarConnection(String url, String method, int readTimeout,
+        String authorization) throws IOException
+    {
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        con.setRequestMethod(method);
+        con.setInstanceFollowRedirects(false);
+        con.setConnectTimeout(10_000);
+        con.setReadTimeout(readTimeout);
+        con.setRequestProperty("Authorization", authorization);
+        return con;
     }
 
     /**

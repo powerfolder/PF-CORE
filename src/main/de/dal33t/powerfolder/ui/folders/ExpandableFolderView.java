@@ -70,6 +70,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Paths;
@@ -120,6 +121,14 @@ public class ExpandableFolderView extends PFUIComponent implements
     // private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
+    /** PFC-3643: rotating folder-spinner animation while transferring. */
+    private javax.swing.Timer folderSpinTimer;
+    private static final int SPIN_TICK_MS = 80;
+    private static final int SPIN_STEP_DEGREES = 10;
+    private static final int SPIN_STEPS = 180 / SPIN_STEP_DEGREES;
+    private int folderSpinFrame;
+    /** PFS-5949: throttles the live sync-% refresh on the 100ms spin timer. */
+    private int folderStatsTick;
     private SyncIconButtonMini upperSyncFolderButton;
     private JButtonMini lowerSyncFolderButton;
 
@@ -601,6 +610,16 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
         primaryButton.addActionListener(new PrimaryButtonActionListener());
+        primaryButton.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) == 0) {
+                return;
+            }
+            if (primaryButton.isShowing()) {
+                updateSyncButton();
+            } else {
+                stopFolderSpin();
+            }
+        });
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction);
 
@@ -707,6 +726,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateSyncButton() {
         if (type != Type.Local) {
+            stopFolderSpin();
             upperSyncFolderButton.setVisible(false);
             upperSyncFolderButton.spin(false);
             primaryButton.setVisible(true);
@@ -719,17 +739,68 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (folder == null) {
                     return;
                 }
+                // PFC-3643: while syncing, show the folder icon WITH a rotating
+                // blue spinner badge (not a separate base-less spinner). The
+                // legacy spinner button stays hidden. Idle states keep the static
+                // icon set by updateIconAndOS().
+                upperSyncFolderButton.setVisible(false);
+                upperSyncFolderButton.spin(false);
+                primaryButton.setVisible(true);
                 if (folder.isTransferring()) {
-                    primaryButton.setVisible(false);
-                    upperSyncFolderButton.setVisible(true);
-                    upperSyncFolderButton.spin(true);
+                    startFolderSpin();
                 } else {
-                    primaryButton.setVisible(true);
-                    upperSyncFolderButton.setVisible(false);
-                    upperSyncFolderButton.spin(false);
+                    stopFolderSpin();
+                    updateIconAndOS();
                 }
             }
         });
+    }
+
+    /**
+     * PFC-3643: animate the folder icon with a rotating spinner badge while the
+     * folder is transferring. Runs on the EDT (javax.swing.Timer).
+     */
+    private void startFolderSpin() {
+        if (folderSpinTimer == null) {
+            // Smooth and calm: 10° every 80 ms (the two arrows repeat every 180°, so 18 steps loop seamlessly).
+            folderSpinTimer = new javax.swing.Timer(SPIN_TICK_MS, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    // Never animate a hidden card; the showing listener restarts it.
+                    if (!primaryButton.isShowing()) {
+                        stopFolderSpin();
+                        return;
+                    }
+                    folderSpinFrame = (folderSpinFrame + 1) % SPIN_STEPS;
+                    primaryButton.setIcon(Icons.getFolderWithSyncingBadge(folderSpinFrame * SPIN_STEP_DEGREES));
+                    // PFS-5949: refresh the sync-% (and sizes/ETA) live while the
+                    // folder transfers - transfer progress is not an event, so
+                    // without this the "0 %" would sit stale until the download
+                    // finishes. Throttled to ~1s.
+                    if (++folderStatsTick >= 1000 / SPIN_TICK_MS) {
+                        folderStatsTick = 0;
+                        updateStatsDetails();
+                        if (folder == null || !folder.isTransferring()) {
+                            stopFolderSpin();
+                            updateIconAndOS();
+                        }
+                    }
+                }
+            });
+            folderSpinTimer.setRepeats(true);
+        }
+        if (!folderSpinTimer.isRunning()) {
+            primaryButton.setIcon(Icons.getFolderWithSyncingBadge(folderSpinFrame * SPIN_STEP_DEGREES));
+            if (primaryButton.isShowing()) {
+                folderSpinTimer.start();
+            }
+        }
+    }
+
+    /** PFC-3643: stop the folder spinner animation. */
+    private void stopFolderSpin() {
+        if (folderSpinTimer != null && folderSpinTimer.isRunning()) {
+            folderSpinTimer.stop();
+        }
     }
 
     private void registerListeners() {
@@ -754,6 +825,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
+        stopFolderSpin(); // PFC-3643: stop the folder-spinner animation timer
         if (myToSListener != null) {
             getController().getOSClient().removeListener(myToSListener);
         }
@@ -1044,27 +1116,35 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == Type.Local) {
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+            boolean syncKnown = sync != FolderStatistic.UNKNOWN_SYNC_STATUS;
+            boolean incomplete = syncKnown && Double.compare(sync, 100.0d) < 0;
             if (folder != null && folder.countProblems() > 0) {
                 // Got a problem.
-                primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderWithStatusBadge(Icons.WARNING));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_problem_text"));
-            } else if (getController().isPaused()
-                && Double.compare(sync, 100.0d) < 0
-                && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
-            {
+            } else if (getController().isPaused() && incomplete) {
                 // Sync is in pause
-                primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderWithStatusBadge(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_paused"));
-            } else if (Double.compare(sync, 100.0d) < 0) {
-                // Not synced and not syncing.
-                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
+            } else if (folder.isTransferring()) {
+                // Spinner badge only while actually transferring; the spin timer owns the icon.
+                startFolderSpin();
+                primaryButton.setToolTipText(Translation
+                    .get("exp_folder_view.folder_sync_incomplete"));
+            } else if (!syncKnown || incomplete) {
+                // Not synced but idle, or state unknown -> plain folder icon, no badge.
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderIcon());
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_sync_incomplete"));
             } else {
-                // We are in sync.
-                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+                // We are in sync -> black folder + green check badge.
+                stopFolderSpin();
+                primaryButton.setIcon(Icons.getFolderWithBadge(Icons.SYNC_COMPLETE));
                 if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
@@ -1081,8 +1161,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
-        } else { // CloudOnly
-            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+        } else { // PFC-3643: CloudOnly / not on device -> plain folder icon, no
+                 // badge (no blue cloud).
+            primaryButton.setIcon(Icons.getFolderIcon());
             primaryButton.setToolTipText(Translation
                 .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
@@ -1136,10 +1217,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else {
             // Local folder popup
             contextMenu.add(openExplorerAction).setIcon(null);
-            contextMenu.addSeparator();
             boolean expert = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
             if (expert) {
+                addSeparatorIfNeeded(contextMenu);
                 if (!folder.getSyncProfile().equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION)) {
                     contextMenu.add(syncFolderAction).setIcon(null);
                 }
@@ -1148,28 +1229,26 @@ public class ExpandableFolderView extends PFUIComponent implements
                 contextMenu.add(clearCompletedDownloadsAction).setIcon(null);
             }
             if (!getController().isBackupOnly()) {
-                boolean addedSeparator = false;
+                addSeparatorIfNeeded(contextMenu);
                 if (ConfigurationEntry.SERVER_INVITE_ENABLED
                     .getValueBoolean(getController()) && admin)
                 {
-                    contextMenu.addSeparator();
-                    addedSeparator = true;
                     contextMenu.add(inviteAction).setIcon(null);
                 }
                 if (expert) {
-                    if (!addedSeparator) {
-                        contextMenu.addSeparator();
-                    }
                     contextMenu.add(openMembersInformationAction).setIcon(null);
                 }
             }
-            contextMenu.addSeparator();
+            addSeparatorIfNeeded(contextMenu);
             if (ConfigurationEntry.SETTINGS_ENABLED
                 .getValueBoolean(getController()))
             {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
-            contextMenu.add(moveFolderLocalAction).setIcon(null);
+            // Moving the local directory is an expert function.
+            if (expert) {
+                contextMenu.add(moveFolderLocalAction).setIcon(null);
+            }
             if (getController().getOSClient().isAllowedToRemoveFolders()) {
                 contextMenu.add(removeFolderLocalAction).setIcon(null);
             }
@@ -1186,7 +1265,20 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
+        // No separator at the end (all entries after it may be hidden).
+        int last = contextMenu.getComponentCount() - 1;
+        if (last >= 0 && contextMenu.getComponent(last) instanceof JPopupMenu.Separator) {
+            contextMenu.remove(last);
+        }
         return contextMenu;
+    }
+
+    /** A separator only between entries: never first, never two in a row. */
+    private static void addSeparatorIfNeeded(JPopupMenu menu) {
+        int n = menu.getComponentCount();
+        if (n > 0 && !(menu.getComponent(n - 1) instanceof JPopupMenu.Separator)) {
+            menu.addSeparator();
+        }
     }
 
     /**
@@ -1509,6 +1601,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             updateSyncButton();
             updateIconAndOS();
+            // PFS-5949: refresh the sync-% immediately on transfer start/finish
+            // (the live climb between events comes from the spin timer).
+            updateStatsDetails();
         }
 
         @Override

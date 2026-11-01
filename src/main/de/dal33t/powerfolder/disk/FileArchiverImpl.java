@@ -1027,6 +1027,10 @@ public class FileArchiverImpl implements FileArchiver {
             }
             return;
         }
+        // Archiving a version creates the directory - the size alone must not bring back one deleted with its folder
+        if (Files.notExists(archiveDirectory)) {
+            return;
+        }
         ByteArrayInputStream bin = new ByteArrayInputStream(String.valueOf(size).getBytes());
         try {
             PathUtils.copyFromStreamToFile(bin, sizeFile);

@@ -59,6 +59,7 @@ public class PreferencesDialog extends BaseDialog {
     private JButton okButton;
     private JButton cancelButton;
     private JButton helpButton;
+    private JButton informationButton;
     private List<PreferenceTab> preferenceTabs;
     private JTabbedPane tabbedPane;
 
@@ -140,11 +141,11 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(warningsNotificationsSettingsTab.getTabName(),
             warningsNotificationsSettingsTab.getUIPanel());
 
-        // Information tab
+        // PFC-3643: Information is no longer a tab. It is reached only via the
+        // Information button in the dialog's button row (createInformationButton),
+        // which opens it in its own dialog - so it also works in non-expert mode,
+        // where the tabbed pane is not shown at all.
         informationTab = new InformationTab(getController());
-        preferenceTabs.add(informationTab);
-        tabbedPane.addTab(informationTab.getTabName(),
-            informationTab.getUIPanel());
 
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
@@ -199,6 +200,40 @@ public class PreferencesDialog extends BaseDialog {
         okButton = createOKButton();
         cancelButton = createCancelButton();
         helpButton = createHelpButton();
+        informationButton = createInformationButton();
+    }
+
+    /**
+     * PFC-3643: Information (about/system details, Transfers, Logging) opens from the button row, right after Help.
+     * It opens on top of Preferences, so unsaved edits stay; it also works in non-expert mode (no tabbed pane).
+     */
+    private JButton createInformationButton() {
+        JButton button = new JButton(informationTab.getTabName());
+        button.addActionListener(e -> showInformationDialog());
+        return button;
+    }
+
+    private void showInformationDialog() {
+        final java.awt.Window owner = dialog;
+        final JDialog infoDialog = new JDialog(owner, informationTab.getTabName(),
+            java.awt.Dialog.ModalityType.DOCUMENT_MODAL);
+        infoDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        // Transfers / Logging open in the main window, which the modal Preferences blocks: leave like Cancel.
+        informationTab.setBeforeOpenView(() -> {
+            infoDialog.dispose();
+            close();
+            undoChanges();
+        });
+        javax.swing.JPanel content = new javax.swing.JPanel(new java.awt.BorderLayout());
+        content.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 10dlu, 10dlu"));
+        content.add(informationTab.getUIPanel(), java.awt.BorderLayout.CENTER);
+        JButton closeButton = new JButton(Translation.get("general.close"));
+        closeButton.addActionListener(ev -> infoDialog.dispose());
+        content.add(ButtonBarFactory.buildCenteredBar(closeButton), java.awt.BorderLayout.SOUTH);
+        infoDialog.setContentPane(content);
+        infoDialog.pack();
+        infoDialog.setLocationRelativeTo(owner);
+        infoDialog.setVisible(true);
     }
 
     private JButton createHelpButton() {
@@ -300,11 +335,13 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
+        // PFC-3643: Information button sits right after Help.
         if (helpButton != null) {
-            return ButtonBarFactory.buildCenteredBar(helpButton, okButton,
-                cancelButton);
+            return ButtonBarFactory.buildCenteredBar(helpButton,
+                informationButton, okButton, cancelButton);
         } else {
-            return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+            return ButtonBarFactory.buildCenteredBar(informationButton, okButton,
+                cancelButton);
         }
     }
 

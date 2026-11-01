@@ -4,15 +4,15 @@ stages:
 variables:
   GIT_DEPTH: "1"
 
-# On a Dev build tag the PF-CORE tests are started manually (a Dev client build does
-# not need to re-run the full suite) and are non-blocking; on every other ref
-# (branches, MRs, QA/Release/Hotfix) they keep running automatically.
+# The PF-CORE tests are heavy, so they run ONLY on the nightly scheduled pipeline
+# (set the schedule under the project's pipeline schedules: 04:00 on develop_27).
+# Nothing else triggers them - not pushes, merge requests, tags, Release/Hotfix or
+# Dev_ builds. Just once a night.
 .rules-test:
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^Dev/'
-      when: manual
-      allow_failure: true
-    - when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - when: never
 
 security-java-scan:
   stage: test
@@ -23,9 +23,22 @@ security-java-scan:
   image: eclipse-temurin:17-jdk
   variables:
     GIT_STRATEGY: clone
+  # The fresh clone wipes tools/, so without a cache every run re-downloads the whole NVD (400k+ records, 40+ min
+  # without NVD_API_KEY) and is that long exposed to NVD hiccups and to stray kills on the shared runner.
+  # Keyed by the dependency-check version: a new version may change the database schema.
+  cache:
+    key: dependency-check-12.1.0
+    paths:
+      - tools/dependency-check/dependency-check/
+  retry:
+    max: 1
+    when:
+      - script_failure
+      - runner_system_failure
   before_script:
     - apt-get update && apt-get install -y ant unzip curl
     - mkdir -p reports
+    - if [ -z "$NVD_API_KEY" ]; then echo "NVD_API_KEY not set - NVD download is heavily rate limited"; fi
   script:
     - ant -f security-scan.xml dependency-check
   artifacts:
@@ -39,12 +52,16 @@ test-Linux:
   extends: .rules-test
   parallel: 2
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:
     - Linux
   script:
+    # Stale test JVMs of THIS workspace only: a bare "pkill -f java" kills the security scan and, with
+    # parallel: 2, the sibling shard's forks on the same host.
+    - if [ -n "$CI_PROJECT_DIR" ]; then for pid in $(pgrep -f java || true); do case "$(ps -o command= -p $pid 2>/dev/null)" in *"$CI_PROJECT_DIR"*) kill -9 "$pid" || true;; esac; done; fi
+    - for pid in $(ps -A -o pid=,etime=,comm= | awk '/java/ && ($2 ~ /-/ || $2 ~ /^[0-9]+:[0-9][0-9]:[0-9][0-9]$/) {print $1}'); do kill -9 "$pid" || true; done
     - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=1 -Dtest.fork.heap=1g
   artifacts:
     reports:
@@ -58,7 +75,7 @@ test-macOS:
   extends: .rules-test
   resource_group: tests-macOS
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:
@@ -95,7 +112,7 @@ test-Windows:
   extends: .rules-test
   resource_group: tests-Windows
   cache:
-    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    key: toolchain-jdk-25.0.4.1_1-ant-1.10.17
     paths:
       - .toolchain/dl/
   tags:

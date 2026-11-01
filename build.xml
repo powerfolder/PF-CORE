@@ -154,7 +154,7 @@ For creation of the installer:
 			<include name="jakarta.persistence-api-2.2.3.jar" />
 			<include name="jboss-logging-3.4.3.Final.jar" />
 			<include name="hibernate-commons-annotations-5.1.2.Final.jar" />
-			<include name="byte-buddy-1.15.4.jar" />
+			<include name="byte-buddy-1.18.16.jar" />
 			<include name="jandex-2.4.2.Final.jar" />
 			<include name="classmate-1.5.1.jar" />
 			<include name="dom4j-2.1.3.jar" />
@@ -164,6 +164,9 @@ For creation of the installer:
 
 			<include name="synthetica.jar" />
 			<include name="syntheticaAddons.jar" />
+
+			<!-- Modern flat Look and Feel (light + dark), PFI-93 UI modernization -->
+			<include name="flatlaf-3.5.4.jar" />
 
 			<include name="bcprov-jdk18on-1.77.jar" />
 			<include name="bcpkix-jdk18on-1.77.jar" />
@@ -180,12 +183,19 @@ For creation of the installer:
             <include name="commons-logging-1.1.3.jar" />
 			<include name="json-20250517.jar" />
 
-			<!-- PFC-3096: StatusNotifierItem (D-Bus) tray for GNOME/KDE.
-			     Pure-Java (JDK unix-socket transport), no native libs. -->
+			<!-- D-Bus (pure-Java, JDK unix-socket transport, no native libs), shared by:
+			     PFC-3096 StatusNotifierItem tray for GNOME/KDE and
+			     PFC-3643 libcloudproviders (Linux file-manager sync status). -->
 			<include name="dbus-java-core-5.2.2.jar" />
 			<include name="dbus-java-transport-native-unixsocket-5.2.2.jar" />
+			<!-- INT-1785: the only slf4j-api - an older one next to it (cryptomator brought 1.7.25) wins in the jar
+			     and leaves the 2.0 jdk14 provider unused, i.e. all SLF4J logging silent. -->
 			<include name="slf4j-api-2.0.17.jar" />
 			<include name="slf4j-jdk14-2.0.17.jar" />
+
+			<!-- INT-1785: needed by cryptofs below AND by Velocity 2 / the PF-PRO server, which take it from
+			     this jar - so it lives here, not among the cryptomator libraries. -->
+			<include name="commons-lang3-3.17.0.jar" />
 
 			<!-- ContextMenu and IconOverlay -->
 			<include name="com.liferay.nativity-1.0.6.jar" />
@@ -208,7 +218,6 @@ For creation of the installer:
 
 			<!-- Encrypted storage - cryptolib/fs -->
 			<include name="cryptomator/commons-codec-1.10.jar" />
-            <include name="cryptomator/commons-lang3-3.6.jar"/>
             <include name="cryptomator/cryptofs-1.4.2.jar"/>
             <include name="cryptomator/cryptolib-1.1.6.jar"/>
             <include name="cryptomator/dagger-2.11.jar"/>
@@ -217,7 +226,6 @@ For creation of the installer:
             <include name="cryptomator/guava-33.7.1-jre.jar"/>
             <include name="cryptomator/failureaccess-1.0.3.jar"/>
 			<include name="cryptomator/javax.inject-1.jar" />
-			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
             <include name="cryptomator/siv-mode-1.2.2.jar"/>
 
             <include name="quartz-2.5.2.jar"/>
@@ -260,8 +268,8 @@ For creation of the installer:
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
-			<include name="mockito/byte-buddy-1.15.4.jar"/>
-			<include name="mockito/byte-buddy-agent-1.15.4.jar"/>
+			<include name="mockito/byte-buddy-1.18.16.jar"/>
+			<include name="mockito/byte-buddy-agent-1.18.16.jar"/>
 			<include name="mockito/mockito-core-5.14.2.jar"/>
 			<include name="mockito/objenesis-3.3.jar"/>
 			<include name="junit5/*.jar"/>
@@ -285,7 +293,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="9" target="9" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" debuglevel="lines" deprecation="off" includeantruntime="false">
+		<javac destdir="${build.dir}" release="21" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" debuglevel="lines" deprecation="off" includeantruntime="false">
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
@@ -335,6 +343,8 @@ For creation of the installer:
 
 		<!-- Intermediate jar, only consumed by the PF-PRO server build (jar-free): fast deflate for own
 		     classes, library entries are copied as-is instead of being re-compressed. -->
+		<!-- INT-1785: update="true" keeps entries of a replaced library version - start empty. -->
+		<delete file="${dist.dir}/PowerFolder.jar" quiet="true" />
 		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true"
 			duplicate="preserve" level="1" keepcompression="true">
 			<manifest>
@@ -354,6 +364,8 @@ For creation of the installer:
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
+		<!-- INT-1785: update="true" keeps entries of a replaced library version - start empty. -->
+		<delete file="${dist.dir}/PowerFolder.jar" quiet="true" />
 		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true" duplicate="preserve">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
@@ -469,6 +481,12 @@ For creation of the installer:
             <option value="-XX:MinHeapFreeRatio=5" />
             <option value="-XX:MaxHeapFreeRatio=10" />
             <option value="-Xdock:name=${dist.name}" />
+            <!-- PFI-93: restore NFD encoding when the JVM turns a path string into bytes for a
+                 file syscall. Temurin 25 (JDK-8296141) dropped macOS path normalization by
+                 default, so an NFC name from the DB/server would otherwise be handed to APFS/SMB
+                 verbatim; =true decomposes it to NFD on access, matching files created decomposed.
+                 Complements the NFC-insensitive name matching in this repo (combining-char data loss). -->
+            <option value="-Djdk.nio.path.useNormalizationFormD=true" />
         </bundleapp>
 
         <copy file="${etc.dir}/mac64libs/libosxnative.jnilib" todir="${dist.dir}/${dist.name}.app/Contents/MacOS" />
@@ -590,6 +608,7 @@ For creation of the installer:
 		<property name="shard.index" value="0" />
 		<property name="shard.total" value="1" />
 		<property name="shard.listonly" value="false" />
+		<property name="test.attempts" value="1,2,3" />
 		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" jvm="${java.bin}"
 		      failonerror="true" dir="${basedir}">
 			<jvmarg value="-Xmx1g" />
@@ -604,6 +623,7 @@ For creation of the installer:
 			<arg value="-Dshard.index=${shard.index}" />
 			<arg value="-Dshard.total=${shard.total}" />
 			<arg value="-Dshard.listonly=${shard.listonly}" />
+			<arg value="-Dtest.attempts=${test.attempts}" />
 			<arg value="${pinned.target}" />
 		</java>
 	</target>
@@ -650,6 +670,7 @@ For creation of the installer:
 					<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
 					<jvmarg value="-Xmx${test.fork.heap}"/>
 					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+					<jvmarg value="--enable-native-access=ALL-UNNAMED"/>
 					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
 					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
 				</fork>
@@ -690,6 +711,8 @@ For creation of the installer:
 		<property name="test.fork.exit.grace" value="120"/>
 		<property name="test.threads" value="auto"/>
 		<property name="test.work.keep" value="false"/>
+		<!-- A failing class gets the further attempts listed here (-Dtest.attempts=1 = no retry) -->
+		<property name="test.attempts" value="1,2,3"/>
 		<property name="test.work.dir" location="${basedir}/build/test-work"/>
 		<property name="shard.index" value="0"/>
 		<property name="shard.total" value="1"/>
@@ -702,6 +725,7 @@ For creation of the installer:
 		</condition>
 		<delete dir="${test.work.dir}" quiet="true"/>
 		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${basedir}/lib-build/ant-contrib-1.0b3.jar"/>
+		<propertyregex property="test.attempts.last" input="${test.attempts}" regexp="([^,]+)$" select="\1"/>
 		<pathconvert property="test.classes.all" pathsep="${line.separator}">
 			<sort>
 				<fileset dir="${build.dir}">
@@ -726,60 +750,90 @@ For creation of the installer:
 			<arg value="${shard.total}"/>
 			<arg value="${shard.index}"/>
 		</java>
-		<echo>shard ${shard.index} of ${shard.total}, ${test.threads.effective} class(es) at a time: ${test.classes.shard}</echo>
+		<echo>shard ${shard.index} of ${shard.total}, ${test.threads.effective} class(es) at a time, attempts ${test.attempts}: ${test.classes.shard}</echo>
 		<if>
 			<not><equals arg1="${shard.listonly}" arg2="true"/></not>
 			<then>
 		<for list="${test.classes.shard}" delimiter="," param="testclass" parallel="true" threadCount="${test.threads.effective}" trim="true">
 			<sequential>
+				<local name="testclass"/>
+				<property name="testclass" value="@{testclass}"/>
 				<local name="testfilerel"/>
 				<propertyregex property="testfilerel" input="@{testclass}" regexp="\." replace="/" global="true"/>
-			<local name="workdir"/>
-			<property name="workdir" location="${test.work.dir}/@{testclass}"/>
-			<mkdir dir="${workdir}/build/test"/>
-			<copy todir="${workdir}/src/test-resources">
-				<fileset dir="${basedir}/src/test-resources"/>
-			</copy>
-			<trycatch>
-			  <try>
-			<junitlauncher haltOnFailure="false" failureProperty="tests.failed" printSummary="true">
-				<classpath>
-					<pathelement location="${build.dir}" />
-					<fileset refid="libs" />
-					<fileset refid="testlibs" />
-				</classpath>
-				<testclasses outputDir="${build.reports.dir}/raw">
-					<fork dir="${workdir}" timeout="1800000">
-						<sysproperty key="file.encoding" value="UTF-8"/>
-						<sysproperty key="powerfolder.config.url.skip" value="true"/>
-						<sysproperty key="powerfolder.argon2.iterations" value="1"/>
-						<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
-						<sysproperty key="wrapper.disable_shutdown_hook" value="TRUE"/>
-						<sysproperty key="powerfolder.test.fork.exit.grace.seconds" value="${test.fork.exit.grace}"/>
-						<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
-						<jvmarg value="-Xmx${test.fork.heap}"/>
-						<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
-						<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
-						<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
-					</fork>
-					<fileset dir="${build.dir}">
-						<include name="${testfilerel}.class"/>
-					</fileset>
-					<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
-					<listener classname="de.dal33t.powerfolder.util.test.ForkExitWatchdog"/>
-				</testclasses>
-			</junitlauncher>
-			  </try>
-			  <catch>
-			    <echo level="warning">Test JVM for @{testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
-			    <property name="tests.crashed" value="@{testclass}"/>
-			  </catch>
-			  <finally>
-			    <if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
-			      <delete dir="${workdir}" quiet="true"/>
-			    </then></if>
-			  </finally>
-			</trycatch>
+				<local name="workdir"/>
+				<property name="workdir" location="${test.work.dir}/@{testclass}"/>
+				<local name="class.done"/>
+				<for param="attempt" list="${test.attempts}">
+				  <sequential>
+				    <if><not><isset property="class.done"/></not><then>
+					<local name="attempt.failed"/>
+					<local name="attempt.crashed"/>
+					<delete dir="${workdir}" quiet="true"/>
+					<mkdir dir="${workdir}/build/test"/>
+					<copy todir="${workdir}/src/test-resources">
+						<fileset dir="${basedir}/src/test-resources"/>
+					</copy>
+					<trycatch>
+					  <try>
+						<junitlauncher haltOnFailure="false" failureProperty="attempt.failed" printSummary="true">
+							<classpath>
+								<pathelement location="${build.dir}" />
+								<fileset refid="libs" />
+								<fileset refid="testlibs" />
+							</classpath>
+							<testclasses outputDir="${build.reports.dir}/raw">
+								<fork dir="${workdir}" timeout="1800000">
+									<sysproperty key="file.encoding" value="UTF-8"/>
+									<sysproperty key="powerfolder.config.url.skip" value="true"/>
+									<sysproperty key="powerfolder.argon2.iterations" value="1"/>
+									<sysproperty key="powerfolder.argon2.memoryKB" value="8192"/>
+									<sysproperty key="wrapper.disable_shutdown_hook" value="TRUE"/>
+									<sysproperty key="powerfolder.test.fork.exit.grace.seconds" value="${test.fork.exit.grace}"/>
+									<sysproperty key="java.util.prefs.PreferencesFactory" value="de.dal33t.powerfolder.util.test.MemoryPreferencesFactory"/>
+									<jvmarg value="-Xmx${test.fork.heap}"/>
+									<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+									<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+									<jvmarg value="--enable-native-access=ALL-UNNAMED"/>
+									<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+								</fork>
+								<fileset dir="${build.dir}">
+									<include name="${testfilerel}.class"/>
+								</fileset>
+								<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+								<listener classname="de.dal33t.powerfolder.util.test.ForkExitWatchdog"/>
+							</testclasses>
+						</junitlauncher>
+					  </try>
+					  <catch>
+					    <echo level="warning">${testclass}: test JVM crashed on attempt @{attempt}</echo>
+					    <property name="attempt.crashed" value="true"/>
+					  </catch>
+					</trycatch>
+					<if><or><isset property="attempt.failed"/><isset property="attempt.crashed"/></or><then>
+					  <if><equals arg1="@{attempt}" arg2="${test.attempts.last}"/><then>
+					    <property name="class.done" value="true"/>
+					    <if><isset property="attempt.crashed"/><then>
+					      <echo level="warning">Test JVM for ${testclass} crashed - continuing with the other classes; the job fails at the end.</echo>
+					      <property name="tests.crashed" value="${testclass}"/>
+					    </then><else>
+					      <property name="tests.failed" value="true"/>
+					    </else></if>
+					  </then><else>
+					    <echo level="warning">${testclass}: failed on attempt @{attempt} - running it again</echo>
+					  </else></if>
+					</then><else>
+					  <property name="class.done" value="true"/>
+					  <if><not><equals arg1="@{attempt}" arg2="1"/></not><then>
+					    <echo level="warning">FLAKY: ${testclass} passed on attempt @{attempt}</echo>
+					    <echo file="${build.reports.dir}/flaky.txt" append="true">${testclass} passed on attempt @{attempt}${line.separator}</echo>
+					  </then></if>
+					</else></if>
+				    </then></if>
+				  </sequential>
+				</for>
+				<if><not><equals arg1="${test.work.keep}" arg2="true"/></not><then>
+				  <delete dir="${workdir}" quiet="true"/>
+				</then></if>
 			</sequential>
 		</for>
 			</then>

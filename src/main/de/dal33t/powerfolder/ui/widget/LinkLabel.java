@@ -64,6 +64,14 @@ public class LinkLabel extends PFComponent {
 
         uiComponent.addMouseListener(new MyMouseAdapter());
 
+        // Recompute the html link colour on a live L&F (light <-> dark) switch.
+        uiComponent.addPropertyChangeListener("UI",
+            new java.beans.PropertyChangeListener() {
+                public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                    setText();
+                }
+            });
+
         CursorUtils.setHandCursor(uiComponent);
         // FIXME This is a hack because of "Fusch!"
         uiComponent.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));

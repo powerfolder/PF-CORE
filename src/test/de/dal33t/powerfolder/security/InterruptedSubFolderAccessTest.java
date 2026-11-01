@@ -177,6 +177,65 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
     }
 
     /**
+     * PFS-5904: an inheriting subfolder BELOW the barrier is decoupled as well - the barrier sits between it and
+     * the top folder. {@code hasPermission(FolderPermission)} is what the share dialog asks before it adds someone,
+     * so a top-folder permission must not imply anything inside the barrier, however deep the addressed subfolder
+     * inherits from it. A permission ON the barrier still reaches down.
+     */
+    @Test
+    public void testTopPermissionDoesNotImplyInheritingSubFolderBelowBarrier() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderInfo topInfo = topFolder.getInfo();
+
+        /*
+         * /top
+         * └── secret               (shared, interrupted -> BARRIER)
+         *     └── deep             (shared subfolder BELOW the barrier, still inheriting - from the barrier)
+         */
+        Path root = topFolder.getPhysicalDir();
+        Files.createDirectories(root.resolve("secret/deep"));
+        TestHelper.scanFolder(topFolder);
+
+        Folder secret = topFolder.share((DirectoryInfo) topFolder.getFileInfo("secret"));
+        Folder deep = topFolder.share((DirectoryInfo) topFolder.getFileInfo("secret/deep"));
+        assertNotNull(secret);
+        assertNotNull(deep);
+        assertTrue(deep.getInfo().inheritsPermissions());
+
+        Account hans = new Account();
+        hans.grant(FolderPermission.readWrite(topInfo));
+
+        // Still inheriting: the top-folder permission applies in the deep subfolder.
+        assertTrue(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(deep.getInfo()));
+
+        secret.setInheritsPermissions(false);
+
+        // Decoupled: nothing of the top folder reaches below the barrier, inheriting subfolder or not.
+        assertFalse(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertFalse(hans.hasPermission(FolderPermission.readWrite(deep.getInfo())));
+        assertEquals(AccessMode.NO_ACCESS, hans.getAllowedAccess(deep.getInfo()));
+        assertEquals(AccessMode.NO_ACCESS, hans.getAllowedAccess(topInfo, "secret/deep/x.txt"));
+        assertFalse(FolderPermission.readWrite(topInfo).implies(FolderPermission.read(deep.getInfo())));
+
+        // A permission ON the barrier is not inherited past it - it is granted there and reaches down.
+        Account direct = new Account();
+        direct.grant(FolderPermission.read(secret.getInfo()));
+        assertTrue(direct.hasPermission(FolderPermission.read(deep.getInfo())));
+        assertEquals(AccessMode.READ, direct.getAllowedAccess(deep.getInfo()));
+        assertFalse(direct.hasPermission(FolderPermission.readWrite(deep.getInfo())));
+
+        // A group holding the top permission resolves through the same primitive.
+        Group topGroup = new Group("Top");
+        topGroup.grant(FolderPermission.readWrite(topInfo));
+        assertFalse(topGroup.hasPermission(FolderPermission.read(deep.getInfo())));
+
+        // Restore: the top permission applies again.
+        secret.setInheritsPermissions(true);
+        assertTrue(hans.hasPermission(FolderPermission.read(deep.getInfo())));
+    }
+
+    /**
      * The barrier lookup must not create anything: {@code getAllowedAccess(folder, path)} sits on the web
      * hot path (every file listing, upload and editor open), so it may cost no more than a volatile read
      * of a pre-merged snapshot. Object IDENTITY across calls is the direct evidence: if anything were

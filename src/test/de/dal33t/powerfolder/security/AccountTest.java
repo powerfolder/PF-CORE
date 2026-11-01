@@ -204,6 +204,47 @@ public class AccountTest {
         }
     }
 
+    /**
+     * PFM-837: A rename puts a new instance of the folder into the pool. The permissions granted before still hold
+     * the old one and must hand out the folder under its new name - the folder list of the app is built from them.
+     */
+    @Test
+    public void testRenamedFolderShowsNewNameThroughPermissions() {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Test1").intern();
+        Group group = new Group("Readers");
+        group.grant(FolderPermission.read(folder));
+        Account account = new Account();
+        account.grant(FolderPermission.owner(folder));
+        account.addGroup(group);
+
+        FolderInfo renamed = FolderInfoFactory.rename(folder, "Test2");
+        assertNotSame(folder, renamed);
+
+        assertEquals("Test2", account.getPermissionFor(folder).getFolder().getName());
+        assertEquals("Test2", account.getFolders().iterator().next().getName());
+        assertEquals("Test2", account.getFoldersCharged().iterator().next().getName());
+        assertEquals("Test2", group.getFolders().iterator().next().getName());
+        assertEquals("Test2", group.getAllFolders().iterator().next().getName());
+    }
+
+    /**
+     * PFM-837: A permission received from the server can already carry the renamed folder while the pool here still
+     * holds the old one - a client the rename has not reached yet. The newer one counts.
+     */
+    @Test
+    public void testPermissionWithNewerFolderThanPoolKeepsItsName() {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Test1").intern();
+        FolderInfo renamed = FolderInfoFactory.rename(folder, "Test2");
+        Account account = new Account();
+        account.grant(FolderPermission.owner(renamed));
+
+        // The pool falls back to the old version, as on a client the rename has not reached
+        assertSame(folder, folder.intern(true));
+
+        assertEquals("Test2", account.getDirectPermissionFor(folder).getFolder().getName());
+        assertEquals("Test2", account.getFolders().iterator().next().getName());
+    }
+
     @Test
     public void testLEU() {
         // 1. Arrange

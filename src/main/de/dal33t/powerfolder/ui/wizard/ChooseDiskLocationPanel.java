@@ -18,6 +18,7 @@
  *
  */
 package de.dal33t.powerfolder.ui.wizard;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -431,7 +432,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
             // Show something while working.
             folderSizeLabel.setText(Translation.get("exp.wizard.choose_disk_location.calculating_directory_size"));
-            folderSizeLabel.setForeground(SystemColor.textText);
+            folderSizeLabel.setForeground(ColorUtil.getTextForegroundColor());
 
             try {
                 Path f = Paths.get(initial);
@@ -466,10 +467,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         folderSizeLabel.setText(Translation.get(
                             "exp.wizard.choose_disk_location.directory_size",
                             Format.formatBytes(directorySize)));
-                        folderSizeLabel.setForeground(SystemColor.textText);
+                        folderSizeLabel.setForeground(ColorUtil.getTextForegroundColor());
                     } else {
                         folderSizeLabel.setText("");
-                        folderSizeLabel.setForeground(SystemColor.textText);
+                        folderSizeLabel.setForeground(ColorUtil.getTextForegroundColor());
                     }
                 }
             } catch (Exception e) {

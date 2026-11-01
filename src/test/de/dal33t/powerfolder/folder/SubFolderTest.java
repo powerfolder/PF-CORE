@@ -1007,7 +1007,8 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         topFolder.scanChangedFile(dirFileInfo);
 
-        assertNull(repository.findSubFolder(dirInfo));
+        // A background scan of the top folder (maintenance of the new subfolder) may be dissolving the share right now
+        TestHelper.waitForCondition(10, () -> repository.findSubFolder(dirInfo) == null);
         assertEquals(1, repository.getFoldersCount());
     }
 

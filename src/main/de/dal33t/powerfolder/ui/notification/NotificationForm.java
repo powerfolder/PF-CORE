@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -75,7 +76,10 @@ public class NotificationForm extends JPanel {
         JPanel panel = createPanel(titleText, acceptOptionLabel,
                 acceptAction, cancelOptionLabel, cancelAction);
         add(panel, BorderLayout.CENTER);
-        setBorder(new LineBorder(Color.lightGray, 1));
+        // PFC-3643: theme-aware border so the toast isn't a light-grey frame on
+        // the dark theme.
+        Color border = UIManager.getColor("Component.borderColor");
+        setBorder(new LineBorder(border != null ? border : Color.lightGray, 1));
     }
 
     /**
@@ -86,7 +90,10 @@ public class NotificationForm extends JPanel {
                                String cancelOptionLabel, Action cancelAction) {
 
         JPanel panel = new JPanel();
-        panel.setBackground(Color.WHITE);
+        // PFC-3643: follow the theme background (white in light mode, dark in dark
+        // mode) instead of a hardcoded white box that left light text unreadable.
+        Color bg = UIManager.getColor("Panel.background");
+        panel.setBackground(bg != null ? bg : Color.WHITE);
         CellConstraints cc = new CellConstraints();
 
         FormLayout formLayout;
@@ -126,6 +133,15 @@ public class NotificationForm extends JPanel {
         textArea.setText(messageText);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
+        // PFC-3643: render the message as plain text on the panel - transparent
+        // background and the theme's label colour/font - so it reads in both the
+        // light and dark themes (previously it was an input field with its own
+        // background, which clashed with the dark toast).
+        textArea.setOpaque(false);
+        textArea.setEditable(false);
+        textArea.setFocusable(false);
+        textArea.setForeground(UIManager.getColor("Label.foreground"));
+        textArea.setFont(UIManager.getFont("Label.font"));
         panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
             CellConstraints.DEFAULT, CellConstraints.TOP));
 

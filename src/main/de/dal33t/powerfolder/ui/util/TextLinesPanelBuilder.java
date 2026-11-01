@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.util;
 
-import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.JLabel;
@@ -47,8 +46,7 @@ public class TextLinesPanelBuilder {
                 builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
-                JLabel label = new JLabel("<HTML><BODY>" + lineText
-                        + "</BODY></HTML>");
+                JLabel label = new JLabel(lineText);
                 Font font = new Font(label.getFont().getFontName(), Font.BOLD,
                         fontsize);
                 label.setFont(font);
@@ -57,7 +55,9 @@ public class TextLinesPanelBuilder {
             row += 1;
         }
         JPanel textBoxPanel = builder.getPanel();
-        textBoxPanel.setBackground(Color.WHITE);
+        // PFC-3643: transparent so the panel takes the theme background (readable
+        // in both light and dark mode) instead of a hardcoded white box.
+        textBoxPanel.setOpaque(false);
         return textBoxPanel;
     }
 }

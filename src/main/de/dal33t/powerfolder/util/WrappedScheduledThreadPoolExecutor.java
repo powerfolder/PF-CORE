@@ -245,10 +245,12 @@ public class WrappedScheduledThreadPoolExecutor extends ScheduledThreadPoolExecu
         @Override
         public void run() {
             checkBusyness();
-            wrappingThreadPool.submit(() -> {
-                if (concurrentExecutionAllowed
-                    || running.compareAndSet(false, true))
-                {
+            // Skip a still running fixed-delay task here: submitting the skip spun up a cached thread every period
+            if (!concurrentExecutionAllowed && !running.compareAndSet(false, true)) {
+                return;
+            }
+            try {
+                wrappingThreadPool.submit(() -> {
                     ProfilingEntry pe = null;
                     try {
                         Integer count = classCountRunning.get(task.getClass());
@@ -268,10 +270,11 @@ public class WrappedScheduledThreadPoolExecutor extends ScheduledThreadPoolExecu
                             classCountRunning.put(task.getClass(), count);
                         }
                     }
-                } else {
-                    //LOG.warning("Skipping execution of " + task);
-                }
-            });
+                });
+            } catch (RuntimeException e) {
+                running.set(false);
+                throw e;
+            }
         }
     }
 }
