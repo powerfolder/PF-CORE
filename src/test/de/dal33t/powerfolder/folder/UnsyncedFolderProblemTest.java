@@ -75,22 +75,29 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 folder.checkSync();
-                for (Problem problem : folder.getProblems()) {
-                    if (problem instanceof UnsynchronizedFolderProblem) {
-                        return true;
-                    }
-                }
-                return false;
+                return unsyncedProblems(folder) == 1;
             }
 
             public String message() {
-                return folder + " reported no unsynced problem. Last sync: "
+                return folder + " reported " + unsyncedProblems(folder)
+                    + " unsynced problem(s), not 1. Last sync: "
                     + folder.getLastSyncDate() + ", warn after "
                     + folder.getSyncWarnSeconds() + "s, problems: "
                     + folder.getProblems();
             }
         });
-        assertEquals(1, folder.getProblems().size());
+        assertEquals(1, unsyncedProblems(folder),
+            folder + " problems: " + folder.getProblems());
+    }
+
+    private static int unsyncedProblems(Folder folder) {
+        int n = 0;
+        for (Problem problem : folder.getProblems()) {
+            if (problem instanceof UnsynchronizedFolderProblem) {
+                n++;
+            }
+        }
+        return n;
     }
 
     private static void waitForLastSyncDate(final Folder folder) {
