@@ -127,9 +127,7 @@ public class LoginPanel extends PFWizardPanel {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 3dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
-        // PFC-3658: the label column must grow to the widest label so longer
-        // translations (e.g. French "Nom d'utilisateur/E-Mail") are not cut off;
-        // keep 50dlu as the minimum so short locales keep the old proportions.
+        // Label column grows with longer translations; 50dlu minimum
         FormLayout layout = new FormLayout("max(50dlu;pref), 3dlu, 110dlu, 40dlu, pref", layoutRows);
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
