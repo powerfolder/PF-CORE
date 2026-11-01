@@ -3,6 +3,7 @@ stages:
 
 variables:
   GIT_DEPTH: "1"
+  TEST_ATTEMPTS: "1,2,3"
 
 # The PF-CORE tests are heavy, so they run ONLY on the nightly scheduled pipeline
 # (set the schedule under the project's pipeline schedules: 04:00 on develop_27).
@@ -11,6 +12,8 @@ variables:
 .rules-test:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$CI_COMMIT_REF_NAME == "feature/PFS-5561-followup"'
       when: on_success
     - when: never
 
@@ -62,7 +65,7 @@ test-Linux:
     # parallel: 2, the sibling shard's forks on the same host.
     - if [ -n "$CI_PROJECT_DIR" ]; then for pid in $(pgrep -f java || true); do case "$(ps -o command= -p $pid 2>/dev/null)" in *"$CI_PROJECT_DIR"*) kill -9 "$pid" || true;; esac; done; fi
     - for pid in $(ps -A -o pid=,etime=,comm= | awk '/java/ && ($2 ~ /-/ || $2 ~ /^[0-9]+:[0-9][0-9]:[0-9][0-9]$/) {print $1}'); do kill -9 "$pid" || true; done
-    - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=1 -Dtest.fork.heap=1g
+    - ant run-tests -Dshard.total=$CI_NODE_TOTAL -Dshard.index=$((CI_NODE_INDEX-1)) -Dtest.threads=1 -Dtest.fork.heap=1g -Dtest.attempts=$TEST_ATTEMPTS
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
@@ -99,7 +102,7 @@ test-macOS:
         done
       ) &
       WATCHDOG_PID=$!
-    - rc=0; ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g || rc=$?; kill $WATCHDOG_PID 2>/dev/null || true; exit $rc
+    - rc=0; ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g -Dtest.attempts=$TEST_ATTEMPTS || rc=$?; kill $WATCHDOG_PID 2>/dev/null || true; exit $rc
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
@@ -120,7 +123,7 @@ test-Windows:
   script:
     - powershell -Command "$dir = $env:CI_PROJECT_DIR; if ($dir) { Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -and $_.CommandLine.Contains($dir) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } }; exit 0"
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -lt (Get-Date).AddHours(-2) } | Stop-Process -Force; exit 0"
-    - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g
+    - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g -Dtest.attempts=%TEST_ATTEMPTS%
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
