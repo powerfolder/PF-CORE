@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
+import de.dal33t.powerfolder.ui.tray.SniTray;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.update.Updater;
@@ -103,15 +104,22 @@ public class UIController extends PFComponent {
     private boolean started;
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
+    /** PFC-3096: StatusNotifierItem (D-Bus) tray backend, used on Linux
+     * GNOME/KDE where the AWT SystemTray is unavailable. Null on other paths. */
+    private SniTray sniTray;
+    /** PFC-3096: menu-entry id of the SNI "Show/Hide" toggle. */
+    private int sniShowHideId = -1;
+    /** PFC-3096: menu-entry id of the SNI "Pause/Resume" entry. */
+    private int sniPauseResumeId = -1;
     private MainFrame mainFrame;
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
 
     // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
-    private Menu sysTrayFoldersMenu;
-    private MenuItem pauseResumeMenu;
-    private Menu recentlyChangedMenu;
+    private JMenu sysTrayFoldersMenu;
+    private JMenuItem pauseResumeMenu;
+    private JMenu recentlyChangedMenu;
     @SuppressWarnings("unused")
     private BoundPermission changePrefsPermission;
 
@@ -131,7 +139,7 @@ public class UIController extends PFComponent {
 
     private final Map<Long, FileInfo> recentlyChangedFiles = new HashMap<Long, FileInfo>(
         MAX_RECENTLY_CHANGED_FILES);
-    private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
+    private final JMenuItem[] recentMenuItems = new JMenuItem[MAX_RECENTLY_CHANGED_FILES];
     private final PreferencesDialog preferencesDialog;
     /**
      * The UI distribution running.
@@ -163,6 +171,17 @@ public class UIController extends PFComponent {
 
         if (OSUtil.isMacOS()) {
             UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
+        }
+
+        if (OSUtil.isLinux()) {
+            // PFC-3096: brand the X11 WM_CLASS (before the splash) so GNOME/KDE
+            // show our icon and name instead of "de.dal33t.Start". Use the
+            // branded binary name the launcher passes in awt.appName.
+            String appName = System.getProperty("awt.appName");
+            UIUtil.setLinuxAppClassName(
+                appName != null && !appName.trim().isEmpty()
+                    ? appName
+                    : "PowerFolder");
         }
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
@@ -275,15 +294,26 @@ public class UIController extends PFComponent {
             TrayIconManager.whitelistSystray(getController());
         }
 
-        if (OSUtil.isSystraySupported()) {
+        // PFC-3096: On Linux prefer the StatusNotifierItem (D-Bus) tray when a
+        // watcher is present (KDE, or GNOME with the AppIndicator extension) - the
+        // AWT SystemTray is unsupported there. Falls back to the AWT tray
+        // (Windows, macOS, KDE-on-X11) and finally to exit-on-close.
+        boolean useSni = OSUtil.isLinux() && SniTray.isAvailable();
+        if (useSni) {
+            OSUtil.setSNITrayAvailable(true);
+        }
+
+        if (useSni) {
+            initializeSniTray();
+        } else if (OSUtil.isSystraySupported()) {
             initializeSystray();
         } else {
-            logWarning("System tray currently only supported on windows (>98)");
+            logWarning("System tray not supported on this platform/desktop");
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        if (getController().isStartMinimized() || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (getController().isStartMinimized()) {
             logInfo("Starting minimized");
         }
 
@@ -292,19 +322,17 @@ public class UIController extends PFComponent {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    boolean isSystraySupported = OSUtil.isSystraySupported();
                     boolean isLinux = OSUtil.isLinux();
                     boolean isStartMinimized = getController()
                         .isStartMinimized();
-                    boolean isExpertMode = PreferencesEntry.EXPERT_MODE
-                        .getValueBoolean(getController());
 
-                    // PFC-2806 never minimize on Linux
-                    mainFrame.getUIComponent()
-                        .setVisible(isLinux
-                            || ((!isSystraySupported || !isStartMinimized)
-                                && isExpertMode));
-                    if (!isStartMinimized && isExpertMode) {
+                    // PFC-3643: bring the main window up on start unless the user
+                    // explicitly chose "start minimized". Previously non-expert
+                    // mode also kept the window hidden behind the tray icon, so the
+                    // client never came up on a normal start.
+                    // PFC-2806 never minimize on Linux. Without a tray the window is the only way back in.
+                    mainFrame.getUIComponent().setVisible(isLinux || !OSUtil.isSystraySupported() || !isStartMinimized);
+                    if (!isStartMinimized) {
                         mainFrame.toFront();
                     }
                 }
@@ -376,14 +404,229 @@ public class UIController extends PFComponent {
 
     }
 
+    /**
+     * PFC-3096: Build and register the StatusNotifierItem (D-Bus) tray used on
+     * Linux GNOME/KDE where the AWT {@link java.awt.SystemTray} is unavailable.
+     * The menu mirrors the AWT tray menu but invokes the operations directly, so
+     * the AWT path ({@link #initializeSystray()}) is left completely untouched.
+     * On any failure it falls back to exit-on-close.
+     */
+    private void initializeSniTray() {
+        String appId = System.getProperty("awt.appName");
+        if (appId == null || appId.trim().isEmpty()) {
+            appId = "powerfolder";
+        }
+        String title = Translation.get("general.application.name");
+        if (title == null || title.trim().isEmpty() || title.startsWith("- ")) {
+            title = "PowerFolder";
+        }
+        // Icon is resolved by freedesktop theme name; the client installs
+        // /usr/share/icons/hicolor/128x128/apps/<appId>.png (see PFC-3096
+        // packaging changes), so the app-id doubles as the icon name.
+        sniTray = new SniTray(appId, appId, title);
+
+        // Left-click brings the main window to front.
+        sniTray.setActivateAction(() -> mainFrame.toFront());
+
+        // Show / Hide toggle.
+        sniShowHideId = sniTray.addItem(Translation.get("systray.show"),
+            () -> {
+                if (mainFrame.getUIComponent().isVisible()) {
+                    mainFrame.getUIComponent().setVisible(false);
+                } else {
+                    mainFrame.toFront();
+                }
+            });
+
+        // Web interface.
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            sniTray.addItem(
+                Translation.get("action_open_web_interface.name"),
+                () -> BrowserLauncher.open(getController(),
+                    () -> getController().getOSClient()
+                        .getLoginURLWithCredentials()));
+        }
+
+        // Browse folders base.
+        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
+            sniTray.addItem(
+                Translation.get("action_open_folders_base.name"),
+                () -> {
+                    if (!PreferencesEntry.WEBDAV_ONLY
+                        .getValueBoolean(getController()))
+                    {
+                        getApplicationModel().openExplorer();
+                    } else {
+                        getApplicationModel().openExplorerWebDAVPath();
+                    }
+                });
+        }
+
+        // Pause / Resume.
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            sniPauseResumeId = sniTray.addItem(pauseResumeLabel(),
+                this::askToPauseResume);
+            getController().addPausedModeListener(new MyPausedModeListener());
+        }
+
+        // Preferences - gated by ChangePreferencesPermission, like the AWT tray
+        // (PFC-3096 review): keep the entry enabled state consistent across
+        // desktop environments.
+        final int sniPrefId = sniTray.addItem(
+            Translation.get("action_open_preferences.name"),
+            () -> preferencesDialog.open());
+        changePrefsPermission = new BoundPermission(getController(),
+            ChangePreferencesPermission.INSTANCE)
+        {
+            @Override
+            public void hasPermission(boolean hasPermission) {
+                if (sniTray != null) {
+                    sniTray.setItemEnabled(sniPrefId, hasPermission);
+                }
+            }
+        };
+
+        sniTray.addSeparator();
+
+        // Sync & Exit (expert only).
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            sniTray.addItem(Translation.get("systray.sync_exit"), () -> {
+                getController().performFullSync();
+                getController().exitAfterSync(4);
+            });
+        }
+
+        // Exit.
+        sniTray.addItem(Translation.get("systray.exit"), () -> {
+            if (isShutdownAllowed()) {
+                getController().exit(0);
+            }
+        });
+
+        try {
+            sniTray.show();
+
+            // Keep the Show/Hide label in sync with the window state. Registered
+            // only after show() succeeds so the listener never dereferences a
+            // nulled sniTray on the fallback path (PFC-3096 review).
+            mainFrame.getUIComponent()
+                .addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentShown(ComponentEvent e) {
+                        sniTray.updateItemLabel(sniShowHideId,
+                            Translation.get("systray.hide"));
+                    }
+
+                    @Override
+                    public void componentHidden(ComponentEvent e) {
+                        sniTray.updateItemLabel(sniShowHideId,
+                            Translation.get("systray.show"));
+                    }
+                });
+        } catch (Exception e) {
+            logSevere("Failed to initialize SNI tray; falling back to no tray",
+                e);
+            sniTray = null;
+            OSUtil.setSNITrayAvailable(false);
+            mainFrame.getUIComponent()
+                .setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+    }
+
+    private static final String AWT_MIRROR = "pf.awtTrayMirror";
+
+    /**
+     * macOS tray: a native AWT menu mirroring the Swing tray menu. Labels, enabled state and sub menu contents follow
+     * the Swing items; a click is forwarded to the Swing item, so its current action command applies.
+     */
+    private static PopupMenu toAwtPopupMenu(JPopupMenu source) {
+        PopupMenu target = new PopupMenu();
+        mirrorChildren(source, () -> target);
+        return target;
+    }
+
+    private static void mirrorChildren(JPopupMenu source, java.util.function.Supplier<Menu> target) {
+        fillAwtMenu(source, target.get());
+        if (source.getClientProperty(AWT_MIRROR) != null) {
+            return;
+        }
+        source.putClientProperty(AWT_MIRROR, Boolean.TRUE);
+        source.addContainerListener(new ContainerListener() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                refill();
+            }
+
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                refill();
+            }
+
+            private void refill() {
+                Menu menu = target.get();
+                if (menu != null) {
+                    menu.removeAll();
+                    fillAwtMenu(source, menu);
+                }
+            }
+        });
+    }
+
+    private static void fillAwtMenu(JPopupMenu source, Menu target) {
+        for (Component c : source.getComponents()) {
+            if (c instanceof JMenuItem && c.isVisible()) {
+                target.add(toAwtMenuItem((JMenuItem) c));
+            } else if (c instanceof JSeparator) {
+                target.addSeparator();
+            }
+        }
+    }
+
+    private static MenuItem toAwtMenuItem(JMenuItem item) {
+        MenuItem awtItem;
+        if (item instanceof JMenu) {
+            JMenu jMenu = (JMenu) item;
+            Menu awtMenu = new Menu(jMenu.getText());
+            item.putClientProperty(AWT_MIRROR, awtMenu);
+            mirrorChildren(jMenu.getPopupMenu(), () -> (Menu) jMenu.getClientProperty(AWT_MIRROR));
+            awtItem = awtMenu;
+        } else {
+            awtItem = new MenuItem(item.getText());
+            awtItem.addActionListener(e -> item.doClick(0));
+            item.putClientProperty(AWT_MIRROR, awtItem);
+        }
+        awtItem.setEnabled(item.isEnabled());
+        if (item.getClientProperty(AWT_MIRROR + ".listener") == null) {
+            item.putClientProperty(AWT_MIRROR + ".listener", Boolean.TRUE);
+            item.addPropertyChangeListener(evt -> {
+                MenuItem current = (MenuItem) item.getClientProperty(AWT_MIRROR);
+                if ("text".equals(evt.getPropertyName())) {
+                    current.setLabel(item.getText());
+                } else if ("enabled".equals(evt.getPropertyName())) {
+                    current.setEnabled(item.isEnabled());
+                }
+            });
+        }
+        return awtItem;
+    }
+
+    /** PFC-3096: current Pause/Resume menu label depending on paused state. */
+    private String pauseResumeLabel() {
+        return getController().isPaused()
+            ? Translation.get("action_resume_sync.name")
+            : Translation.get("action_pause_sync.name");
+    }
+
     private void initializeSystray() {
         trayIconManager = new TrayIconManager(this);
-        PopupMenu menu = new PopupMenu();
+        // PFC-3643: a Swing JPopupMenu (FlatLaf themes it dark in dark mode) on Windows/Linux, where the native
+        // java.awt.PopupMenu is always light; shown manually on the popup trigger (see below). macOS keeps the
+        // native menu (opens on left-click, follows dark mode) as an AWT mirror of this menu.
+        final JPopupMenu menu = new JPopupMenu();
 
         TrayIcon trayIcon = trayIconManager.getTrayIcon();
-        if (trayIcon != null) {
-            trayIcon.setPopupMenu(menu);
-        }
 
         ActionListener systrayActionHandler = new ActionListener() {
             @Override
@@ -489,7 +732,7 @@ public class UIController extends PFComponent {
         // /////////////////////////
         // Open / close menu item //
         // /////////////////////////
-        final MenuItem openUI = new MenuItem(
+        final JMenuItem openUI = new JMenuItem(
             Translation.get("systray.show"));
         menu.add(openUI);
         openUI.setActionCommand(COMMAND_OPEN_UI);
@@ -498,11 +741,11 @@ public class UIController extends PFComponent {
         // //////
         // Web //
         // //////
-        MenuItem item;
+        JMenuItem item;
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("action_open_web_interface.name")));
             item.setActionCommand(COMMAND_WEB);
             item.addActionListener(systrayActionHandler);
@@ -511,7 +754,7 @@ public class UIController extends PFComponent {
         // //////////
         // Folders //
         // //////////
-        sysTrayFoldersMenu = new Menu(
+        sysTrayFoldersMenu = new JMenu(
             Translation.get("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (Feature.SYSTRAY_ALL_FOLDERS.isEnabled()) {
@@ -522,7 +765,7 @@ public class UIController extends PFComponent {
         // Browse //
         // /////////
         if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("action_open_folders_base.name")));
             item.setActionCommand(COMMAND_BROWSE);
             item.addActionListener(systrayActionHandler);
@@ -532,7 +775,7 @@ public class UIController extends PFComponent {
         // Pause / Resume //
         // /////////////////
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            pauseResumeMenu = new MenuItem(
+            pauseResumeMenu = new JMenuItem(
                     Translation.get("action_resume_sync.name"));
             menu.add(pauseResumeMenu);
             pauseResumeMenu.addActionListener(systrayActionHandler);
@@ -544,12 +787,12 @@ public class UIController extends PFComponent {
         // Recent //
         // /////////
         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            recentlyChangedMenu = new Menu(
+            recentlyChangedMenu = new JMenu(
                     Translation.get("uicontroller.recently_changed"));
             recentlyChangedMenu.setEnabled(false);
             menu.add(recentlyChangedMenu);
             for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-                recentMenuItems[i] = new MenuItem();
+                recentMenuItems[i] = new JMenuItem();
                 recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
                 recentMenuItems[i].addActionListener(systrayActionHandler);
             }
@@ -558,7 +801,7 @@ public class UIController extends PFComponent {
         // //////////////
         // Preferences //
         // //////////////
-        final MenuItem prefItem = menu.add(new MenuItem(Translation
+        final JMenuItem prefItem = menu.add(new JMenuItem(Translation
             .get("action_open_preferences.name")));
         prefItem.setActionCommand(COMMAND_PREFERENCES);
         prefItem.addActionListener(systrayActionHandler);
@@ -579,7 +822,7 @@ public class UIController extends PFComponent {
         if (SystemUtil.isShutdownSupported()
             && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
@@ -589,7 +832,7 @@ public class UIController extends PFComponent {
         // Sync Exit //
         // ////////////
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            item = menu.add(new MenuItem(Translation
+            item = menu.add(new JMenuItem(Translation
                 .get("systray.sync_exit")));
             item.setActionCommand(COMMAND_SYNC_EXIT);
             item.addActionListener(systrayActionHandler);
@@ -599,15 +842,85 @@ public class UIController extends PFComponent {
         // Exit //
         // ///////
         item = menu
-            .add(new MenuItem(Translation.get("systray.exit")));
+            .add(new JMenuItem(Translation.get("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
-        if (trayIcon != null) {
+        if (trayIcon != null && OSUtil.isMacOS()) {
+            trayIcon.setPopupMenu(toAwtPopupMenu(menu));
+        }
+        if (trayIcon != null && !OSUtil.isMacOS()) {
             trayIcon.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     mainFrame.toFront();
+                }
+            });
+
+            // PFC-3643: show the (FlatLaf-themed, dark-mode-aware) Swing menu on
+            // the tray popup trigger. A TrayIcon can't host a JPopupMenu directly,
+            // so an invisible, focusable owner window is positioned at the cursor
+            // and the popup is shown on it; losing focus (click-away) or picking an
+            // item hides the owner again. TrayIcon mouse coordinates are screen
+            // coordinates; Swing auto-flips the menu upward near the taskbar.
+            // A JWindow (not a JDialog): FlatLaf decorates JDialogs, and applying
+            // its rounded/translucent popup on a decorated-dialog owner throws
+            // IllegalComponentStateException ("The dialog is decorated") on every
+            // open. A JWindow is undecorated by nature; the heavyweight popup still
+            // dismisses on click-away via its own grab.
+            final JWindow trayMenuOwner = new JWindow();
+            trayMenuOwner.setAlwaysOnTop(true);
+            trayMenuOwner.setSize(1, 1);
+            menu.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                    trayMenuOwner.setVisible(false);
+                }
+
+                @Override
+                public void popupMenuCanceled(
+                    javax.swing.event.PopupMenuEvent e)
+                {
+                    trayMenuOwner.setVisible(false);
+                }
+            });
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    maybeShowMenu(e);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    maybeShowMenu(e);
+                }
+
+                private void maybeShowMenu(MouseEvent e) {
+                    if (!e.isPopupTrigger()) {
+                        return;
+                    }
+                    // The pointer location is in user space; TrayIcon event coordinates are device pixels on
+                    // scaled Windows displays.
+                    PointerInfo pointer = MouseInfo.getPointerInfo();
+                    final int x = pointer != null ? pointer.getLocation().x : e.getX();
+                    final int y = pointer != null ? pointer.getLocation().y : e.getY();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            trayMenuOwner.setLocation(x, y);
+                            trayMenuOwner.setVisible(true);
+                            trayMenuOwner.toFront();
+                            menu.show(trayMenuOwner, 0, 0);
+                        }
+                    });
                 }
             });
         }
@@ -624,13 +937,13 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent arg0) {
-                openUI.setLabel(Translation.get("systray.hide"));
+                openUI.setText(Translation.get("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
 
             @Override
             public void componentHidden(ComponentEvent arg0) {
-                openUI.setLabel(Translation.get("systray.show"));
+                openUI.setText(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
@@ -638,13 +951,13 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addWindowListener(new WindowAdapter() {
             @Override
             public void windowIconified(WindowEvent e) {
-                openUI.setLabel(Translation.get("systray.show"));
+                openUI.setText(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
-                openUI.setLabel(Translation.get("systray.hide"));
+                openUI.setText(Translation.get("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
         });
@@ -662,11 +975,11 @@ public class UIController extends PFComponent {
      * @param folder
      */
     private void addFolderToSysTray(Folder folder) {
-        MenuItem menuItem = new MenuItem(folder.getName());
+        JMenuItem menuItem = new JMenuItem(folder.getName());
         // Insert in the correct position.
         boolean done = false;
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            if (sysTrayFoldersMenu.getItem(i).getLabel().toLowerCase()
+            if (sysTrayFoldersMenu.getItem(i).getText().toLowerCase()
                 .compareTo(folder.getName().toLowerCase()) > 0)
             {
                 sysTrayFoldersMenu.insert(menuItem, i);
@@ -696,8 +1009,10 @@ public class UIController extends PFComponent {
      */
     private void removeFolderFromSysTray(Folder folder) {
         for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
-            if (menuItem.getLabel().equals(folder.getName())) {
+            JMenuItem menuItem = sysTrayFoldersMenu.getItem(i);
+            if (menuItem != null
+                && menuItem.getText().equals(folder.getName()))
+            {
                 sysTrayFoldersMenu.remove(i);
             }
         }
@@ -775,7 +1090,10 @@ public class UIController extends PFComponent {
             Icons.setIconProperties(props);
         }
         try {
-            LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
+            LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel(), activeSkin);
+            // Give the appearance watcher a controller so it can offer a restart
+            // when the OS light/dark setting changes.
+            LookAndFeelSupport.setThemeController(getController());
         } catch (UnsupportedLookAndFeelException | ParseException e) {
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
@@ -1005,7 +1323,13 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().dispose();
 
             // Close systray
-            if (OSUtil.isSystraySupported() && trayIconManager != null) {
+            if (sniTray != null) {
+                // PFC-3096: SNI (D-Bus) tray teardown. Clear the backend flag so
+                // isSystraySupported() no longer reports a tray that is gone.
+                sniTray.dispose();
+                sniTray = null;
+                OSUtil.setSNITrayAvailable(false);
+            } else if (OSUtil.isSystraySupported() && trayIconManager != null) {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
             }
@@ -1176,14 +1500,21 @@ public class UIController extends PFComponent {
     }
 
     private void configurePauseResumeLink() {
-        if (getController().isPaused()) {
-            pauseResumeMenu.setLabel(Translation
-                .get("action_resume_sync.name"));
-            pauseResumeMenu.setActionCommand(COMMAND_RESUME);
-        } else {
-            pauseResumeMenu.setLabel(Translation
-                .get("action_pause_sync.name"));
-            pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
+        // AWT tray path.
+        if (pauseResumeMenu != null) {
+            if (getController().isPaused()) {
+                pauseResumeMenu.setText(Translation
+                    .get("action_resume_sync.name"));
+                pauseResumeMenu.setActionCommand(COMMAND_RESUME);
+            } else {
+                pauseResumeMenu.setText(Translation
+                    .get("action_pause_sync.name"));
+                pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
+            }
+        }
+        // PFC-3096: SNI tray path.
+        if (sniTray != null && sniPauseResumeId != -1) {
+            sniTray.updateItemLabel(sniPauseResumeId, pauseResumeLabel());
         }
     }
 
@@ -1310,9 +1641,9 @@ public class UIController extends PFComponent {
                     recentlyChangedMenu.removeAll();
                     int i = 0;
                     for (FileInfo info : recentlyChangedFiles.values()) {
-                        MenuItem menuItem = recentMenuItems[i++];
+                        JMenuItem menuItem = recentMenuItems[i++];
                         recentlyChangedMenu.add(menuItem);
-                        menuItem.setLabel(info.getFilenameOnly());
+                        menuItem.setText(info.getFilenameOnly());
                     }
                     recentlyChangedMenu.setEnabled(!recentlyChangedFiles
                         .isEmpty());

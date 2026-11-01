@@ -252,7 +252,8 @@ public class Debug {
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
             b.append("\nDataitems: " + countDataitems(c));
             if (c.isStarted()) {
-                addSearchIndexInfo(b, c.getFolderRepository().getFolders(true));
+                // Meta-folders are never indexed; counting them showed a fully indexed server as 50%
+                addSearchIndexInfo(b, c.getFolderRepository().getFolders(false));
             }
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());

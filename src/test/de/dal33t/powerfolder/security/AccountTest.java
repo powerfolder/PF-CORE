@@ -27,14 +27,14 @@ import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AccountTest {
 
@@ -110,28 +110,26 @@ public class AccountTest {
         Account subAdmin = new Account();
         subAdmin.grant(FolderPermission.admin(subA));
 
-        assertFalse("Not admin of the folder above", subAdmin.hasAdminPermission(top));
-        assertFalse("... and not by an unrelated path either",
-            subAdmin.hasAdminPermission(top, "elsewhere/file.txt"));
-        assertTrue("Admin at the addressed location", subAdmin.hasAdminPermission(top, "structure/SubA"));
-        assertTrue("... and deeper inside it",
-            subAdmin.hasAdminPermission(top, "structure/SubA/deeper/file.txt"));
-        assertTrue("... also when the subfolder itself is addressed",
-            subAdmin.hasAdminPermission(subA, "deeper/file.txt"));
-        assertTrue("... addressed by the file",
-            subAdmin.hasAdminPermission(FileInfoFactory.unmarshallExistingFile(top,
-                "structure/SubA/deeper/file.txt", null, 0, null, null, new Date(), 1, null, false, null)));
+        assertFalse(subAdmin.hasAdminPermission(top), "Not admin of the folder above");
+        assertFalse(subAdmin.hasAdminPermission(top, "elsewhere/file.txt"), "... and not by an unrelated path either");
+        assertTrue(subAdmin.hasAdminPermission(top, "structure/SubA"), "Admin at the addressed location");
+        assertTrue(subAdmin.hasAdminPermission(top, "structure/SubA/deeper/file.txt"), "... and deeper inside it");
+        assertTrue(subAdmin.hasAdminPermission(subA, "deeper/file.txt"),
+            "... also when the subfolder itself is addressed");
+        assertTrue(subAdmin.hasAdminPermission(FileInfoFactory.unmarshallExistingFile(top,
+            "structure/SubA/deeper/file.txt", null, 0, null, null, new Date(), 1, null, false, null)),
+            "... addressed by the file");
 
         // Write access is not admin, however deep it is granted.
         Account writer = new Account();
         writer.grant(FolderPermission.readWrite(subA));
-        assertFalse("Read/write in the subfolder is not admin of it",
-            writer.hasAdminPermission(top, "structure/SubA/file.txt"));
+        assertFalse(writer.hasAdminPermission(top, "structure/SubA/file.txt"),
+            "Read/write in the subfolder is not admin of it");
 
         // And an admin of the top folder stays admin below it - inheritance is not touched.
         Account topAdmin = new Account();
         topAdmin.grant(FolderPermission.admin(top));
-        assertTrue("The admin above is admin below", topAdmin.hasAdminPermission(top, "structure/SubA/file.txt"));
+        assertTrue(topAdmin.hasAdminPermission(top, "structure/SubA/file.txt"), "The admin above is admin below");
     }
 
     /**
@@ -204,6 +202,47 @@ public class AccountTest {
             // The feature flag is process-wide - never leak it into other tests.
             Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         }
+    }
+
+    /**
+     * PFM-837: A rename puts a new instance of the folder into the pool. The permissions granted before still hold
+     * the old one and must hand out the folder under its new name - the folder list of the app is built from them.
+     */
+    @Test
+    public void testRenamedFolderShowsNewNameThroughPermissions() {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Test1").intern();
+        Group group = new Group("Readers");
+        group.grant(FolderPermission.read(folder));
+        Account account = new Account();
+        account.grant(FolderPermission.owner(folder));
+        account.addGroup(group);
+
+        FolderInfo renamed = FolderInfoFactory.rename(folder, "Test2");
+        assertNotSame(folder, renamed);
+
+        assertEquals("Test2", account.getPermissionFor(folder).getFolder().getName());
+        assertEquals("Test2", account.getFolders().iterator().next().getName());
+        assertEquals("Test2", account.getFoldersCharged().iterator().next().getName());
+        assertEquals("Test2", group.getFolders().iterator().next().getName());
+        assertEquals("Test2", group.getAllFolders().iterator().next().getName());
+    }
+
+    /**
+     * PFM-837: A permission received from the server can already carry the renamed folder while the pool here still
+     * holds the old one - a client the rename has not reached yet. The newer one counts.
+     */
+    @Test
+    public void testPermissionWithNewerFolderThanPoolKeepsItsName() {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Test1").intern();
+        FolderInfo renamed = FolderInfoFactory.rename(folder, "Test2");
+        Account account = new Account();
+        account.grant(FolderPermission.owner(renamed));
+
+        // The pool falls back to the old version, as on a client the rename has not reached
+        assertSame(folder, folder.intern(true));
+
+        assertEquals("Test2", account.getDirectPermissionFor(folder).getFolder().getName());
+        assertEquals("Test2", account.getFolders().iterator().next().getName());
     }
 
     @Test
@@ -580,7 +619,7 @@ public class AccountTest {
         account.addGroup(owners);
 
         Collection<FolderInfo> charged = account.getFoldersCharged();
-        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertEquals(1, charged.size(), "Only the owned folder is charged: " + charged);
         assertTrue(charged.contains(owned));
         assertFalse(charged.contains(viaGroup));
         assertFalse(charged.contains(justAdmin));

@@ -93,6 +93,17 @@ public class FoldersTab extends PFUIComponent {
             .get("folders_tab.new_folder"));
         newFolderActionLabel.setVisible(false);
         client = getApplicationModel().getServerClientModel().getClient();
+        // Follow the main status too: a server switch can announce the server before its connection is complete,
+        // then "Connecting..." would stay here while the status already moved on.
+        getApplicationModel().addSyncStatusListener(new de.dal33t.powerfolder.ui.event.SyncStatusListener() {
+            public void syncStatusChanged(de.dal33t.powerfolder.ui.event.SyncStatusEvent event) {
+                updateEmptyLabel();
+            }
+
+            public boolean fireInEventDispatchThread() {
+                return true;
+            }
+        });
 
         controller.getThreadPool().scheduleWithFixedDelay(() -> {
             SwingUtilities.invokeLater(() -> {
@@ -139,13 +150,7 @@ public class FoldersTab extends PFUIComponent {
         buildEmptyPanel();
         builder.add(emptyPanelOuter, cc.xywh(1,  row, 1, 1));
         builder.add(scrollPane, cc.xywh(1,  row, 1, 1));
-
-        if (!PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.appendRow("3dlu");
-            builder.appendRow("pref");
-            row += 2;
-            builder.addSeparator("", cc.xy(1, row));
-        }
+        // No separator below the list: the bottom tray draws the one line between list and tray.
 
         uiComponent = builder.getPanel();
 

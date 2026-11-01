@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -28,6 +31,7 @@ import java.nio.file.Path;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test that when a folder is confgured not to use the recycle bin, no folders
@@ -35,7 +39,7 @@ import de.dal33t.powerfolder.util.test.ControllerTestCase;
  */
 public class NoRecycleTest extends ControllerTestCase {
 
-    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         // Remove directries
 
@@ -61,6 +65,7 @@ public class NoRecycleTest extends ControllerTestCase {
         getFolder().setArchiveVersions(0);
     }
 
+    @Test
     public void testRecycleBin() {
         FileInfo testfile = getFolder().getKnownFiles().iterator().next();
         Path file = getFolder().getDiskFile(testfile);

@@ -1790,6 +1790,11 @@ public class PathUtils {
 
                         @Override
                         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            // tolerate a file that vanished mid-walk, but still report a missing source root
+                            if (exc instanceof NoSuchFileException && !file.equals(sourceDirectory)) {
+                                log.warning("Source file gone while move, skipping: " + file + ": " + exc);
+                                return CONTINUE;
+                            }
                             throw exc;
                         }
                     });

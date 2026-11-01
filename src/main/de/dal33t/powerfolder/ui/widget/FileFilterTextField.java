@@ -18,6 +18,7 @@
  *
  */
 package de.dal33t.powerfolder.ui.widget;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -191,7 +192,7 @@ public class FileFilterTextField extends PFComponent {
         if (!hasExternalText()) {
             if (focus && !currentlyMemberMode) {
                 textField.setText("");
-                textField.setForeground(SystemColor.textText);
+                textField.setForeground(ColorUtil.getTextForegroundColor());
             } else {
                 textField.setForeground(Color.lightGray);
                 int mode = (Integer) externalSearchModeValueModel.getValue();
@@ -409,7 +410,7 @@ public class FileFilterTextField extends PFComponent {
             if (previouslyMemberMode) {
                 textField.setText("");
                 externalSearchTextValueModel.setValue("");
-                textField.setForeground(SystemColor.textText);
+                textField.setForeground(ColorUtil.getTextForegroundColor());
                 clearTextJButton.setVisible(false);
                 textField.transferFocus();
             }

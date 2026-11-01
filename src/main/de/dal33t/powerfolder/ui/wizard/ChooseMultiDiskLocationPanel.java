@@ -18,6 +18,7 @@
  *
  */
 package de.dal33t.powerfolder.ui.wizard;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -455,7 +456,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private void startFolderSizeCalculator() {
         folderSizeLabel.setText(Translation.get(
                 "exp.wizard.choose_disk_location.calculating_directory_size"));
-        folderSizeLabel.setForeground(SystemColor.textText);
+        folderSizeLabel.setForeground(ColorUtil.getTextForegroundColor());
         new MyFolderSizeSwingWorker().execute();
     }
 

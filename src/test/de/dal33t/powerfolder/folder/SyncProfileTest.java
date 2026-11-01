@@ -19,18 +19,21 @@
 */
 package de.dal33t.powerfolder.folder;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.SyncProfileConfiguration;
 
 /**
  * Class to run some basic tests on sync profiles.
  */
-public class SyncProfileTest extends TestCase {
+public class SyncProfileTest {
 
     /**
      * Checks that profiles cannot have the same name or config as each other.
      */
+    @Test
     public void testDuplicates() {
 
         SyncProfile tweedledee = SyncProfile
@@ -47,8 +50,8 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set two profiles with the same name",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set two profiles with the same name");
 
         // Test setting custom name with preset name
         String presetProfileName = SyncProfile.getSyncProfilesCopy().get(0)
@@ -60,8 +63,8 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set a profile name with a preset name",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set a profile name with a preset name");
 
         // Test setting custom config with another custom config
         SyncProfileConfiguration tweedledumConfiguration = tweedledum
@@ -73,8 +76,8 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set two profiles with the same config",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set two profiles with the same config");
 
         // Test setting custom config with a preset config
         SyncProfileConfiguration presetConfiguration = SyncProfile
@@ -86,13 +89,14 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set a profile configuration with a preset configuration",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set a profile configuration with a preset configuration");
     }
 
     /**
      * Checks that preset profiles cannot have name or config set.
      */
+    @Test
     public void testPresets() {
 
         SyncProfile presetProfile = SyncProfile.getSyncProfilesCopy().get(0);
@@ -105,8 +109,8 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set a preset profile name",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set a preset profile name");
 
         // Check cannot set config.
         passed = false;
@@ -117,14 +121,15 @@ public class SyncProfileTest extends TestCase {
             e.printStackTrace();
             passed = true;
         }
-        assertTrue("Should not have been able to set a preset profile configuration",
-                passed);
+        assertTrue(
+                passed,"Should not have been able to set a preset profile configuration");
     }
 
     /**
      * Checks that two profiles with the same config but different name,
      * load as one profile.
      */
+    @Test
     public void testSameConfig() {
 
         int initialSize = SyncProfile.getSyncProfilesCopy().size();
@@ -136,17 +141,18 @@ public class SyncProfileTest extends TestCase {
                 .getSyncProfileByFieldList("true,true,true,true,555,false,12,0,m,selma");
         int finalSize = SyncProfile.getSyncProfilesCopy().size();
 
-        assertSame("Loading identical config profiles should only create one new profile (1)",
-                finalSize - initialSize, 2);
-        assertEquals("Loading identical config profiles should only create one new profile (2)",
-                patty.getName(), selma.getName());
-        assertFalse("Loading different config profiles should create two new profile",
-                patty.getName().equals(marge.getName()));
+        assertSame(
+                finalSize - initialSize, 2,"Loading identical config profiles should only create one new profile (1)");
+        assertEquals(
+                patty.getName(), selma.getName(),"Loading identical config profiles should only create one new profile (2)");
+        assertFalse(
+                patty.getName().equals(marge.getName()),"Loading different config profiles should create two new profile");
     }
 
     /**
      * Thorough check of the SyncProfileConfig equals method
      */
+    @Test
     public void testConfigEquals() {
 
         SyncProfileConfiguration base = new SyncProfileConfiguration(
@@ -172,16 +178,16 @@ public class SyncProfileTest extends TestCase {
         SyncProfileConfiguration delta10 = new SyncProfileConfiguration(
                 false, false, false, false, 0, false, 0, 0, "h", true);
 
-        assertFalse("delta1", base.equals(delta1));
-        assertFalse("delta2", base.equals(delta2));
-        assertFalse("delta3", base.equals(delta3));
-        assertFalse("delta4", base.equals(delta4));
-        assertFalse("delta5", base.equals(delta5));
-        assertFalse("delta6", base.equals(delta6));
-        assertFalse("delta7", base.equals(delta7));
-        assertFalse("delta8", base.equals(delta8));
-        assertFalse("delta9", base.equals(delta9));
-        assertFalse("delta10", base.equals(delta10));
+        assertFalse( base.equals(delta1),"delta1");
+        assertFalse( base.equals(delta2),"delta2");
+        assertFalse( base.equals(delta3),"delta3");
+        assertFalse( base.equals(delta4),"delta4");
+        assertFalse( base.equals(delta5),"delta5");
+        assertFalse( base.equals(delta6),"delta6");
+        assertFalse( base.equals(delta7),"delta7");
+        assertFalse( base.equals(delta8),"delta8");
+        assertFalse( base.equals(delta9),"delta9");
+        assertFalse( base.equals(delta10),"delta10");
     }
 
 }

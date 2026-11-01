@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,13 +33,14 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TODO ADD JAVADOC
  */
 public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -58,6 +62,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testOverwriteToRecycleAndRestore() throws IOException {
         final Path testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());

@@ -1,5 +1,10 @@
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -17,6 +22,31 @@ public final class TagUtil {
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private TagUtil() {
+    }
+
+    /**
+     * PFS-5911: The directory that carries the tags of a folder. An inheriting subfolder is a directory of its top
+     * folder and is tagged there - its FolderInfo holds at most the copy it got when it was shared. The top folder
+     * and an interrupted subfolder carry their tags on the FolderInfo (the interrupt moves them over, the restore
+     * back). The one rule for everything that writes, lists, searches or suggests the tags of a folder.
+     *
+     * @return the directory in the top folder, {@code null} when the FolderInfo carries the tags - also when the top
+     *         folder is not mounted or has no entry for the directory, which leaves the FolderInfo as the only place
+     */
+    public static FileInfo directoryOf(FolderInfo foInfo, FolderRepository repository) {
+        if (!foInfo.isSubFolder() || !foInfo.inheritsPermissions()) {
+            return null;
+        }
+        Folder top = repository.getFolder(foInfo.getTopFolder());
+        FileInfo directory = top != null
+            ? top.getFile(FileInfoFactory.lookupDirectory(top.getInfo(), foInfo.locationPath())) : null;
+        return directory != null && !directory.isDeleted() ? directory : null;
+    }
+
+    /** PFS-5911: The tags of a folder, from wherever they are carried - see {@link #directoryOf}. */
+    public static List<String> tagsOf(FolderInfo foInfo, FolderRepository repository) {
+        FileInfo directory = directoryOf(foInfo, repository);
+        return directory != null ? directory.getTagsList() : foInfo.getTagsList();
     }
 
     public static List<String> parse(String tagsJson) {

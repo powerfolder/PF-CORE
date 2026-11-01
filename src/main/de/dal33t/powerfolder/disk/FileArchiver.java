@@ -149,6 +149,15 @@ public interface FileArchiver {
     Path versionsDirectory(String relativePath);
 
     /**
+     * PFS-5529: Whether the archive holds a version of anything at or below the relative directory - of
+     * anything at all for a blank path. The recycle bin asks this before it asks the database.
+     *
+     * @param relativeDirectory the directory in the folder, blank for the folder root
+     * @return {@code true} when at least one version lies below
+     */
+    boolean hasArchivedFilesBelow(String relativeDirectory);
+
+    /**
      * Purges all archived versions in this folder.
      * The folder's archiver must be this instance.
      *

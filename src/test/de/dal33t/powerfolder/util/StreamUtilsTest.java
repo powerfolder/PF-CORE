@@ -18,17 +18,19 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import junit.framework.TestCase;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class StreamUtilsTest extends TestCase {
+public class StreamUtilsTest {
 
+    @Test
     public void testByteArrayStream() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] data = new byte[12324];
@@ -42,6 +44,7 @@ public class StreamUtilsTest extends TestCase {
         assertTrue(byteArrayEquals(data, out.toByteArray()));
     }
 
+    @Test
     public void testFileCopy() throws IOException {
         Files.createDirectories(Paths.get("build/test"));
         Path inFile = TestHelper.createRandomFile(Paths.get(
@@ -55,6 +58,7 @@ public class StreamUtilsTest extends TestCase {
         Files.delete(inFile);
     }
 
+    @Test
     public void testCopyStreamCrypto() throws IOException {
         Files.createDirectories(Paths.get("build/test"));
 
@@ -70,6 +74,7 @@ public class StreamUtilsTest extends TestCase {
         Files.delete(inFile);
     }
 
+    @Test
     public void testReadOk() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
@@ -83,6 +88,7 @@ public class StreamUtilsTest extends TestCase {
     }
 
 
+    @Test
     public void testReadIndexOutOfBoundsOffset() throws IOException {
         PipedInputStream inputStream = new PipedInputStream();
         PipedOutputStream outputStream = new PipedOutputStream();
@@ -100,6 +106,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadIndexOutOfBoundsLength() throws IOException {
         PipedInputStream inputStream = new PipedInputStream();
         PipedOutputStream outputStream = new PipedOutputStream();
@@ -117,6 +124,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadIndexOutOfBoundsLengthSmallerThanArray() throws IOException {
         PipedInputStream inputStream = new PipedInputStream();
         PipedOutputStream outputStream = new PipedOutputStream();
@@ -135,6 +143,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadEndOfFile() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
@@ -151,6 +160,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadFail() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
@@ -171,6 +181,7 @@ public class StreamUtilsTest extends TestCase {
         assertEquals(0, read);
     }
 
+    @Test
     public void testCopyStream() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
@@ -187,12 +198,13 @@ public class StreamUtilsTest extends TestCase {
 
         long read = StreamUtils.copyToStream(in, bOut, testLength - 1000);
         byte[] output = bOut.toByteArray();
-        assertEquals("Too much data written sto stream!", testLength - 1000,
-                output.length);
+        assertEquals( testLength - 1000,
+                output.length,"Too much data written sto stream!");
         assertEquals(new String(buf, 0, testLength - 1000), new String(output));
         assertEquals(testLength - 1000, read);
     }
 
+    @Test
     public void testReadIntoByteArrayNullInputStream(){
         try {
             StreamUtils.readIntoByteArray(null);
@@ -204,6 +216,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadIntoByteArrayOk() throws IOException {
         byte[] array = new byte[99];
         for (int i = 0; i < 99; i++) {
@@ -216,6 +229,7 @@ public class StreamUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testReadIntOk() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
@@ -228,6 +242,7 @@ public class StreamUtilsTest extends TestCase {
         assertEquals(16909060, read);
     }
 
+    @Test
     public void testReadIntThreeElements() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();

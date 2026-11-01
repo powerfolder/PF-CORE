@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +33,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test the project work sync mode.
@@ -39,7 +43,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  */
 public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -50,6 +54,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
      * Test the file detection on start. This is a bug and should not happen.
      * Ticket #200.
      */
+    @Test
     public void testDetectOnStart() {
         // Create some random files
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
@@ -75,6 +80,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test if the files are transferred after the sync was triggered manually
      */
+    @Test
     public void testReceiveFiles() {
         // Both should be friends
         makeFriends();
@@ -127,6 +133,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test if the files are transferred after the sync was triggered manually
      */
+    @Test
     public void testReceiveDeletes() throws IOException {
         // Create some random files
         Path rndFile1 = TestHelper.createRandomFile(getFolderAtBart()
@@ -216,12 +223,12 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(2, countExisting(getFolderAtLisa().getKnownFiles()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
-        assertEquals("Files at lisa: "
-            + Arrays.asList(getFolderAtLisa().getLocalBase().toFile().list()), 2 + 1,
-            getFolderAtLisa().getLocalBase().toFile().list().length);
-        assertEquals("File at bart: "
-            + Arrays.asList(getFolderAtBart().getLocalBase().toFile().list()), 2 + 1,
-            getFolderAtBart().getLocalBase().toFile().list().length);
+        assertEquals( 2 + 1,
+            getFolderAtLisa().getLocalBase().toFile().list().length,"Files at lisa: "
+            + Arrays.asList(getFolderAtLisa().getLocalBase().toFile().list()));
+        assertEquals( 2 + 1,
+            getFolderAtBart().getLocalBase().toFile().list().length,"File at bart: "
+            + Arrays.asList(getFolderAtBart().getLocalBase().toFile().list()));
     }
 
     private int countDeleted(Collection<FileInfo> files) {

@@ -226,8 +226,8 @@ public class MembersExpertTable extends JTable {
 
             if (!isSelected) {
                 setBackground(row % 2 == 0
-                    ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+                    ? ColorUtil.getEvenTableRowColor()
+                    : ColorUtil.getOddTableRowColor());
             }
 
             return defaultComp;

@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.ui.InvitationsPanel;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
@@ -69,6 +70,7 @@ public class FoldersList extends PFUIComponent {
 
     private JPanel uiComponent;
     private JPanel folderListPanel;
+    private InvitationsPanel invitationsPanel;
     private FolderRepository repository;
     private ServerClient client;
     private JScrollPane scrollPane;
@@ -124,6 +126,9 @@ public class FoldersList extends PFUIComponent {
         folderListPanel = new JPanel();
         folderListPanel.setLayout(new BoxLayout(folderListPanel,
             BoxLayout.PAGE_AXIS));
+        // PFC-3301: open folder invitations show as the first entry of the list.
+        invitationsPanel = new InvitationsPanel(getController());
+        folderListPanel.add(invitationsPanel.getUIComponent());
         registerListeners();
 
         // Build ui

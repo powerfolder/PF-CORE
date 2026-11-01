@@ -1122,7 +1122,8 @@ public enum ConfigurationEntry {
     PROFILING("profiling", false),
 
     /**
-     * The loglevel to write to debug file when verbose=true
+     * The loglevel to write to the log file. PFC-3643: the UI client always logs to file, at INFO unless verbose or
+     * this entry is set explicitly.
      */
     LOG_LEVEL_FILE("log.file.level", Level.FINE.getName(), true),
 

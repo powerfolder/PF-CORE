@@ -34,6 +34,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFC-3633: Archived file versions follow a subfolder when its inheritance is interrupted - into its own
@@ -43,6 +47,7 @@ import java.util.stream.Stream;
  */
 public class SubFolderArchiveTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -52,12 +57,14 @@ public class SubFolderArchiveTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         super.tearDown();
     }
 
+    @Test
     public void testArchivedVersionsFollowInterruptAndRestore() throws IOException {
         final Folder topBart = getFolderAtBart();
         final Folder topLisa = getFolderAtLisa();
@@ -96,42 +103,35 @@ public class SubFolderArchiveTest extends TwoControllerTestCase {
             }
         });
         Path topArchiveReports = archiveDir(topBart).resolve("reports");
-        assertTrue("Sanity: the version sits in the top archive below the subfolder's path",
-            Files.isDirectory(topArchiveReports));
+        assertTrue(Files.isDirectory(topArchiveReports), "Sanity: the version sits in the top archive below the subfolder's path");
 
         // --- Share + interrupt: the version moves into the subfolder's own archive ---
         Folder sub = topBart.share((DirectoryInfo) topBart.getFileInfo("reports"));
-        assertTrue("Sanity: an inheriting subfolder archives through the top folder",
-            sub.getFileArchiver() instanceof SubFolderFileArchiverProxy);
+        assertTrue(sub.getFileArchiver() instanceof SubFolderFileArchiverProxy, "Sanity: an inheriting subfolder archives through the top folder");
         sub.setInheritsPermissions(false);
-        assertTrue("An interrupted subfolder has an archiver of its own",
-            sub.getFileArchiver() instanceof FileArchiverImpl);
+        assertTrue(sub.getFileArchiver() instanceof FileArchiverImpl, "An interrupted subfolder has an archiver of its own");
         FileInfo subRow = sub.getKnownFiles().iterator().next();
         assertEquals("Report.txt", subRow.getRelativeName());
-        assertEquals("The interruption brought the archived version along", 1,
-            sub.getFileArchiver().getArchivedFilesInfos(subRow).size());
-        assertFalse("... and left nothing behind in the top archive", Files.exists(topArchiveReports));
+        assertEquals(1, sub.getFileArchiver().getArchivedFilesInfos(subRow).size(), "The interruption brought the archived version along");
+        assertFalse(Files.exists(topArchiveReports), "... and left nothing behind in the top archive");
 
         // A second version archived WHILE interrupted lands in the subfolder's own archive.
         sub.getFileArchiver().archive(subRow, sub.getLocalBase().resolve("Report.txt"), true);
-        assertEquals("Sanity: two versions in the subfolder's archive", 2,
-            sub.getFileArchiver().getArchivedFilesInfos(subRow).size());
+        assertEquals(2, sub.getFileArchiver().getArchivedFilesInfos(subRow).size(), "Sanity: two versions in the subfolder's archive");
         Path subArchive = archiveDir(sub);
 
         // --- Restore: both versions are back in the top archive, the own archive is empty ---
         sub.setInheritsPermissions(true);
         FileInfo restoredRow = topBart.getFileInfo(fileBart);
-        assertNotNull("Sanity: the row is the top folder's again", restoredRow);
-        assertEquals("The restore brought both versions back to the top archive", 2,
-            topBart.getFileArchiver().getArchivedFilesInfos(restoredRow).size());
-        assertTrue("The subfolder's archive holds no version any more", isEmptyOrMissing(subArchive));
+        assertNotNull(restoredRow, "Sanity: the row is the top folder's again");
+        assertEquals(2, topBart.getFileArchiver().getArchivedFilesInfos(restoredRow).size(), "The restore brought both versions back to the top archive");
+        assertTrue(isEmptyOrMissing(subArchive), "The subfolder's archive holds no version any more");
 
         // --- Unshare: the subfolder's .PowerFolder directory may go now ---
         Path systemSubDir = sub.getSystemSubDir();
         topBart.unshare((DirectoryInfo) topBart.getFileInfo("reports"));
-        assertFalse("The subfolder's .PowerFolder directory is gone", Files.exists(systemSubDir));
-        assertEquals("... and the top folder still has both versions", 2,
-            topBart.getFileArchiver().getArchivedFilesInfos(restoredRow).size());
+        assertFalse(Files.exists(systemSubDir), "The subfolder's .PowerFolder directory is gone");
+        assertEquals(2, topBart.getFileArchiver().getArchivedFilesInfos(restoredRow).size(), "... and the top folder still has both versions");
     }
 
     private Path archiveDir(Folder folder) {

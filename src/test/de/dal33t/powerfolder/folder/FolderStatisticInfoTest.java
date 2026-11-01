@@ -18,14 +18,15 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import junit.framework.TestCase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FolderStatisticInfoTest extends TestCase {
+public class FolderStatisticInfoTest {
 
     // public void testLoadAll() {
     // File baseDir = new File(
@@ -37,6 +38,7 @@ public class FolderStatisticInfoTest extends TestCase {
      * PFS-818: Exceptions while running with dynamic folder mounting / shared
      * storage
      */
+    @Test
     public void testCorruptFiles() {
         //assertNull(testCorruptFile(Paths
         //    .get("src/test-resources/FolderStatisticInfo_OOM.txt")));
@@ -48,6 +50,9 @@ public class FolderStatisticInfoTest extends TestCase {
     }
 
     private FolderStatisticInfo testCorruptFile(Path file) {
+        if (Files.notExists(file)) {
+            file = Paths.get("../PF-CORE").resolve(file);
+        }
         if (Files.notExists(file)) {
             fail("Testfile not found " + file);
         }

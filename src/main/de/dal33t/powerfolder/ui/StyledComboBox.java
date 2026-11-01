@@ -22,15 +22,26 @@ package de.dal33t.powerfolder.ui;
 import java.awt.Rectangle;
 
 import javax.swing.JComboBox;
+import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 
 import de.javasoft.plaf.synthetica.SyntheticaComboBoxUI;
+import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 public class StyledComboBox<E> extends JComboBox<E> {
     public StyledComboBox(E[] initial) {
         super(initial);
-        setUI(new StyledComboBoxUI());
+        // The custom UI extends SyntheticaComboBoxUI purely to constrain the
+        // popup width to the combo's preferred size. Since the PFI-93 UI
+        // modernization the client runs FlatLaf by default (Synthetica is only a
+        // fallback), and SyntheticaComboBoxUI.installUI() NPEs when Synthetica is
+        // not the active Look-and-Feel (its style factory is null) - which stopped
+        // the login wizard from opening. So only install it under Synthetica;
+        // otherwise keep the active L&F's own combo box UI.
+        if (UIManager.getLookAndFeel() instanceof SyntheticaLookAndFeel) {
+            setUI(new StyledComboBoxUI());
+        }
     }
 
     private class StyledComboBoxUI extends SyntheticaComboBoxUI {

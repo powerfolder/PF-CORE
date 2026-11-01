@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -34,6 +35,10 @@ import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for the TaskManager and the possible tasks.
@@ -42,7 +47,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  * @version $revision$
  */
 public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -51,6 +56,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
 
+    @Test
     public void testTaskManager() throws InterruptedException {
         PersistentTaskManager man = getContollerBart().getTaskManager();
         man.purgeAllTasks();
@@ -80,6 +86,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         man.purgeAllTasks();
     }
 
+    @Test
     public void testOfflineInvitation() {
         Member lisaAtBart = getContollerBart().getNodeManager()
             .getConnectedNodes().iterator().next();
@@ -96,15 +103,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         // Should have one more task now.
         assertEquals(1 + bartInitialTasks, getContollerBart().getTaskManager().activeTaskCount());
 
-        Mockery mock = new Mockery();
-        final InvitationHandler handler = mock
-            .mock(InvitationHandler.class);
-        mock.checking(new Expectations() {
-            {
-                one(handler).gotInvitation(
-                    with(any(Invitation.class)));
-            }
-        });
+        final InvitationHandler handler = mock(InvitationHandler.class);
         getContollerLisa().addInvitationHandler(handler);
         connectBartAndLisa();
         TestHelper.waitForCondition(30, new Condition() {
@@ -115,6 +114,6 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         });
 
         TestHelper.waitMilliSeconds(2500);
-        mock.assertIsSatisfied();
+        verify(handler).gotInvitation(any(Invitation.class));
     }
 }

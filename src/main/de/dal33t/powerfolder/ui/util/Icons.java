@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.TrayIconManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -96,6 +97,8 @@ public class Icons {
     public static final String ACTION_ARROW = "action_arrow.icon";
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
+    /** Status glyph id for "connecting / waiting" (hourglass); drawn as vector only, no bitmap. */
+    public static final String STATUS_WAITING = "status_waiting";
     public static final String DEBUG = "bug.icon";
     public static final String SYSTEM_MONITOR = "system_monitor.icon";
     public static final String STOP = "stop.icon";
@@ -165,10 +168,24 @@ public class Icons {
     public static final String FACEBOOK_BUTTON = "facebook.icon";
     public static final String LINKEDIN_BUTTON = "linkedin.icon";
     public static final String EMAIL_BUTTON = "email.icon";
+    public static final String OPEN_INVITATIONS = "open_invitations.icon";
+    public static final String OPEN_INVITATIONS_WHITE = "open_invitations_white.icon";
+    public static final String INVITATION_ACCEPT = "invitation_accept.icon";
+    public static final String INVITATION_ACCEPT_WHITE = "invitation_accept_white.icon";
+    public static final String INVITATION_DECLINE = "invitation_decline.icon";
+    public static final String INVITATION_DECLINE_WHITE = "invitation_decline_white.icon";
+    public static final String INVITATION_MANAGE = "invitation_manage.icon";
+    public static final String INVITATION_MANAGE_WHITE = "invitation_manage_white.icon";
 
     // Sync icons
     public static final String SYNC_COMPLETE = "sync_complete.icon";
     public static final String SYNC_INCOMPLETE = "sync_incomplete.icon";
+    /** Android-style "online only / in the cloud" glyph (blue circular arrows). */
+    public static final String SYNC_CLOUD = "sync_cloud.icon";
+    /** PFC-3643: sync badges copied from the Android app - green ring+check for the
+     *  synced state, blue circular arrows (rotated) for the syncing spinner. */
+    public static final String SYNCED_BADGE = "synced_badge.icon";
+    public static final String SYNCING_BADGE = "syncing_badge.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
@@ -180,23 +197,39 @@ public class Icons {
         "systray_sync00_lowres.icon", "systray_sync01_lowres.icon", "systray_sync02_lowres.icon",
         "systray_sync03_lowres.icon", "systray_sync04_lowres.icon", "systray_sync05_lowres.icon",
         "systray_sync06_lowres.icon", "systray_sync07_lowres.icon", "systray_sync08_lowres.icon",
-        "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon"};
+        "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon",
+        "systray_sync12_lowres.icon", "systray_sync13_lowres.icon", "systray_sync14_lowres.icon",
+        "systray_sync15_lowres.icon", "systray_sync16_lowres.icon", "systray_sync17_lowres.icon",
+        "systray_sync18_lowres.icon", "systray_sync19_lowres.icon", "systray_sync20_lowres.icon",
+        "systray_sync21_lowres.icon", "systray_sync22_lowres.icon", "systray_sync23_lowres.icon"};
     private static final String[] SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES = {
-            "systray_sync00_lowres_light.icon", "systray_sync01_lowres_light.icon", "systray_sync02_lowres_light.icon",
-            "systray_sync03_lowres_light.icon", "systray_sync04_lowres_light.icon", "systray_sync05_lowres_light.icon",
-            "systray_sync06_lowres_light.icon", "systray_sync07_lowres_light.icon", "systray_sync08_lowres_light.icon",
-            "systray_sync09_lowres_light.icon", "systray_sync10_lowres_light.icon", "systray_sync11_lowres_light.icon"};
+        "systray_sync00_lowres_light.icon", "systray_sync01_lowres_light.icon", "systray_sync02_lowres_light.icon",
+        "systray_sync03_lowres_light.icon", "systray_sync04_lowres_light.icon", "systray_sync05_lowres_light.icon",
+        "systray_sync06_lowres_light.icon", "systray_sync07_lowres_light.icon", "systray_sync08_lowres_light.icon",
+        "systray_sync09_lowres_light.icon", "systray_sync10_lowres_light.icon", "systray_sync11_lowres_light.icon",
+        "systray_sync12_lowres_light.icon", "systray_sync13_lowres_light.icon", "systray_sync14_lowres_light.icon",
+        "systray_sync15_lowres_light.icon", "systray_sync16_lowres_light.icon", "systray_sync17_lowres_light.icon",
+        "systray_sync18_lowres_light.icon", "systray_sync19_lowres_light.icon", "systray_sync20_lowres_light.icon",
+        "systray_sync21_lowres_light.icon", "systray_sync22_lowres_light.icon", "systray_sync23_lowres_light.icon"};
 
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
         "systray_sync00_hires.icon", "systray_sync01_hires.icon", "systray_sync02_hires.icon",
         "systray_sync03_hires.icon", "systray_sync04_hires.icon", "systray_sync05_hires.icon",
         "systray_sync06_hires.icon", "systray_sync07_hires.icon", "systray_sync08_hires.icon",
-        "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon"};
+        "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon",
+        "systray_sync12_hires.icon", "systray_sync13_hires.icon", "systray_sync14_hires.icon",
+        "systray_sync15_hires.icon", "systray_sync16_hires.icon", "systray_sync17_hires.icon",
+        "systray_sync18_hires.icon", "systray_sync19_hires.icon", "systray_sync20_hires.icon",
+        "systray_sync21_hires.icon", "systray_sync22_hires.icon", "systray_sync23_hires.icon"};
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES = {
-            "systray_sync00_hires_light.icon", "systray_sync01_hires_light.icon", "systray_sync02_hires_light.icon",
-            "systray_sync03_hires_light.icon", "systray_sync04_hires_light.icon", "systray_sync05_hires_light.icon",
-            "systray_sync06_hires_light.icon", "systray_sync07_hires_light.icon", "systray_sync08_hires_light.icon",
-            "systray_sync09_hires_light.icon", "systray_sync10_hires_light.icon", "systray_sync11_hires_light.icon"};
+        "systray_sync00_hires_light.icon", "systray_sync01_hires_light.icon", "systray_sync02_hires_light.icon",
+        "systray_sync03_hires_light.icon", "systray_sync04_hires_light.icon", "systray_sync05_hires_light.icon",
+        "systray_sync06_hires_light.icon", "systray_sync07_hires_light.icon", "systray_sync08_hires_light.icon",
+        "systray_sync09_hires_light.icon", "systray_sync10_hires_light.icon", "systray_sync11_hires_light.icon",
+        "systray_sync12_hires_light.icon", "systray_sync13_hires_light.icon", "systray_sync14_hires_light.icon",
+        "systray_sync15_hires_light.icon", "systray_sync16_hires_light.icon", "systray_sync17_hires_light.icon",
+        "systray_sync18_hires_light.icon", "systray_sync19_hires_light.icon", "systray_sync20_hires_light.icon",
+        "systray_sync21_hires_light.icon", "systray_sync22_hires_light.icon", "systray_sync23_hires_light.icon"};
 
     public static final String SYSTRAY_SYNC_COMPLETE;
     private static final String SYSTRAY_SYNC_COMPLETE_LOW_RES = "systray_sync_complete_lowres.icon";
@@ -222,6 +255,18 @@ public class Icons {
     private static final String SYSTRAY_PAUSE_LOW_LIGHT_RES = "systray_pause_lowres_light.icon";
     private static final String SYSTRAY_PAUSE_HIGH_LIGHT_RES = "systray_pause_hires_light.icon";
 
+    public static final String SYSTRAY_INFORMATION;
+    private static final String SYSTRAY_INFORMATION_LOW_RES = "systray_information_lowres.icon";
+    private static final String SYSTRAY_INFORMATION_HIGH_RES = "systray_information_hires.icon";
+    private static final String SYSTRAY_INFORMATION_LOW_LIGHT_RES = "systray_information_lowres_light.icon";
+    private static final String SYSTRAY_INFORMATION_HIGH_LIGHT_RES = "systray_information_hires_light.icon";
+
+    public static final String SYSTRAY_SETUP;
+    private static final String SYSTRAY_SETUP_LOW_RES = "systray_setup_lowres.icon";
+    private static final String SYSTRAY_SETUP_HIGH_RES = "systray_setup_hires.icon";
+    private static final String SYSTRAY_SETUP_LOW_LIGHT_RES = "systray_setup_lowres_light.icon";
+    private static final String SYSTRAY_SETUP_HIGH_LIGHT_RES = "systray_setup_hires_light.icon";
+
     static {
         if (!TrayIconManager.isHiRes()) {
             if (!TrayIconManager.isMacMenuBarDarkMode()) {
@@ -230,6 +275,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_LOW_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_LOW_RES;
             }
             else {
                 SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES;
@@ -237,6 +284,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_LIGHT_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_LIGHT_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_LIGHT_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_LOW_LIGHT_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_LOW_LIGHT_RES;
             }
         } else {
             if (!TrayIconManager.isMacMenuBarDarkMode()) {
@@ -245,6 +294,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_HIGH_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_HIGH_RES;
             }
             else {
                 SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES;
@@ -252,6 +303,8 @@ public class Icons {
                 SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_LIGHT_RES;
                 SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_LIGHT_RES;
                 SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_LIGHT_RES;
+                SYSTRAY_INFORMATION = SYSTRAY_INFORMATION_HIGH_LIGHT_RES;
+                SYSTRAY_SETUP = SYSTRAY_SETUP_HIGH_LIGHT_RES;
             }
         }
     }
@@ -312,6 +365,7 @@ public class Icons {
             }
         }
         ID_ICON_MAP.clear();
+        STATUS_GLYPH_MAP.clear();
         // Flush image cache
         for (Map.Entry<String, Image> entry : ID_IMAGE_MAP.entrySet()) {
             Image image = entry.getValue();
@@ -339,6 +393,631 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
+    /** Whether the UI is in dark mode; monochrome icons are shown white then. */
+    private static volatile boolean darkMode;
+
+    /**
+     * Monochrome icon FILES (basenames) that must be re-tinted white in dark mode
+     * so they stay visible on the dark background. Filename-based (not icon-id)
+     * so every action id that maps to one of these PNGs is covered automatically.
+     */
+    private static final java.util.Set<String> MONOCHROME_ICON_FILES =
+        new java.util.HashSet<>(java.util.Arrays.asList(
+            // folders
+            "Folder.png", "FolderLocal.png", "FolderOnline.png", "LocalFolder.png",
+            "LocalAndOnlineFolder.png", "PreviewFolder.png", "OnlineFolderSmall.png",
+            "NewFolder.png", "Directory.png", "DirectoryOpen.png",
+            // sync / status
+            // NOTE: "SyncComplete.png" is intentionally NOT listed: it is now the
+            // green Android-style check and must keep its colour in dark mode
+            // (whitening would turn it into a white check).
+            "SyncInComplete.png", "StartSync.png",
+            "information.png", "Warning.png", "Checked.png", "Pause.png",
+            // logo + action arrow
+            "Logo400UI.png", "ActionArrow.png",
+            // common actions/buttons
+            "Add.png", "Delete.png", "Edit.png", "Settings.png", "Preferences.png",
+            "Cog.png", "FilterTextFieldGlass.png", "Upload.png", "Download.png",
+            "Abort.png", "Clear.png", "Open.png", "ArrowLeft.png", "ArrowRight.png",
+            // specialised actions/utility (Material Symbols)
+            "Advanced.png", "Bug.png", "Collapse.png", "Expand.png", "ConnectBright.png",
+            "Details.png", "Dialog.png", "Download_active.png", "DynDns.png", "Expected.png",
+            "Files.png", "FindComputers.png", "Group.png", "Inactive.png", "Invite.png",
+            "AddFriend.png", "RemoveFriend.png", "Mac.png", "Question.png", "Restore.png",
+            "SortBlank.png", "SortDown.png", "SortUp.png", "SystemMonitor.png",
+            "Unknown.png", "Updates.png", "WakeUp.png",
+            // node / computer status
+            "NodeMyself.png", "NodeFriendConnected.png", "NodeNonFriendConnected.png",
+            "NodeFriendDisconnected.png", "NodeNonFriendDisconnected.png",
+            "NodeFriendPoor.png", "NodeFriendmedium.png", "NodeFriendLan.png"));
+    static {
+        for (int i = 0; i <= 11; i++) {
+            MONOCHROME_ICON_FILES.add(String.format("Sync%02d.png", i));
+        }
+    }
+
+    /** @return the file name (basename) of a resource path, or the input if none. */
+    private static String baseName(String path) {
+        if (path == null) {
+            return null;
+        }
+        int slash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        return slash >= 0 ? path.substring(slash + 1) : path;
+    }
+
+    /**
+     * Switch the icon set between light and dark. Call from LookAndFeelSupport
+     * whenever it applies the FlatLaf theme.
+     */
+    public static void setDarkMode(boolean dark) {
+        if (dark != darkMode) {
+            darkMode = dark;
+            // ID_ICON_MAP is keyed per theme (see getIconById); the file-type/extension
+            // caches are not, so clear them to pick up the new tint.
+            FILETYPE_ICON_MAP.clear();
+            EXTENSION_ICON_MAP.clear();
+        }
+    }
+
+    /** PFC-3643: ids of the sync-spinner animation frames. These no longer map to
+     *  the dated grey bundled PNGs - each frame is the Android "syncing" badge (blue
+     *  circular arrows) rotated by the frame index (see {@link #badgeIcon}). */
+    private static final java.util.Set<String> SYNC_ANIMATION_IDS =
+        new java.util.HashSet<>(java.util.Arrays.asList(SYNC_ANIMATION));
+
+    /** Base size (px) of the in-list / badge sync glyph. */
+    private static final int SPINNER_BASE_SIZE = 24;
+
+    /** @return the frame position of a SYNC_ANIMATION id (0 if not found). */
+    private static int syncFrameIndex(String id) {
+        for (int i = 0; i < SYNC_ANIMATION.length; i++) {
+            if (SYNC_ANIMATION[i].equals(id)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /** PFC-3643: the account-header status glyphs (synced / syncing / pause / ...)
+     *  are a white symbol on a filled brand-accent disc - the same colour, shape and
+     *  size as the avatar, so they pair cleanly. (Folders/tray keep the Android
+     *  badges.) The disc colour is the shared brand accent
+     *  ({@link LookAndFeelSupport#getAccentColor()}), resolved at paint time. */
+
+    /** Generated status glyphs and spinner frames, keyed by glyph, size and accent colour. */
+    private static final Map<String, Icon> STATUS_GLYPH_MAP = new ConcurrentHashMap<>();
+
+    private static String statusGlyphKey(String glyph, int size) {
+        // The badges' backing disc follows the theme, so the theme is part of the key.
+        return glyph + '|' + size + '|' + LookAndFeelSupport.getAccentColor().getRGB() + '|' + darkMode;
+    }
+
+    /** Scale factors of the generated HiDPI variants (Windows 100 % to 300 %). */
+    private static final double[] HIDPI_SCALES = {1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0};
+
+    /** Paints a glyph in 1x user space; the graphics is already scaled to the variant. */
+    private interface GlyphPainter {
+        void paint(Graphics2D g);
+    }
+
+    /**
+     * PFC-3643: draws a glyph as vectors once per {@link #HIDPI_SCALES} entry, so every resolution variant is
+     * rendered at its native pixel size instead of upscaling a 1x bitmap.
+     */
+    private static ImageIcon vectorIcon(int w, int h, GlyphPainter painter) {
+        Image[] variants = new Image[HIDPI_SCALES.length];
+        for (int i = 0; i < variants.length; i++) {
+            int vw = (int) Math.round(w * HIDPI_SCALES[i]), vh = (int) Math.round(h * HIDPI_SCALES[i]);
+            BufferedImage img = new BufferedImage(vw, vh, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = img.createGraphics();
+            try {
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+                g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g.scale(vw / (double) w, vh / (double) h);
+                painter.paint(g);
+            } finally {
+                g.dispose();
+            }
+            variants[i] = img;
+        }
+        return new ImageIcon(new java.awt.image.BaseMultiResolutionImage(variants));
+    }
+
+    /**
+     * Fills the accent disc of a status glyph and sets the pen to white for the symbol. Inset by 0.75 px so
+     * the antialiased edge is not clipped when the icon lands on a fractional device position (150 %).
+     */
+    private static void paintStatusDisc(Graphics2D g, int size) {
+        g.setColor(LookAndFeelSupport.getAccentColor());
+        g.fill(new java.awt.geom.Ellipse2D.Double(0.75, 0.75, size - 1.5, size - 1.5));
+        g.setColor(Color.WHITE);
+    }
+
+    /**
+     * @return the syncing status glyph: a white arc (rotated per frame) on the accent
+     *         disc, at {@code size} px. Account-header status (syncing / uploading /
+     *         downloading / connecting); folders/tray keep the Android badges.
+     */
+    public static Icon getSyncSpinnerFrame(int frame, int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        int f = frame % SYNC_ANIMATION.length;
+        final int px = size;
+        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("spin" + f, size), k -> drawSyncSpinnerFrame(f, px));
+    }
+
+    /**
+     * @return the syncing status glyph turned by {@code degrees} (fine steps for a smooth animation), at
+     *         {@code size} px. The two arrows repeat every 180°.
+     */
+    public static Icon getSyncSpinnerGlyph(int degrees, int size) {
+        int d = Math.floorMod(degrees, 180);
+        final int px = size > 0 ? size : SPINNER_BASE_SIZE;
+        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("spinDeg" + d, px),
+            k -> vectorIcon(px, px, g -> paintSyncingBadge(g, 0.75, 0.75, px - 1.5, d)));
+    }
+
+    private static Icon drawSyncSpinnerFrame(int frame, int size) {
+        // Same as the folder badge; the two arrows repeat every 180°, so the frames step through 180°.
+        double degrees = 180.0 * frame / SYNC_ANIMATION.length;
+        return vectorIcon(size, size, g -> paintSyncingBadge(g, 0.75, 0.75, size - 1.5, degrees));
+    }
+
+    /** Amber of the "warning" status badge. */
+    private static final Color WARNING_BADGE_AMBER = new Color(0xD98200);
+
+    /** @return the colour of the neutral status badges (paused, setup): brand accent, light grey-blue when dark. */
+    private static Color neutralBadgeColor() {
+        return darkMode ? new Color(0xA9B8C8) : LookAndFeelSupport.getAccentColor();
+    }
+
+    /**
+     * PFC-3643: an account-header status badge in the style of the folder badges: backing disc, coloured ring and
+     * {@code symbol} (drawn on the 60-unit grid, pen already in {@code color}), at {@code size} px.
+     */
+    private static Icon ringBadge(int size, Color color, java.util.function.Consumer<Graphics2D> symbol) {
+        return vectorIcon(size, size, g -> paintRingBadge(g, 0.75, 0.75, size - 1.5, color, symbol));
+    }
+
+    /** The ring badge of {@link #ringBadge} in the box ({@code x}, {@code y}, {@code s}). */
+    private static void paintRingBadge(Graphics2D g, double x, double y, double s, Color color,
+        java.util.function.Consumer<Graphics2D> symbol)
+    {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.translate(x, y);
+        g2.scale(s / 60.0, s / 60.0);
+        g2.setColor(badgeBacking());
+        g2.fill(new java.awt.geom.Ellipse2D.Double(3, 3, 54, 54));
+        g2.setColor(color);
+        g2.fill(badgeRing());
+        symbol.accept(g2);
+        g2.dispose();
+    }
+
+    /**
+     * @return the "all in sync" status glyph: a white checkmark on the accent disc, at
+     *         {@code size} px. Account-header only; folders/tray keep the Android badge.
+     */
+    public static Icon getSyncCompleteIcon(int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        final int px = size;
+        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("complete", size), k -> drawSyncCompleteIcon(px));
+    }
+
+    private static Icon drawSyncCompleteIcon(int size) {
+        return vectorIcon(size, size, g -> paintSyncedBadge(g, 0.75, 0.75, size - 1.5));
+    }
+
+    /**
+     * @return a status glyph for a bundled monochrome icon ({@code iconId}, e.g.
+     *         {@link #PAUSE}): the symbol drawn white and centered on the accent disc,
+     *         at {@code size} px - so pause etc. match the drawn check/spinner.
+     */
+    public static Icon getStatusGlyph(String iconId, int size) {
+        if (size <= 0) {
+            size = SPINNER_BASE_SIZE;
+        }
+        final int px = size;
+        return STATUS_GLYPH_MAP.computeIfAbsent(statusGlyphKey("id:" + iconId, size), k -> drawStatusGlyph(iconId, px));
+    }
+
+    private static Icon drawStatusGlyph(String iconId, int size) {
+        // PFC-3643: the known states as ring badges like the folder badges; symbols on the 60-unit grid.
+        java.util.function.Consumer<Graphics2D> symbol = statusBadgeSymbol(iconId);
+        if (symbol != null) {
+            return ringBadge(size, statusBadgeColor(iconId), symbol);
+        }
+        // Symbols without a vector shape fall back to the whitened bitmap on the accent disc.
+        Icon white = whitenedIcon(iconId);
+        return vectorIcon(size, size, g -> {
+            paintStatusDisc(g, size);
+            double gs = size * 0.46, off = (size - gs) / 2;
+            if (white instanceof ImageIcon) {
+                g.drawImage(((ImageIcon) white).getImage(), (int) Math.round(off), (int) Math.round(off),
+                    (int) Math.round(gs), (int) Math.round(gs), null);
+            }
+        });
+    }
+
+    /** @return the ring colour of the status badge {@code iconId}. */
+    private static Color statusBadgeColor(String iconId) {
+        if (WARNING.equals(iconId) || PROBLEMS.equals(iconId)) {
+            return WARNING_BADGE_AMBER;
+        }
+        return INFORMATION.equals(iconId) ? SYNCING_BADGE_BLUE : neutralBadgeColor();
+    }
+
+    /**
+     * PFC-3643: the symbol of a status ring badge on the 60-unit grid (pen already in the ring colour), or
+     * {@code null} if {@code iconId} has no vector shape.
+     */
+    private static java.util.function.Consumer<Graphics2D> statusBadgeSymbol(String iconId) {
+        if (WARNING.equals(iconId) || PROBLEMS.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 15, 7, 21, 7, 7));
+                g.fill(new java.awt.geom.Ellipse2D.Double(26, 39.5, 8, 8));
+            };
+        } else if (INFORMATION.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.Ellipse2D.Double(26, 13, 8, 8));
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(26.5, 25, 7, 21, 7, 7));
+            };
+        } else if (ACTION_ARROW.equals(iconId)) {
+            return g -> {
+                g.setStroke(new BasicStroke(6.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                java.awt.geom.Path2D.Double chevron = new java.awt.geom.Path2D.Double();
+                chevron.moveTo(25, 18);
+                chevron.lineTo(37, 30);
+                chevron.lineTo(25, 42);
+                g.draw(chevron);
+            };
+        } else if (STATUS_WAITING.equals(iconId)) {
+            return g -> {
+                g.setStroke(new BasicStroke(4.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.draw(new java.awt.geom.Line2D.Double(21, 15, 39, 15));
+                g.draw(new java.awt.geom.Line2D.Double(21, 45, 39, 45));
+                java.awt.geom.Path2D.Double glass = new java.awt.geom.Path2D.Double();
+                glass.moveTo(23.5, 15);
+                glass.curveTo(23.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 23.5, 35, 23.5, 45);
+                glass.moveTo(36.5, 15);
+                glass.curveTo(36.5, 25, 30, 26, 30, 30);
+                glass.curveTo(30, 34, 36.5, 35, 36.5, 45);
+                g.draw(glass);
+            };
+        } else if (PAUSE.equals(iconId)) {
+            return g -> {
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(21, 19, 7, 22, 3, 3));
+                g.fill(new java.awt.geom.RoundRectangle2D.Double(32, 19, 7, 22, 3, 3));
+            };
+        }
+        return null;
+    }
+
+    /** @return the bitmap icon {@code iconId} drawn white, or {@code null} if unknown. */
+    private static Icon whitenedIcon(String iconId) {
+        Icon glyph = getIconById(iconId);
+        return glyph != null ? whiten(glyph) : null;
+    }
+
+    /** @return a copy of {@code icon} with every pixel set to white, alpha kept. */
+    private static Icon whiten(Icon icon) {
+        int w = icon.getIconWidth(), h = icon.getIconHeight();
+        if (w <= 0 || h <= 0) {
+            return icon;
+        }
+        BufferedImage src = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = src.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int a = src.getRGB(x, y) >>> 24;
+                out.setRGB(x, y, (a << 24) | 0x00FFFFFF);
+            }
+        }
+        return new ImageIcon(out);
+    }
+
+    /** Green of the "synced" badge ring and check. */
+    private static final Color SYNCED_BADGE_GREEN = new Color(0x1F8F30);
+
+    /** Blue of the "syncing" badge arrows. */
+    private static final Color SYNCING_BADGE_BLUE = new Color(0x0078D7);
+
+    /** @return the disc behind the sync badges: translucent white, translucent panel colour in dark mode. */
+    private static Color badgeBacking() {
+        if (darkMode) {
+            Color panel = UIManager.getColor("Panel.background");
+            Color c = panel != null && panel.getRed() + panel.getGreen() + panel.getBlue() < 384 ? panel
+                : new Color(0x2B2D30);
+            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 240);
+        }
+        return new Color(255, 255, 255, 245);
+    }
+
+    /** The coloured ring both sync badges share, on their 60-unit grid. */
+    private static java.awt.geom.Area badgeRing() {
+        java.awt.geom.Area ring = new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(0, 0, 60, 60));
+        ring.subtract(new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(5, 5, 50, 50)));
+        return ring;
+    }
+
+    /**
+     * PFC-3643: the Android "synced" badge as vectors: a green ring with a check on a translucent white disc,
+     * in the box ({@code x}, {@code y}, {@code s}).
+     */
+    private static void paintSyncedBadge(Graphics2D g, double x, double y, double s) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.translate(x, y);
+        g2.scale(s / 60.0, s / 60.0); // 60-unit grid of the former SyncedBadge.png
+        g2.setColor(badgeBacking());
+        g2.fill(new java.awt.geom.Ellipse2D.Double(3, 3, 54, 54));
+        g2.setColor(SYNCED_BADGE_GREEN);
+        g2.fill(badgeRing());
+        g2.setStroke(new BasicStroke(4.6f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+        java.awt.geom.Path2D.Double check = new java.awt.geom.Path2D.Double();
+        check.moveTo(18.2, 30.2);
+        check.lineTo(26.9, 38.6);
+        check.lineTo(42.5, 22.4);
+        g2.draw(check);
+        g2.dispose();
+    }
+
+    /**
+     * PFC-3643: the "syncing" badge in the style of the synced badge: the same backing disc and ring in blue, inside
+     * two circular arrows with the check's line weight, rotated by {@code degrees} (spinner frames), in the box
+     * ({@code x}, {@code y}, {@code s}).
+     */
+    private static void paintSyncingBadge(Graphics2D g, double x, double y, double s, double degrees) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.translate(x, y);
+        g2.scale(s / 60.0, s / 60.0); // 60-unit grid, as the synced badge
+        g2.setColor(badgeBacking());
+        g2.fill(new java.awt.geom.Ellipse2D.Double(3, 3, 54, 54));
+        g2.setColor(SYNCING_BADGE_BLUE);
+        g2.fill(badgeRing());
+        // One arrow: an arc over the top ending in a head pointing clockwise; the second is it rotated by 180°.
+        double r = 13.5, end = Math.toRadians(25);
+        java.awt.geom.Area arrow = new java.awt.geom.Area(
+            new BasicStroke(4.6f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER).createStrokedShape(
+                new java.awt.geom.Arc2D.Double(30 - r, 30 - r, 2 * r, 2 * r, 170, -140, java.awt.geom.Arc2D.OPEN)));
+        double px = 30 + r * Math.cos(end), py = 30 - r * Math.sin(end);
+        double dx = Math.sin(end), dy = Math.cos(end); // clockwise tangent
+        double nx = Math.cos(end), ny = -Math.sin(end); // outward normal
+        java.awt.geom.Path2D.Double head = new java.awt.geom.Path2D.Double();
+        head.moveTo(px + dx * 5.5, py + dy * 5.5);
+        head.lineTo(px - dx * 1.0 + nx * 5.2, py - dy * 1.0 + ny * 5.2);
+        head.lineTo(px - dx * 1.0 - nx * 5.2, py - dy * 1.0 - ny * 5.2);
+        head.closePath();
+        arrow.add(new java.awt.geom.Area(head));
+        java.awt.geom.Area both = new java.awt.geom.Area(arrow);
+        both.add(arrow.createTransformedArea(java.awt.geom.AffineTransform.getRotateInstance(Math.PI, 30, 30)));
+        g2.rotate(Math.toRadians(degrees), 30, 30);
+        g2.fill(both);
+        g2.dispose();
+    }
+
+    /** @return the vector Android sync badge for a sync-state icon id, or {@code null} if it has none. */
+    private static Icon vectorBadgeIcon(String id, int size) {
+        if (SYNC_ANIMATION_IDS.contains(id)) {
+            double degrees = 360.0 * syncFrameIndex(id) / SYNC_ANIMATION.length;
+            return vectorIcon(size, size, g -> paintSyncingBadge(g, 0, 0, size, degrees));
+        } else if (SYNC_COMPLETE.equals(id)) {
+            return vectorIcon(size, size, g -> paintSyncedBadge(g, 0, 0, size));
+        }
+        return null;
+    }
+
+    /**
+     * PFC-3643: the monochrome folder glyph as vectors on a 24-unit grid (closed folder with tab and a gap below
+     * the lid), scaled to {@code size} px in {@code color}. {@code knockout} (px, may be null) is cut out of the
+     * folder, so a badge on it gets a clean gap instead of covering it.
+     */
+    private static void paintFolderGlyph(Graphics2D g, double size, Color color, java.awt.geom.Ellipse2D knockout) {
+        java.awt.geom.Path2D.Double body = new java.awt.geom.Path2D.Double();
+        body.moveTo(2.0, 6.5);
+        body.curveTo(2.0, 5.1, 3.1, 4.0, 4.5, 4.0);
+        body.lineTo(8.6, 4.0);
+        body.curveTo(9.3, 4.0, 9.9, 4.3, 10.3, 4.8);
+        body.lineTo(11.6, 6.5);
+        body.lineTo(19.5, 6.5);
+        body.curveTo(20.9, 6.5, 22.0, 7.6, 22.0, 9.0);
+        body.lineTo(22.0, 17.5);
+        body.curveTo(22.0, 18.9, 20.9, 20.0, 19.5, 20.0);
+        body.lineTo(4.5, 20.0);
+        body.curveTo(3.1, 20.0, 2.0, 18.9, 2.0, 17.5);
+        body.closePath();
+        java.awt.geom.Area folder = new java.awt.geom.Area(body);
+        // Gap between the lid and the front.
+        folder.subtract(new java.awt.geom.Area(new java.awt.geom.Rectangle2D.Double(2.0, 8.7, 20.0, 1.3)));
+        folder.transform(java.awt.geom.AffineTransform.getScaleInstance(size / 24.0, size / 24.0));
+        if (knockout != null) {
+            folder.subtract(new java.awt.geom.Area(knockout));
+        }
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setColor(color);
+        g2.fill(folder);
+        g2.dispose();
+    }
+
+    /** Badge on the folder glyph: its size and the free gap around it, as fractions of the folder size. */
+    private static final double FOLDER_BADGE_SIZE = 0.56;
+    private static final double FOLDER_BADGE_GAP = 0.06;
+
+    /** @return the badge box offset on a {@code size} px folder: bottom right, 0.75 px off the edges. */
+    private static double folderBadgeOffset(double size) {
+        return size - size * FOLDER_BADGE_SIZE - 0.75;
+    }
+
+    /** @return the area cut out of the folder around its badge. */
+    private static java.awt.geom.Ellipse2D folderBadgeKnockout(double size) {
+        double bs = size * FOLDER_BADGE_SIZE, gap = size * FOLDER_BADGE_GAP, bxy = folderBadgeOffset(size);
+        return new java.awt.geom.Ellipse2D.Double(bxy - gap, bxy - gap, bs + 2 * gap, bs + 2 * gap);
+    }
+
+    /** @return the folder glyph colour: black, white in dark mode. */
+    private static Color folderGlyphColor() {
+        return darkMode ? Color.WHITE : Color.BLACK;
+    }
+
+    /** Cache for composite folder+badge icons, keyed by badge id + dark-mode. */
+    private static final Map<String, Icon> FOLDER_BADGE_MAP = new HashMap<>();
+
+    /** PFC-3643 feedback: uniform folder-icon container size (matches the account /
+     *  status / bottom-bar icons). */
+    public static final int FOLDER_ICON_SIZE = 28;
+
+    /** Cache for the plain (no-badge) folder icon, keyed by dark-mode. */
+    private static final Map<String, Icon> FOLDER_ICON_MAP = new HashMap<>();
+
+    /**
+     * PFC-3643 feedback: the plain folder icon at the uniform {@link #FOLDER_ICON_SIZE}
+     * (dark-mode aware, drawn as vectors per HiDPI scale), so not-synced folders match
+     * the badged folders and the other 28px icons. Use instead of
+     * {@code getIconById(FOLDER)} in the folder list.
+     */
+    public static Icon getFolderIcon() {
+        String key = "plain|" + darkMode;
+        Icon cached = FOLDER_ICON_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Color color = folderGlyphColor();
+        Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE,
+            g -> paintFolderGlyph(g, FOLDER_ICON_SIZE, color, null));
+        FOLDER_ICON_MAP.put(key, result);
+        return result;
+    }
+
+    /**
+     * Android-style folder glyph: the (dark-mode-aware) black/white folder icon
+     * with a small coloured sync-state badge in the bottom-right corner, so a
+     * folder card shows both the folder shape and its sync state at once.
+     *
+     * @param badgeIconId the status badge icon id (e.g. {@link #SYNC_COMPLETE},
+     *                    {@link #SYNC_CLOUD}, {@link #SYNC_INCOMPLETE}).
+     * @return the composite icon, or the plain folder icon if the badge is
+     *         missing.
+     */
+    /**
+     * PFC-3643: the folder icon with the syncing badge turned by {@code degrees} (folder-card animation in fine,
+     * smooth steps instead of the 12 coarse spinner frames).
+     */
+    public static Icon getFolderWithSyncingBadge(int degrees) {
+        int d = Math.floorMod(degrees, 360);
+        String key = "syncing@" + d + '|' + darkMode;
+        Icon cached = FOLDER_BADGE_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Color color = folderGlyphColor();
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
+        Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
+            paintSyncingBadge(g, bxy, bxy, bs, d);
+        });
+        FOLDER_BADGE_MAP.put(key, result);
+        return result;
+    }
+
+    /**
+     * PFC-3643: the folder icon with a status ring badge ({@link #WARNING} / {@link #PROBLEMS}, {@link #PAUSE},
+     * {@link #INFORMATION}), like the sync badges.
+     */
+    public static Icon getFolderWithStatusBadge(String iconId) {
+        java.util.function.Consumer<Graphics2D> symbol = statusBadgeSymbol(iconId);
+        if (symbol == null) {
+            return getFolderIcon();
+        }
+        String key = "status:" + iconId + '|' + darkMode;
+        Icon cached = FOLDER_BADGE_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        Color color = folderGlyphColor(), ring = statusBadgeColor(iconId);
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
+        Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
+            paintRingBadge(g, bxy, bxy, bs, ring, symbol);
+        });
+        FOLDER_BADGE_MAP.put(key, result);
+        return result;
+    }
+
+    public static Icon getFolderWithBadge(String badgeIconId) {
+        String key = badgeIconId + '|' + darkMode;
+        Icon cached = FOLDER_BADGE_MAP.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        // PFC-3643: folder and the synced/syncing badges are drawn as vectors per HiDPI scale.
+        // Other badges (cloud, incomplete) are only available as bitmaps.
+        boolean vectorBadge = SYNC_ANIMATION_IDS.contains(badgeIconId) || SYNC_COMPLETE.equals(badgeIconId);
+        Image badgeImg = vectorBadge ? null : getImageById(badgeIconId);
+        if (!vectorBadge && badgeImg == null) {
+            return getFolderIcon();
+        }
+        Color color = folderGlyphColor();
+        // The badge keeps 0.75 px off the right/bottom edge so its antialiased ring is never clipped (150 %).
+        double size = FOLDER_ICON_SIZE, bs = size * FOLDER_BADGE_SIZE, bxy = folderBadgeOffset(size);
+        double degrees = SYNC_ANIMATION_IDS.contains(badgeIconId)
+            ? 360.0 * syncFrameIndex(badgeIconId) / SYNC_ANIMATION.length : 0;
+        Icon result = vectorIcon(FOLDER_ICON_SIZE, FOLDER_ICON_SIZE, g -> {
+            paintFolderGlyph(g, size, color, folderBadgeKnockout(size));
+            if (SYNC_COMPLETE.equals(badgeIconId)) {
+                paintSyncedBadge(g, bxy, bxy, bs);
+            } else if (vectorBadge) {
+                paintSyncingBadge(g, bxy, bxy, bs, degrees);
+            } else {
+                int ibs = (int) Math.round(bs);
+                g.drawImage(badgeImg, FOLDER_ICON_SIZE - ibs, FOLDER_ICON_SIZE - ibs, ibs, ibs, null);
+            }
+        });
+        FOLDER_BADGE_MAP.put(key, result);
+        return result;
+    }
+
+    /** Cache for bundled file-type glyphicons, keyed by lower-case extension. */
+    private static final Map<String, Icon> FILETYPE_ICON_MAP = new HashMap<>();
+    private static final Icon NO_FILETYPE_ICON = new ImageIcon();
+    private static final String FILETYPE_ICON_BASE =
+        "de/dal33t/powerfolder/skin/origin/icons/filetypes/";
+
+    /**
+     * @return a bundled monochrome file-type glyphicon (from the iOS glyphicons
+     *         set) for the given extension, re-tinted white in dark mode, or
+     *         {@code null} if none is bundled for that extension.
+     */
+    public static Icon getFileTypeIcon(String extension) {
+        if (extension == null || extension.isEmpty()) {
+            return null;
+        }
+        String ext = extension.toLowerCase();
+        Icon cached = FILETYPE_ICON_MAP.get(ext);
+        if (cached != null) {
+            return cached == NO_FILETYPE_ICON ? null : cached;
+        }
+        java.net.URL url = Thread.currentThread().getContextClassLoader()
+            .getResource(FILETYPE_ICON_BASE + ext + ".png");
+        if (url == null) {
+            FILETYPE_ICON_MAP.put(ext, NO_FILETYPE_ICON);
+            return null;
+        }
+        Icon icon = new ImageIcon(url);
+        if (darkMode) {
+            icon = whiten(icon);
+        }
+        FILETYPE_ICON_MAP.put(ext, icon);
+        return icon;
+    }
+
     public static Icon getIconById(String id) {
         if (id == null) {
             log.severe("Icon id null ???");
@@ -350,7 +1029,10 @@ public class Icons {
             return null;
         }
 
-        Icon icon = ID_ICON_MAP.get(id);
+        // Keyed per theme, so an icon cached before the theme was applied is never
+        // served with the wrong tint. See setDarkMode.
+        String key = darkMode ? id + "#dark" : id;
+        Icon icon = ID_ICON_MAP.get(key);
         if (icon != null) {
             return icon;
         }
@@ -362,7 +1044,7 @@ public class Icons {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("Cached icon " + id);
                 }
-                ID_ICON_MAP.put(id, icon);
+                ID_ICON_MAP.put(key, icon);
             }
             return icon;
         } else if (id.equals(UNKNOWN_FILE_RED)) {
@@ -371,7 +1053,7 @@ public class Icons {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("Cached icon " + id);
                 }
-                ID_ICON_MAP.put(id, icon);
+                ID_ICON_MAP.put(key, icon);
             }
             return icon;
         }
@@ -412,12 +1094,189 @@ public class Icons {
             }
         }
 
-        icon = new ImageIcon(iconURL);
+        // Resource path of the bitmap actually shown, for its optional "@4x" sibling (logo only).
+        String shownPath = iconId;
+        if (darkMode) {
+            // Prefer a hand-made white variant "<name>_dark.png" bundled next to
+            // the icon (e.g. the proper white PowerFolder logo from PFM);
+            // otherwise auto-whiten known monochrome glyphs. Brand logos have no
+            // _dark sibling, so they fall through to whitening their own artwork.
+            java.net.URL darkURL = darkVariantURL(iconId);
+            if (darkURL != null) {
+                icon = new ImageIcon(darkURL);
+                shownPath = darkVariantPath(iconId);
+            } else {
+                shownPath = null; // whitened at runtime: a light @4x sibling would not match
+                icon = new ImageIcon(iconURL);
+                if (MONOCHROME_ICON_FILES.contains(baseName(iconId))) {
+                    icon = whiten(icon);
+                }
+            }
+        } else {
+            icon = new ImageIcon(iconURL);
+        }
+        // PFC-3643: the header brand logo and the "powered by" strip are wide
+        // bitmaps excluded from the small-icon HiDPI path (> HIDPI_MAX_BASE). Give
+        // them HiDPI variants, downscaled from a bundled "@4x" master when there is
+        // one (e.g. PoweredBy@4x.png), so they stay sharp on scaled displays.
+        // The small logo of the notification toast gets the same treatment (Icon32x32@4x.png).
+        if ((LOGO400UI.equals(id) || POWERED_BY.equals(id) || SMALL_LOGO.equals(id)) && icon instanceof ImageIcon) {
+            // PFC-3652: shift the header logo left by its transparent left margin (render
+            // only, the file is untouched) so its content lines up with the avatar / login
+            // fields. Only horizontal - vertical position and the logo size stay the same.
+            icon = toHiDpiIcon((ImageIcon) icon, shownPath != null ? hiResVariantURL(shownPath) : null,
+                LOGO400UI.equals(id));
+        }
+        // PFC-3643: sync glyphs use the Android badges, drawn as vectors - the "syncing"
+        // badge (blue arrows) rotated per frame, and the "synced" badge (green ring + check).
+        Icon badge = vectorBadgeIcon(id, SPINNER_BASE_SIZE);
+        if (badge != null) {
+            icon = badge;
+        }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached icon " + id);
         }
-        ID_ICON_MAP.put(id, icon);
+        ID_ICON_MAP.put(key, icon);
         return icon;
+    }
+
+    /**
+     * PFC-3643: wrap a brand bitmap in a {@link java.awt.image.BaseMultiResolutionImage}
+     * so it renders sharply on HiDPI/scaled displays. With a high-resolution master
+     * ({@code hiResURL}, same layout) every variant is downscaled from it; without one
+     * only bicubic 2x/3x upscales are possible, which add no detail. Returns the
+     * original icon on any failure.
+     */
+    private static Icon toHiDpiIcon(ImageIcon src, URL hiResURL, boolean shiftLeft) {
+        try {
+            int w = src.getIconWidth(), h = src.getIconHeight();
+            if (w <= 0 || h <= 0) {
+                return src;
+            }
+            BufferedImage base = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = base.createGraphics();
+            g.drawImage(src.getImage(), 0, 0, null);
+            g.dispose();
+            if (shiftLeft) {
+                base = trimLeft(base);
+                w = base.getWidth();
+            }
+            BufferedImage master = hiResURL != null ? javax.imageio.ImageIO.read(hiResURL) : null;
+            if (shiftLeft && master != null) {
+                master = trimLeft(master);
+            }
+            if (master == null || master.getWidth() <= w * 2 || master.getHeight() <= h * 2) {
+                return new ImageIcon(new java.awt.image.BaseMultiResolutionImage(base,
+                    upscale(base, 2), upscale(base, 3)));
+            }
+            // The hand-tuned 1x bitmap stays the base; higher scales come from the master.
+            List<Image> variants = new ArrayList<>();
+            variants.add(base);
+            for (double s : HIDPI_SCALES) {
+                int vw = (int) Math.round(w * s), vh = (int) Math.round(h * s);
+                if (s > 1.0 && vw < master.getWidth()) {
+                    variants.add(downscale(master, vw, vh));
+                }
+            }
+            variants.add(master);
+            return new ImageIcon(new java.awt.image.BaseMultiResolutionImage(variants.toArray(new Image[0])));
+        } catch (Exception e) {
+            log.warning(hiResURL + ": HiDPI logo variants not created. " + e);
+            return src;
+        }
+    }
+
+    /**
+     * PFC-3652: drop only the fully transparent columns on the left of a logo bitmap,
+     * so its content starts flush at x=0 and lines up with the avatar / login fields.
+     * Height, the right margin and the logo's drawn size are all kept, so this only
+     * shifts the logo left - it never resizes it. The source file is untouched.
+     */
+    private static BufferedImage trimLeft(BufferedImage src) {
+        int w = src.getWidth(), h = src.getHeight();
+        int minx = w;
+        for (int x = 0; x < w && minx == w; x++) {
+            for (int y = 0; y < h; y++) {
+                if (((src.getRGB(x, y) >>> 24) & 0xff) > 8) {
+                    minx = x;
+                    break;
+                }
+            }
+        }
+        if (minx <= 0 || minx >= w) {
+            return src;
+        }
+        BufferedImage out = new BufferedImage(w - minx, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = out.createGraphics();
+        g.drawImage(src, -minx, 0, null);
+        g.dispose();
+        return out;
+    }
+
+    /**
+     * @return {@code src} downscaled to {@code w} x {@code h} in halving steps on premultiplied
+     *         alpha, so edges neither alias nor pick up dark fringes.
+     */
+    private static BufferedImage downscale(BufferedImage src, int w, int h) {
+        BufferedImage cur = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
+        Graphics2D g0 = cur.createGraphics();
+        g0.drawImage(src, 0, 0, null);
+        g0.dispose();
+        int cw = cur.getWidth(), ch = cur.getHeight();
+        do {
+            cw = Math.max(w, cw / 2);
+            ch = Math.max(h, ch / 2);
+            BufferedImage next = new BufferedImage(cw, ch, BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics2D g = next.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.drawImage(cur, 0, 0, cw, ch, null);
+            g.dispose();
+            cur = next;
+        } while (cw > w || ch > h);
+        return cur;
+    }
+
+    /**
+     * @return the URL of the optional high-resolution master "&lt;name&gt;@4x.png" next to
+     *         the given icon resource or file, or {@code null} if there is none.
+     */
+    private static URL hiResVariantURL(String path) {
+        int dot = path.toLowerCase().lastIndexOf(".png");
+        if (dot < 0) {
+            return null;
+        }
+        String hiRes = path.substring(0, dot) + "@4x" + path.substring(dot);
+        try {
+            if (Files.exists(Paths.get(hiRes))) {
+                return Paths.get(hiRes).toUri().toURL();
+            }
+        } catch (InvalidPathException | MalformedURLException e) {
+            return null;
+        }
+        return Thread.currentThread().getContextClassLoader().getResource(hiRes);
+    }
+
+    /**
+     * @return the URL of a bundled dark-mode variant "&lt;name&gt;_dark.png"
+     *         sitting next to the given classpath icon resource, or {@code null}
+     *         if there is none (or the id already refers to a _dark asset).
+     */
+    private static java.net.URL darkVariantURL(String iconId) {
+        String darkId = darkVariantPath(iconId);
+        return darkId != null ? Thread.currentThread().getContextClassLoader().getResource(darkId) : null;
+    }
+
+    /** @return the "&lt;name&gt;_dark.png" path for an icon path, or {@code null} if not applicable. */
+    private static String darkVariantPath(String iconId) {
+        if (iconId == null) {
+            return null;
+        }
+        int dot = iconId.toLowerCase().lastIndexOf(".png");
+        if (dot < 5 || iconId.regionMatches(true, dot - 5, "_dark", 0, 5)) {
+            return null;
+        }
+        return iconId.substring(0, dot) + "_dark" + iconId.substring(dot);
     }
 
     /**
@@ -466,13 +1325,69 @@ public class Icons {
             }
         }
 
-        image = Toolkit.getDefaultToolkit().getImage(imageURL);
+        // PFC-3643: wrap small bitmap icons in a multi-resolution image so they
+        // render smoothly on HiDPI/scaled displays instead of upscaling the bare
+        // low-res PNG (which looked blocky/"destroyed" on Windows scaling). Large
+        // images (logos, splash) keep the original async Toolkit loading.
+        image = loadHiDpiImage(imageURL);
+        if (image == null) {
+            image = Toolkit.getDefaultToolkit().getImage(imageURL);
+        }
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached image " + id);
         }
         ID_IMAGE_MAP.put(id, image);
 
         return image;
+    }
+
+    /** Max base size (px) for which we generate HiDPI resolution variants. */
+    private static final int HIDPI_MAX_BASE = 128;
+
+    /**
+     * PFC-3643: load a small icon as a {@link java.awt.image.BaseMultiResolutionImage}
+     * with 2x and 3x bicubic-upscaled variants, so a scaled (HiDPI) display picks a
+     * higher-resolution variant and the icon no longer looks pixelated. Returns
+     * {@code null} for large images or on any failure, so the caller falls back to
+     * the plain {@code Toolkit.getImage} path.
+     *
+     * @param url the icon resource/file URL.
+     * @return a multi-resolution image, or {@code null} to use the fallback loader.
+     */
+    private static Image loadHiDpiImage(URL url) {
+        try {
+            java.awt.image.BufferedImage base = javax.imageio.ImageIO.read(url);
+            if (base == null) {
+                return null;
+            }
+            int w = base.getWidth(), h = base.getHeight();
+            if (w <= 0 || h <= 0 || w > HIDPI_MAX_BASE || h > HIDPI_MAX_BASE) {
+                return null; // large image -> original loader
+            }
+            return new java.awt.image.BaseMultiResolutionImage(base,
+                upscale(base, 2), upscale(base, 3));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** High-quality (bicubic) integer upscale used for HiDPI icon variants. */
+    private static java.awt.image.BufferedImage upscale(
+        java.awt.image.BufferedImage src, int factor)
+    {
+        int w = src.getWidth() * factor, h = src.getHeight() * factor;
+        java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(
+            w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = out.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+            java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING,
+            java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+            java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.drawImage(src, 0, 0, w, h, null);
+        g.dispose();
+        return out;
     }
 
     /**
@@ -651,7 +1566,12 @@ public class Icons {
 
         if (icon == null) {// no icon found in cache
             if (exists) { // create one if local file is there
-                icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
+                // Prefer the bundled monochrome file-type glyphicon; fall back to
+                // the OS system icon.
+                icon = getFileTypeIcon(extension);
+                if (icon == null) {
+                    icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
+                }
                 if (icon == null) {
                     return getIconById(UNKNOWN_FILE);
                 }
@@ -668,7 +1588,10 @@ public class Icons {
                     // fixes speed with lots of *.ico or *.exe files
                     icon = getIconById(UNKNOWN_FILE_GRAY);
                 } else {
-                    icon = getIconExtension(extension);
+                    icon = getFileTypeIcon(extension);
+                    if (icon == null) {
+                        icon = getIconExtension(extension);
+                    }
                     if (icon == null) {
                         icon = getIconById(UNKNOWN_FILE_GRAY);
                     } else {

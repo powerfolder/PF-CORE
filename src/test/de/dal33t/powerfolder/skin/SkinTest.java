@@ -18,6 +18,11 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -29,15 +34,13 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.ui.util.Icons;
 
-public class SkinTest extends TestCase {
+public class SkinTest {
     private Set<String> availableIconKeys = new HashSet<String>();
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
         Field[] fields = Icons.class.getFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
@@ -49,18 +52,20 @@ public class SkinTest extends TestCase {
         }
     }
 
+    @Test
     public void testLoadSkin() {
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
         List<Skin> skins = new ArrayList<Skin>();
-        for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext();) {
+        for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext(); ) {
             skins.add(it.next());
         }
         assertEquals(1, skins.size());
     }
 
+    @Test
     public void testIcons() {
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
-        for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext();) {
+        for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext(); ) {
             Skin skin = it.next();
             Properties p = skin.getIconsProperties();
             if (p == null) {
@@ -72,24 +77,23 @@ public class SkinTest extends TestCase {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
                 InputStream in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(value);
+                        .getResourceAsStream(value);
                 if (in == null) {
                     if (!skinNameShown) {
                         System.err.println("\nProblems in skin: "
-                            + skin.getName());
+                                + skin.getName());
                         skinNameShown = true;
                     }
 
                     if (!availableIconKeys.contains(key)
-                        && !key.startsWith("action"))
-                    {
+                            && !key.startsWith("action")) {
                         fail("Skin: " + skin.getName() + ": Not longer used: "
-                            + key + "=" + value);
+                                + key + "=" + value);
                         System.err.println("Not longer used: " + key + "="
-                            + value);
+                                + value);
                     } else {
                         fail("Skin: " + skin.getName() + ": NOT FOUND: " + key
-                            + "=" + value);
+                                + "=" + value);
                         System.err.println("NOT FOUND: " + key + "=" + value);
                     }
                 }

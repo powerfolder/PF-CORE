@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
 import java.io.Serializable;
@@ -94,7 +95,8 @@ public class PermissionUserType extends Loggable implements UserType {
         return false;
     }
 
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names,
+        SharedSessionContractImplementor session, Object owner)
         throws HibernateException, SQLException
     {
         Permission p = null;
@@ -263,7 +265,8 @@ public class PermissionUserType extends Loggable implements UserType {
         return p;
     }
 
-    public void nullSafeSet(PreparedStatement st, Object value, int index)
+    public void nullSafeSet(PreparedStatement st, Object value, int index,
+        SharedSessionContractImplementor session)
         throws HibernateException, SQLException
     {
         if (value == null) {

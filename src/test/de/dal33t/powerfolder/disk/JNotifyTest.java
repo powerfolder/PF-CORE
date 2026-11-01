@@ -18,42 +18,50 @@
  */
 package de.dal33t.powerfolder.disk;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import junit.framework.TestCase;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyListener;
 import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.util.PathUtils;
 
-public class JNotifyTest extends TestCase {
+public class JNotifyTest {
     private static final boolean RUN_TEST = false;
     private static final boolean REMOVE_WATCHERS = true;
     private static final boolean REMOVE_TEST_DIR = true;
 
+    @Test
     public void testWatchers_1_5000() {
         testWatcher(1, 5000);
     }
 
+    @Test
     public void testWatchers_5_1000() {
         testWatcher(5, 1000);
     }
 
+    @Test
     public void testWatchers_10_500() {
         testWatcher(10, 500);
     }
 
+    @Test
     public void testWatchers_50_100() {
         testWatcher(50, 100);
     }
 
+    @Test
     public void testWatchers_500_10() {
         testWatcher(500, 10);
     }
 
+    @Test
     public void testWatchers_5000_1() {
         testWatcher(5000, 1);
     }
@@ -105,17 +113,17 @@ public class JNotifyTest extends TestCase {
 
             int expected = nFiles * nWatches;
 
-            assertEquals("nFileCreate event mismatch. Totals: " + listener,
-                expected, listener.nFileCreated);
+            assertEquals(
+                expected, listener.nFileCreated,"nFileCreate event mismatch. Totals: " + listener);
 
-            assertEquals("nFileRenamed event mismatch. Totals: " + listener,
-                expected, listener.nFileRenamed);
+            assertEquals(
+                expected, listener.nFileRenamed,"nFileRenamed event mismatch. Totals: " + listener);
 
-            assertEquals("nFileDeleted event mismatch. Totals: " + listener,
-                expected, listener.nFileDeleted);
+            assertEquals(
+                expected, listener.nFileDeleted,"nFileDeleted event mismatch. Totals: " + listener);
 
-            assertTrue("nFileModified event mismatch. Totals: " + listener,
-                listener.nFileModified >= expected * 2);
+            assertTrue(
+                listener.nFileModified >= expected * 2,"nFileModified event mismatch. Totals: " + listener);
 
             System.out.println("ALL OK! Tested: " + nWatches + " watcher, "
                 + nFiles + " files each.");

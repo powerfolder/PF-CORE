@@ -76,9 +76,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private Action cleanupAction;
     private JComboBox<Locale> languageChooser;
     private JCheckBox modeChooser;
-    private JCheckBox verboseCB;
-    private boolean originalVerbose;
-    
+
     private boolean needsRestart;
 
     GeneralSettingsTab(Controller controller) {
@@ -114,8 +112,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         xBehaviorChooser = createXBehaviorChooser();
 
-        originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
-        
         if (OSUtil.isStartupItemSupported()) {
             if(OSUtil.isMacOS()) {
                 runOnStartupBox = new JCheckBox(
@@ -198,8 +194,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         modeChooser
             .setText(Translation.get("preferences_show_advaned_options"));
         // END PFC-2385
-        verboseCB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.verbose"));
-        verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
     }
 
     /**
@@ -254,9 +248,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
             builder.addLabel(Translation.get("preferences.general.exit_behavior"), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
-
-            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
-            builder.add(verboseCB, cc.xy(3, row));
 
             // Start: PFC-2385
             if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
@@ -338,7 +329,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         checkForUpdatesButton.setMnemonic(
                 Translation.get("preferences.general.check_for_updates_key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(new UpdateAction());
-        checkForUpdatesButton.setBackground(Color.WHITE);
         return checkForUpdatesButton;
     }
 
@@ -356,7 +346,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         changeAccountButton.setToolTipText(Translation.get("preferences.general.change_account_tips"));
         changeAccountButton.setMnemonic(Translation.get("preferences.general.change_account_key").trim().charAt(0));
         changeAccountButton.addActionListener(new ChangeAccountAction());
-        changeAccountButton.setBackground(Color.WHITE);
         return changeAccountButton;
     }
 
@@ -368,7 +357,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         logoutButton.setMnemonic(Translation
             .get("preferences.general.logout_key").trim().charAt(0));
         logoutButton.addActionListener(new LogoutAction());
-        logoutButton.setBackground(Color.WHITE);
         return logoutButton;
     }
 
@@ -432,13 +420,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        // Verbose logging
-        if (originalVerbose ^ verboseCB.isSelected()) {
-            // Verbose setting changed.
-            needsRestart = true;
-        }
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseCB.isSelected()));
-        
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {
             Locale locale = (Locale) languageChooser.getSelectedItem();
@@ -640,7 +621,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             Translation.get("factory_reset.button.text"));
         resetButton.setToolTipText(
             Translation.get("factory_reset.button.tip"));
-        resetButton.setBackground(Color.WHITE);
         resetButton.addActionListener(new FactoryResetAction());
         builder.add(resetButton, cc.xy(1, 1));
         return builder.getPanel();

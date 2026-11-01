@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -37,6 +36,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -50,11 +50,11 @@ import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.AvatarLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
@@ -67,6 +67,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -74,6 +75,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
@@ -102,6 +104,10 @@ public class MainFrame extends PFUIComponent {
 
     // Left mini panel
     private JButtonMini allInSyncButton;
+    // Uniform icon box for the avatar, the sync-status glyphs and the folder-list icons.
+    private static final int STATUS_GLYPH_SIZE = 28;
+    // Bottom-bar action icons, a bit smaller than the status glyphs.
+    private static final int MENU_ICON_SIZE = 24;
     private SyncIconButtonMini syncingButton;
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
@@ -110,30 +116,31 @@ public class MainFrame extends PFUIComponent {
     private JButtonMini noticeInfoButton;
 
     private ActionLabel upperMainTextActionLabel;
-    private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
 
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private JLabel noStorageText;
-    private ActionLabel noticesActionLabel;
+    /** PFC-3643: account header - avatar (from server, initials fallback). */
+    private AvatarLabel avatarLabel;
+    /** OID of the account whose avatar is loaded, being loaded or failed to load; null = none. */
+    private String avatarOID;
 
     private DelayedUpdater mainStatusUpdater;
     private DelayedUpdater osStatusUpdater;
 
     // Right mini panel
     private ActionLabel createFolderActionLabel;
-    private ActionLabel openWebInterfaceActionLabel;
-    private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
     private ActionLabel configurationActionLabel;
-    private ActionLabel openDebugActionLabel;
-    private ActionLabel openTransfersActionLabel;
+    /**
+     * PFC-3643: the "open PowerFolders base dir" (Explore) action. Reused by the
+     * sync-status glyph and by the "All folders synchronized" text hyperlink
+     * (the standalone Explore tray icon was removed in favour of that link).
+     */
+    private MyOpenFoldersBaseAction myOpenFoldersBaseAction;
 
     private FrameMode frameMode = FrameMode.NORMAL;
-    private JButton3Icons closeButton;
-    private JButton3Icons plusButton;
-    private JButton3Icons minusButton;
 
     /** Has the main frame state been set after init? */
     private final AtomicBoolean frameStateSet = new AtomicBoolean();
@@ -160,14 +167,17 @@ public class MainFrame extends PFUIComponent {
     }
 
     private JPanel createMiniPanel() {
-        FormLayout layout = new FormLayout("left:pref:grow, left:pref",
-            "top:pref:grow");
+        // PFC-3643 follow-up: the action column that used to sit on the right of
+        // this mini panel now lives in the horizontal bottom tray (see
+        // createBottomTrayPanel()), so only the account/status block remains here.
+        FormLayout layout = new FormLayout("left:pref:grow", "top:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
+        // PFC-3643: tighten the gap below the logo (was 10dlu) so the account block
+        // sits closer to it instead of floating in empty space.
+        builder.setBorder(Borders.createEmptyBorder("4dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(createLeftMiniPanel(), cc.xy(1, 1));
-        builder.add(createRightMiniPanel(), cc.xy(2, 1));
 
         return builder.getPanel();
     }
@@ -175,10 +185,24 @@ public class MainFrame extends PFUIComponent {
     private Component createLeftMiniPanel() {
         CellConstraints cc = new CellConstraints();
 
-        // UPPER PART
-        FormLayout layoutUpper = new FormLayout("pref, 3dlu, pref:grow",
-            "pref, pref");
-        DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
+        // PFC-3643: one shared grid for the whole account/status block so that
+        //  - the icon column lines up the avatar and the sync-status glyph, and
+        //  - the text column lines up the name, storage bar, the folder
+        //    sync status and the "last check" line
+        // all on a single left edge. (Previously these were two separate
+        // FormLayouts with different icon widths + gaps, so the columns drifted.)
+        // col1 = icons, col2 = gap, col3 = text / storage bar. PFC-3643: the text
+        // column was a cramped 100dlu, leaving the name/progress bar/status squeezed
+        // with lots of empty space to the right - widened so they use that space.
+        // Rows carry small gaps so the fields breathe instead of stacking tightly.
+        // PFC-3643 feedback: the icon->text gap must match the folder rows (3dlu)
+        // so the account name / status text lines up flush with the folder names.
+        FormLayout layout = new FormLayout("pref, 3dlu, 160dlu",
+            "pref, 10dlu, pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
+
+        // Sync-status glyph: all states stacked in one cell, only one visible.
         PanelBuilder b = new PanelBuilder(new FormLayout("pref:grow",
             "pref:grow"));
         b.add(allInSyncButton, cc.xy(1, 1));
@@ -188,106 +212,159 @@ public class MainFrame extends PFUIComponent {
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         b.add(noticeWarningButton, cc.xy(1, 1));
         b.add(noticeInfoButton, cc.xy(1, 1));
-        builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
-        builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper
-            .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        if (getController().getOSClient().isAllowedToCreateFolders()
-            && setupLabel != null)
-        {
-            builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
-        } else {
-            builderUpper.add(new JLabel(" "), cc.xy(3, 2));
-        }
-        // UPPER PART END
 
-        // LOWER PART
-        FormLayout layoutLower = new FormLayout("pref, 100dlu",
-            "pref, pref, pref");
-        DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
-        // Include a spacer icon that lines up the pair with builderUpper
-        // when allInSyncLabel has null icon.
-        builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
-        builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
-        builderLower.add(usagePB, cc.xy(2, 2));
-        builderLower.add(noStorageText, cc.xy(2, 2));
-        // Make sure the noticesActionLabel vertical space is maintained.
-        builderLower.add(new JLabel(" "), cc.xy(1, 3));
-        builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(2, 3));
-        // LOWER PART END
+        // Account header in one row: avatar in the icon column, name + storage bar as one block in the text column,
+        // both centred vertically (spanned rows would not centre them). Unread notices show in the status row.
+        // The header must not jump when the login state changes: the name row keeps one text line while the name is
+        // still empty, the hidden bar / no-quota text keep their space.
+        JLabel textLine = new JLabel("Ag");
+        textLine.setFont(loginActionLabel.getUIComponent().getFont());
+        int lineHeight = textLine.getPreferredSize().height;
+        FormLayout accountLayout = new FormLayout("fill:pref:grow", "max(pref;" + lineHeight + "px), 3dlu, pref");
+        accountLayout.setHonorsVisibility(false);
+        PanelBuilder account = new PanelBuilder(accountLayout);
+        account.add(loginActionLabel.getUIComponent(), cc.xy(1, 1));
+        account.add(usagePB, cc.xy(1, 3, "left, center"));
+        account.add(noStorageText, cc.xy(1, 3));
+        account.getPanel().setOpaque(false);
+        builder.add(avatarLabel, cc.xy(1, 1, "center, center"));
+        builder.add(account.getPanel(), cc.xy(3, 1, "fill, center"));
 
-        // PUT TOGETHER
-        FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
-        DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
-        builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
-        // PUT TOGETHER END
-
-        return builderMain.getPanel();
-    }
-
-    private Component createRightMiniPanel() {
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref, pref, pref, pref, pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-            .getValueBoolean(getController()))
-        {
-            builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 1, "right, top"));
+        // Folder sync status in one row (its height is the taller of glyph and text; spanned rows would collapse):
+        // glyph centred under the avatar in the icon column, status text in the text column.
+        builder.add(b.getPanel(), cc.xy(1, 3, "center, center"));
+        // Status text centred next to the glyph; the last check / ETA is its tooltip, the setup link sits below.
+        JPanel statusText = new JPanel();
+        statusText.setLayout(new BoxLayout(statusText, BoxLayout.Y_AXIS));
+        statusText.setOpaque(false);
+        JComponent status = upperMainTextActionLabel.getUIComponent();
+        status.setAlignmentX(Component.LEFT_ALIGNMENT);
+        statusText.add(status);
+        if (getController().getOSClient().isAllowedToCreateFolders() && setupLabel != null) {
+            JComponent setup = setupLabel.getUIComponent();
+            int gap = com.jgoodies.forms.layout.Sizes.dialogUnitYAsPixel(2, setup);
+            setup.setBorder(BorderFactory.createEmptyBorder(gap, 0, 0, 0));
+            setup.setAlignmentX(Component.LEFT_ALIGNMENT);
+            statusText.add(setup);
         }
-        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
-            builder.add(openFoldersBaseActionLabel.getUIComponent(),
-                cc.xy(1, 2, "right, top"));
-        }
-        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3, "right, top"));
-        }
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4, "right, top"));
-        if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5, "right, top"));
-        }
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6, "right, top"));
-        }
-        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-            builder.add(createFolderActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
-        }
+        builder.add(statusText, cc.xy(3, 3, "fill, center"));
 
         return builder.getPanel();
     }
 
+    /**
+     * The bottom tray: the seven former right-column actions re-laid-out as a
+     * flat horizontal dock at the bottom of the main window. Each item is the
+     * existing {@link ActionLabel} (same action, label and tooltip as before)
+     * shown as icon-above-label, centred, with a theme-aware monochrome vector
+     * glyph. Visibility gating matches the former right column, so the tray
+     * sizes itself to however many actions are enabled.
+     */
+    private Component createBottomTrayPanel() {
+        // PFC-3643: Explore moved to the "All folders synchronized" hyperlink and
+        // the web interface moved to the logo / account name / email links, so
+        // neither is a tray icon any more.
+        applyTrayIcon(pauseResumeActionLabel, ActionIcons.Type.PAUSE);
+        applyTrayIcon(createFolderActionLabel, ActionIcons.Type.CREATE_FOLDER);
+        applyTrayIcon(configurationActionLabel, ActionIcons.Type.PREFERENCES);
+
+        // Bottom bar: Create Folder, Pause, Preferences; Transfers and Logging live in Preferences > Information.
+        java.util.List<ActionLabel> items = new java.util.ArrayList<ActionLabel>();
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            items.add(createFolderActionLabel);
+            items.add(pauseResumeActionLabel);
+        }
+        items.add(configurationActionLabel);
+
+        StringBuilder colSpec = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0) {
+                colSpec.append(", ");
+            }
+            colSpec.append("center:pref:grow");
+        }
+        FormLayout layout = new FormLayout(colSpec.toString(), "pref");
+        // Equal column widths, so the items stay put when a label changes length (Pause <-> Resume).
+        int[] group = new int[items.size()];
+        for (int i = 0; i < group.length; i++) {
+            group[i] = i + 1;
+        }
+        layout.setColumnGroups(new int[][]{group});
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        for (int i = 0; i < items.size(); i++) {
+            builder.add(items.get(i).getUIComponent(),
+                cc.xy(i + 1, 1, "center, center"));
+        }
+
+        JPanel panel = builder.getPanel();
+        java.awt.Color sep = javax.swing.UIManager.getColor("Separator.foreground");
+        if (sep == null) {
+            sep = javax.swing.UIManager.getColor("controlShadow");
+        }
+        if (sep == null) {
+            sep = java.awt.Color.GRAY;
+        }
+        panel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, sep),
+            javax.swing.BorderFactory.createEmptyBorder(6, 8, 6, 8)));
+        return panel;
+    }
+
+    /**
+     * Attach a vector icon to a bottom-tray action label as icon-above-label,
+     * centred. The label foreground drives the glyph colour (black in light
+     * mode / white in dark mode). The link underline-on-hover is disabled so the
+     * tray stays flat - no highlight.
+     */
+    private void applyTrayIcon(ActionLabel label, ActionIcons.Type type) {
+        if (label == null) {
+            return;
+        }
+        label.setNeverUnderline(true);
+        // PFC-3643 feedback: bottom-bar (menu) icons sized to match the folder icons.
+        label.setIcon(ActionIcons.get(type, MENU_ICON_SIZE));
+        JComponent ui = label.getUIComponent();
+        if (ui instanceof JLabel) {
+            JLabel jl = (JLabel) ui;
+            jl.setHorizontalTextPosition(SwingConstants.CENTER);
+            jl.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jl.setHorizontalAlignment(SwingConstants.CENTER);
+            jl.setIconTextGap(3);
+        }
+    }
+
     private void configureUi() {
 
-        // Display the title pane.
-        uiComponent.getRootPane().putClientProperty(
-            "Synthetica.titlePane.enabled", Boolean.FALSE);
-        uiComponent.getRootPane().updateUI();
+        // On macOS the window uses the native title bar (see LookAndFeelSupport:
+        // Synthetica.window.decoration=false), which provides the close/minimize/
+        // zoom controls, so leave that native title pane in place. On Windows/Linux
+        // hide Synthetica's title pane; MainFrame draws its own window buttons.
+        if (!OSUtil.isMacOS()) {
+            // Display the title pane.
+            uiComponent.getRootPane().putClientProperty(
+                "Synthetica.titlePane.enabled", Boolean.FALSE);
+            uiComponent.getRootPane().updateUI();
+        }
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, pref, fill:0:grow");
+            "pref, pref, fill:0:grow, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
 
-        ButtonBarBuilder b = new ButtonBarBuilder();
-        b.addFixed(minusButton);
-        b.addFixed(plusButton);
-        b.addFixed(closeButton);
-        builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
-
+        // The native window title bar provides minimize/maximize/close on every platform.
         builder.add(logoLabel, cc.xyw(1, 1, 4));
-        builder.add(inlineInfoLabel,
-            cc.xy(2, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
-        builder.add(inlineInfoCloseButton,
-            cc.xy(4, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
+        // PFC-3643: the inline info title + close X are no longer a floating row here;
+        // they are a header row directly above the card's tabs (see configureInlineInfo),
+        // so the title lines up with the Downloads/Uploads tabs and the X sits at the
+        // right pane's edge (same column as the native window X), highlighting red.
 
         builder.add(centralPanel, cc.xyw(1, 3, 4));
 
         builder.add(createMiniPanel(), cc.xyw(1, 2, 4));
+
+        builder.add(createBottomTrayPanel(), cc.xyw(1, 4, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
@@ -300,15 +377,18 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setSize(uiComponent.getWidth(),
             UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
 
-        GraphicsEnvironment ge = GraphicsEnvironment
-            .getLocalGraphicsEnvironment();
-        GraphicsDevice[] devices = ge.getScreenDevices();
-
-        int x = (int) ((devices[0].getDisplayMode().getWidth() - uiComponent
-            .getWidth()) / 2.0);
-        int y = (int) ((devices[0].getDisplayMode().getHeight() - uiComponent
-            .getHeight()) / 2.0);
-        uiComponent.setLocation(x, y);
+        // Centre in the usable area of the primary screen (user space, without the taskbar). The display mode is in
+        // device pixels and put the window too low - partly under the taskbar - on scaled displays (150 %).
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+            .getDefaultConfiguration();
+        Rectangle screen = gc.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        Rectangle usable = new Rectangle(screen.x + insets.left, screen.y + insets.top,
+            screen.width - insets.left - insets.right, screen.height - insets.top - insets.bottom);
+        uiComponent.setSize(Math.min(uiComponent.getWidth(), usable.width),
+            Math.min(uiComponent.getHeight(), usable.height));
+        uiComponent.setLocation(usable.x + (usable.width - uiComponent.getWidth()) / 2,
+            usable.y + (usable.height - uiComponent.getHeight()) / 2);
 
         configureInlineInfo();
         if (!getController().getNodeManager().isStarted()) {
@@ -320,24 +400,27 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Show notices link if there are notices available.
+     * PFC-3643: the unread notices count lives in the status row ("1 notification") while a notice status is shown.
      */
     private void updateNoticesLabel() {
-        int unreadCount = (Integer) getController().getUIController()
-                .getApplicationModel().getNoticesModel()
-                .getUnreadNoticesCountVM().getValue();
-        if (unreadCount == 0) {
-            noticesActionLabel.setVisible(false);
-        } else if (unreadCount == 1) {
-            noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.get(
-                    "main_frame.unread_notices.single.text"));
-        } else {
-            noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.get(
-                "main_frame.unread_notices.plural.text",
-                String.valueOf(unreadCount)));
+        if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
+            String text = getUnreadNoticesText();
+            if (text != null) {
+                upperMainTextActionLabel.setText(text);
+            }
         }
+    }
+
+    /** @return "1 notification" / "3 notifications", or {@code null} without unread notices. */
+    private String getUnreadNoticesText() {
+        int unreadCount = (Integer) getController().getUIController().getApplicationModel().getNoticesModel()
+            .getUnreadNoticesCountVM().getValue();
+        if (unreadCount <= 0) {
+            return null;
+        }
+        return unreadCount == 1
+            ? Translation.get("main_frame.unread_notices.single.text")
+            : Translation.get("main_frame.unread_notices.plural.text", String.valueOf(unreadCount));
     }
 
     /**
@@ -377,6 +460,35 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
+     * Theme-aware styling for the online-storage usage bar: a light grey/white fill on a subtle track, taller and
+     * with rounded ends (FlatLaf largeHeight).
+     */
+    private void styleUsageBar() {
+        if (usagePB == null) {
+            return;
+        }
+        boolean dark = LookAndFeelSupport.isDarkMode();
+        usagePB.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
+        usagePB.setBorderPainted(false);
+        usagePB.setStringPainted(false);
+        // PFC-3643: keep the storage bar at its previous ~100dlu length. The text
+        // column was widened to 160dlu (for the name/status), which would otherwise
+        // stretch the bar across the whole width.
+        int barWidth = com.jgoodies.forms.layout.Sizes
+            .dialogUnitXAsPixel(100, usagePB);
+        usagePB.setPreferredSize(new java.awt.Dimension(barWidth, 14));
+        usagePB.setMaximumSize(new java.awt.Dimension(barWidth, 14));
+        // Fill: light grey (light mode) / near-white (dark mode).
+        java.awt.Color fill = dark
+            ? new java.awt.Color(0xE6E6E6) : new java.awt.Color(0xB8B8B8);
+        // Track: subtle, slightly lighter/darker than the surrounding surface.
+        java.awt.Color track = dark
+            ? new java.awt.Color(0x4A4A4A) : new java.awt.Color(0xEAEAEA);
+        usagePB.setForeground(fill);
+        usagePB.setBackground(track);
+    }
+
+    /**
      * Initializes all ui components
      */
     private void initComponents() {
@@ -393,35 +505,36 @@ public class MainFrame extends PFUIComponent {
             mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
         }
 
-        MyOpenFoldersBaseAction myOpenFoldersBaseAction =
-                new MyOpenFoldersBaseAction(getController());
+        myOpenFoldersBaseAction = new MyOpenFoldersBaseAction(getController());
         myOpenFoldersBaseAction.setEnabled(PreferencesEntry.SHOW_BROWSE
             .getValueBoolean(getController()));
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
-        allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+        allInSyncButton.setIcon(Icons.getSyncCompleteIcon(STATUS_GLYPH_SIZE));
         allInSyncButton.setText(null);
 
         pauseButton = new JButtonMini(new MyPauseResumeAction(getController()));
-        pauseButton.setIcon(Icons.getIconById(Icons.PAUSE));
+        // The status shows the state (paused: || ), the bottom tray's "Resume" button the action.
+        pauseButton.setIcon(Icons.getStatusGlyph(Icons.PAUSE, STATUS_GLYPH_SIZE));
         pauseButton.setText(null);
 
         syncingButton = new SyncIconButtonMini(getController());
+        syncingButton.setSpinnerSize(STATUS_GLYPH_SIZE);
         syncingButton.addActionListener(myOpenFoldersBaseAction);
         syncingButton.setVisible(false);
 
         setupButton = new JButtonMini(mySetupAction);
-        setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
+        setupButton.setIcon(Icons.getStatusGlyph(Icons.ACTION_ARROW, STATUS_GLYPH_SIZE));
         setupButton.setText(null);
 
-        notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
+        notConnectedLoggedInLabel = new JLabel(Icons.getStatusGlyph(Icons.STATUS_WAITING, STATUS_GLYPH_SIZE));
 
         MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(getController());
         noticeWarningButton = new JButtonMini(myShowNoticesAction);
-        noticeWarningButton.setIcon(Icons.getIconById(Icons.WARNING));
+        noticeWarningButton.setIcon(Icons.getStatusGlyph(Icons.WARNING, STATUS_GLYPH_SIZE));
         noticeWarningButton.setText(null);
 
         noticeInfoButton = new JButtonMini(myShowNoticesAction);
-        noticeInfoButton.setIcon(Icons.getIconById(Icons.INFORMATION));
+        noticeInfoButton.setIcon(Icons.getStatusGlyph(Icons.INFORMATION, STATUS_GLYPH_SIZE));
         noticeInfoButton.setText(null);
 
         upperMainTextActionLabel = new ActionLabel(getController(),
@@ -431,25 +544,7 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
-        lowerMainTextActionLabel = new ActionLabel(getController(),
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (!PreferencesEntry.EXPERT_MODE
-                        .getValueBoolean(getController()))
-                    {
-                        handleSyncTextClick();
-                    }
-                }
-            });
-
         upperMainTextActionLabel.setNeverUnderline(true);
-        lowerMainTextActionLabel.setNeverUnderline(true);
-
-        if (!PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController()))
-        {
-            lowerMainTextActionLabel.setNeverUnderline(true);
-        }
 
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
             .getValueBoolean(getController())
@@ -459,47 +554,57 @@ public class MainFrame extends PFUIComponent {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
 
-        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(getController()));
-        noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));
-        updateNoticesLabel();
+        // PFC-3643: the account name opens the login wizard, the quota notice or the web account (see openAccount).
+        loginActionLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                openAccount(e, false);
+            }
+        });
 
+        // PFC-3643: the avatar, logo and storage bar link to the web account (see openAccount).
         MouseListener accountLoginOpener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 1) {
-                    if (StringUtils.isBlank(client.getUsername())) {
-                        PFWizard.openLoginWizard(getController(), client);
-                    } else {
-                        BrowserLauncher.open(getController(), () -> client.getWebURL(
-                                Constants.MY_ACCOUNT_URI, true));
-                    }
+                // Left-click only, so a right-click (avatar context menu) does not also open the web account.
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+                    openAccount(null, true);
                 }
             }
         };
 
         noStorageText = SimpleComponentFactory.createLabel(Translation.get("main_frame.no_quota"));
-        noStorageText.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         noStorageText.addMouseListener(accountLoginOpener);
         noStorageText.setVisible(false);
 
         usagePB = new JProgressBar();
-        usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(accountLoginOpener);
+        styleUsageBar();
+
+        // PFC-3643: account header avatar (initials until the server image loads).
+        avatarLabel = new AvatarLabel(STATUS_GLYPH_SIZE);
+        avatarLabel.setToolTipText(Translation.get("main_frame.avatar.tip"));
+        avatarLabel.addMouseListener(accountLoginOpener);
+        // The picture is changed on the web; Enter / Space open the account there.
+        InputMap avatarKeys = avatarLabel.getInputMap(JComponent.WHEN_FOCUSED);
+        avatarKeys.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "avatarOpen");
+        avatarKeys.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "avatarOpen");
+        avatarLabel.getActionMap().put("avatarOpen", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                openAccount(e, true);
+            }
+        });
+
+        // PFC-3643: account header - a plain (non-bold) account name. No explicit
+        // font size so it inherits the 13px defaultFont, matching the folder names
+        // and the sync-status header.
+        loginActionLabel.setNeverUnderline(true);
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
-        openWebInterfaceActionLabel = new ActionLabel(getController(),
-            new MyOpenWebInterfaceAction(getController()));
-        openFoldersBaseActionLabel = new ActionLabel(getController(),
-            myOpenFoldersBaseAction);
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActionLabel = new ActionLabel(getController(),
             new MyOpenPreferencesAction(getController()));
-        openDebugActionLabel = new ActionLabel(getController(),
-            new MyOpenDebugAction(getController()));
-        openTransfersActionLabel = new ActionLabel(getController(),
-            new MyOpenTransfersAction(getController()));
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -516,57 +621,55 @@ public class MainFrame extends PFUIComponent {
         logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        // PFC-3652: indent the brand logo by the same 5dlu as the avatar column in
+        // createLeftMiniPanel, so the logo's left edge lines up with the avatar circle
+        // and the account/status text below it instead of hugging the window edge.
+        logoLabel.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
 
         MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
         logoLabel.addMouseListener(logoMouseListener);
         logoLabel.addMouseMotionListener(logoMouseListener);
-
-        closeButton = new JButton3Icons(
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
-        closeButton.setToolTipText(Translation
-            .get("main_frame.close.tips"));
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doCloseOperation();
+        // PFC-3643: the logo links to the server's web portal (a plain click; dragging the window still works).
+        logoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1 && client.hasWebURL()) {
+                    BrowserLauncher.open(getController(), () -> client.getWebURL());
+                }
             }
         });
 
-        plusButton = new JButton3Icons(
-            Icons.getIconById(Icons.WINDOW_MAXIMIZE_NORMAL),
-            Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
-            Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-        plusButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doPlusOperation();
-            }
-        });
-
-        minusButton = new JButton3Icons(
-            Icons.getIconById(Icons.WINDOW_MINUS_NORMAL),
-            Icons.getIconById(Icons.WINDOW_MINUS_HOVER),
-            Icons.getIconById(Icons.WINDOW_MINUS_PUSH));
-        minusButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doMinusOperation();
-            }
-        });
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
         mainTabbedPane = new MainTabbedPane(getController());
 
         updateTitle();
 
+        // PFC-3643: monochrome black X (matches the toolbar action icons) instead
+        // of the old red clear-filter glyph.
         inlineInfoCloseButton = new JButton3Icons(
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
-            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14),
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14),
+            ActionIcons.get(ActionIcons.Type.CLOSE, 14));
         inlineInfoCloseButton.setToolTipText(Translation
             .get("main_frame.inline_info_close.tip"));
         inlineInfoCloseButton
             .addActionListener(new MyInlineCloseInfoActionListener());
         inlineInfoCloseButton.setContentAreaFilled(false);
+        // PFC-3643: highlight the X red on hover, like the native window close button.
+        // The CLOSE glyph is drawn in the component foreground, so recolouring the
+        // button foreground recolours the X.
+        inlineInfoCloseButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                inlineInfoCloseButton.setForeground(new java.awt.Color(0xE81123));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                inlineInfoCloseButton.setForeground(null);
+            }
+        });
 
         inlineInfoLabel = new JLabel();
 
@@ -609,7 +712,97 @@ public class MainFrame extends PFUIComponent {
         getController().addPausedModeListener(new MyPausedModeListener());
     }
 
+    /**
+     * PFC-3643: account header click. Not logged in: license activation or the login wizard. Space exceeded: the
+     * storage notice. Otherwise the account on the web (pre-authenticated, {@code /myaccount}) if web login is
+     * allowed, else the login wizard - only for the account name, the pure web links ({@code webOnly}) do nothing.
+     */
+    private void openAccount(ActionEvent e, boolean webOnly) {
+        if (client.isLoggedIn()) {
+            AccountDetails ad = client.getAccountDetails();
+            if (ad != null && ad.isSpaceExceededOrDisabled()) {
+                getController().getIOProvider().startIO(CloudStorageNotice.full().getPayload(getController()));
+                return;
+            }
+            if (client.supportsWebLogin()) {
+                BrowserLauncher.open(getController(), () -> client.getWebURL(Constants.MY_ACCOUNT_URI, true));
+                return;
+            }
+            if (webOnly) {
+                return;
+            }
+        }
+        if (getController().getNodeManager().isStarted()
+            || getApplicationModel().getLicenseModel().getActivationAction() == null)
+        {
+            PFWizard.openLoginWizard(getController(), client);
+        } else {
+            getApplicationModel().getLicenseModel().getActivationAction().actionPerformed(e);
+        }
+    }
+
+    /** PFC-3643: hand cursor on the logo, avatar and storage bar only where a click opens something. */
+    private void updateAccountLinks() {
+        Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+        boolean linked = !client.isLoggedIn() || client.supportsWebLogin();
+        Cursor cursor = linked ? hand : Cursor.getDefaultCursor();
+        logoLabel.setCursor(client.hasWebURL() ? hand : Cursor.getDefaultCursor());
+        avatarLabel.setCursor(cursor);
+        usagePB.setCursor(cursor);
+        noStorageText.setCursor(cursor);
+    }
+
+    /**
+     * PFC-3643: loads the avatar of the logged in account once per account OID. Skipped while the same account is
+     * loaded, being loaded or failed; another account or a logout resets it, a disconnect keeps it.
+     */
+    private void updateAvatar() {
+        if (!client.isLoggedIn() && StringUtils.isNotBlank(client.getUsername())) {
+            return;
+        }
+        AccountInfo aInfo = client.isLoggedIn() ? client.getAccountInfo() : null;
+        String oid = aInfo != null ? aInfo.getOID() : null;
+        if (java.util.Objects.equals(oid, avatarOID)) {
+            return;
+        }
+        avatarOID = oid;
+        avatarLabel.clearAvatar();
+        if (oid != null) {
+            loadAvatar(aInfo);
+        } else {
+            avatarLabel.setName(null);
+        }
+    }
+
+    private void loadAvatar(AccountInfo aInfo) {
+        String oid = aInfo.getOID();
+        try {
+            getController().getThreadPool().execute(() -> {
+                try {
+                    BufferedImage img = client.loadAvatar(aInfo);
+                    if (img != null) {
+                        UIUtil.invokeLaterInEDT(() -> {
+                            // Ignore a stale result after an account switch.
+                            if (oid.equals(avatarOID)) {
+                                avatarLabel.setAvatar(img);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    logFine(aInfo + ": Avatar not loaded. " + e);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            logFine(aInfo + ": Avatar not loaded, shutting down");
+        }
+    }
+
     private void handleSyncTextClick() {
+        // Not logged in ("Logging in...", "Login failed", "Connecting..."): the click opens the login (or activation).
+        if (!client.isLoggedIn()) {
+            openAccount(null, false);
+            return;
+        }
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
 
@@ -630,8 +823,15 @@ public class MainFrame extends PFUIComponent {
                     }
                 }
             }
+        } else if (myOpenFoldersBaseAction != null
+            && myOpenFoldersBaseAction.isEnabled())
+        {
+            // PFC-3643: with no pending notices/problems, the sync-status text
+            // ("All folders synchronized") acts as the Explore hyperlink and
+            // opens the PowerFolders base directory - same action as the former
+            // tray Explore icon and the sync-status glyph.
+            myOpenFoldersBaseAction.actionPerformed(null);
         }
-        // setLinkTooltips();
     }
 
     private void updateMainStatus(SyncStatusEvent event) {
@@ -649,21 +849,25 @@ public class MainFrame extends PFUIComponent {
             setupLabel.setVisible(notStartedOrNoFolders);
 
         }
-        setupButton.setVisible(notStartedOrNoFolders
-            || !client.isLoginExecuted());
         setupButton.setEnabled(getController().getOSClient()
             .isAllowedToCreateFolders());
-        allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
-        syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING)
-            || event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
-        syncingButton.spin(event.equals(SyncStatusEvent.SYNCING)
-            || event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        // PFC-3643: the same symbol as the tray icon (StatusGlyph); the buttons carry the clicks.
+        StatusGlyph glyph = StatusGlyph.of(event, client);
+        boolean spinning = glyph == StatusGlyph.SYNCING;
+        setupButton.setVisible(glyph == StatusGlyph.SETUP);
+        allInSyncButton.setVisible(glyph == StatusGlyph.SYNCED);
+        syncingButton.setVisible(spinning);
+        syncingButton.spin(spinning);
         noticeWarningButton.setVisible(event.equals(SyncStatusEvent.WARNING));
-        noticeInfoButton.setVisible(event.equals(SyncStatusEvent.INFORMATION));
-        notConnectedLoggedInLabel.setVisible((event
-            .equals(SyncStatusEvent.NOT_CONNECTED) || event
-            .equals(SyncStatusEvent.NOT_LOGGED_IN))
-            && client.isLoginExecuted());
+        noticeInfoButton.setVisible(glyph == StatusGlyph.INFORMATION);
+        // Logged in before, now offline (waiting) or the login failed (warning): no click action.
+        boolean offline = glyph == StatusGlyph.WAITING
+            || (glyph == StatusGlyph.WARNING && !event.equals(SyncStatusEvent.WARNING));
+        if (offline) {
+            notConnectedLoggedInLabel.setIcon(Icons.getStatusGlyph(
+                glyph == StatusGlyph.WAITING ? Icons.STATUS_WAITING : Icons.WARNING, STATUS_GLYPH_SIZE));
+        }
+        notConnectedLoggedInLabel.setVisible(offline);
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -698,11 +902,28 @@ public class MainFrame extends PFUIComponent {
             || event.equals(SyncStatusEvent.SYNC_INCOMPLETE))
         {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
-            String syncingTemp = overallSyncPercentage >= 0
-                && overallSyncPercentage < 99.5d ? Format
-                .formatDecimal(overallSyncPercentage) + '%' : "...";
+            boolean percentKnown = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d;
+            String syncingTemp = percentKnown ? Format.formatDecimal(overallSyncPercentage) + '%' : "...";
             upperText = Translation.get("main_frame.syncing",
                 syncingTemp);
+            // With an ETA between 1 s and 6 h it replaces "Synchronizing", e.g. "87% · 15 minutes remaining".
+            if (syncDate != null) {
+                long remaining = syncDate.getTime() - System.currentTimeMillis();
+                if (remaining > 1000L && remaining < 6L * 3600L * 1000L) {
+                    String duration = Format.formatDeltaTime(remaining);
+                    String pattern = Translation.get("main_frame.sync_remaining");
+                    if (!pattern.startsWith("{0}") && !duration.isEmpty()) {
+                        // Mid-sentence ("noch weniger als eine Minute"): no capital first letter.
+                        duration = Character.toLowerCase(duration.charAt(0)) + duration.substring(1);
+                    }
+                    String eta = Translation.get("main_frame.sync_remaining", duration);
+                    if (percentKnown) {
+                        upperText = syncingTemp + " · " + eta;
+                    } else {
+                        upperText = eta.isEmpty() ? eta : Character.toUpperCase(eta.charAt(0)) + eta.substring(1);
+                    }
+                }
+            }
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
             upperText = Translation.get("main_frame.in_sync");
@@ -717,10 +938,12 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.get("main_frame.log_in_failed.text");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.WARNING)) {
-            upperText = Translation.get("main_frame.warning_notice.text");
+            String notices = getUnreadNoticesText();
+            upperText = notices != null ? notices : Translation.get("main_frame.warning_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else if (event.equals(SyncStatusEvent.INFORMATION)) {
-            upperText = Translation.get("main_frame.info_notice.text");
+            String notices = getUnreadNoticesText();
+            upperText = notices != null ? notices : Translation.get("main_frame.info_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else {
             logSevere("Not handling all sync states: " + event);
@@ -730,12 +953,8 @@ public class MainFrame extends PFUIComponent {
         upperMainTextActionLabel.setText(upperText);
         if (showSetupLabel) {
             setupLabel.setText(setupText);
-            // The lowerMainTextActionLabel and setupLabel share the same slot,
-            // so visibility is mutually exclusive.
             setupLabel.setVisible(notStartedOrNoFolders);
         }
-
-        lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
         String lowerText = " ";
@@ -786,7 +1005,9 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         }
-        lowerMainTextActionLabel.setText(lowerText);
+        // "Last check" / ETA only as tooltip of the status text.
+        boolean noTooltip = notStartedOrNoFolders || StringUtils.isBlank(lowerText);
+        upperMainTextActionLabel.setToolTipText(noTooltip ? null : lowerText);
     }
 
     /**
@@ -795,21 +1016,10 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
         StringBuilder title = new StringBuilder();
 
-        String appName = Translation.get("general.application.name");
-        // @todo Unclear, please comment what this is about.
-        if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
-            appName = "PowerFolder";
-        }
-        title.append(appName);
-
-        if (getController().isVerbose()) {
-            // Append in front of program name in verbose mode
-            title.append(" v" + Controller.PROGRAM_VERSION);
-            if (getController().getBuildTime() != null) {
-                title.append(" | build: " + getController().getBuildTime());
-            }
-            title.append(" | " + getController().getMySelf().getNick());
-        }
+        // PFC-3652: show only "v<version> | <device name>" on every branded client;
+        // the branding name is already shown by the logo above the title bar.
+        title.append("v" + Controller.PROGRAM_VERSION);
+        title.append(" | " + getController().getMySelf().getNick());
         /* No idea who archi is ;)
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
@@ -872,6 +1082,34 @@ public class MainFrame extends PFUIComponent {
      */
     public boolean isMaximized() {
         return (uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) != 0;
+    }
+
+    /**
+     * Whether the window currently fills (roughly) the whole screen - either via
+     * the app's own maximize ({@link Frame#MAXIMIZED_BOTH}) or the native macOS
+     * green "zoom" button. The native zoom does NOT go through
+     * {@link #setFrameMode(FrameMode)}, so {@code frameMode} stays
+     * {@code NORMAL} and {@link #isMaximized()} may not report it. Used to avoid
+     * force-resizing a window the OS is keeping maximized (which left an
+     * unpainted black area on macOS).
+     *
+     * @return true if the window effectively occupies the whole usable screen.
+     */
+    private boolean isEffectivelyMaximized() {
+        if (isMaximized()) {
+            return true;
+        }
+        GraphicsConfiguration gc = uiComponent.getGraphicsConfiguration();
+        if (gc == null) {
+            return false;
+        }
+        Rectangle screen = gc.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int usableW = screen.width - insets.left - insets.right;
+        int usableH = screen.height - insets.top - insets.bottom;
+        Dimension size = uiComponent.getSize();
+        // Small tolerance for window shadows / rounding.
+        return size.width >= usableW - 20 && size.height >= usableH - 20;
     }
 
     /**
@@ -955,7 +1193,31 @@ public class MainFrame extends PFUIComponent {
 
             centralPanel.removeAll();
             split.setLeftComponent(mainTabbedPane.getUIComponent());
-            split.setRightComponent(inlineInfoPanel);
+            // PFC-3643: overlay the title + close X at the TOP-RIGHT of the card (via a
+            // JLayeredPane), so they sit on the same row as the card's own controls
+            // (Downloads/Uploads tabs, CPU dump) with the X flush at the right edge -
+            // the native window-X column - instead of on a separate row above.
+            final JPanel overlay = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
+            overlay.setOpaque(false);
+            overlay.add(inlineInfoLabel);
+            overlay.add(inlineInfoCloseButton);
+            final JPanel card = inlineInfoPanel;
+            final JLayeredPane layered = new JLayeredPane();
+            layered.setLayout(null);
+            layered.add(card, JLayeredPane.DEFAULT_LAYER);
+            layered.add(overlay, JLayeredPane.PALETTE_LAYER);
+            layered.addComponentListener(new java.awt.event.ComponentAdapter() {
+                @Override
+                public void componentResized(java.awt.event.ComponentEvent e) {
+                    int w = layered.getWidth();
+                    int h = layered.getHeight();
+                    card.setBounds(0, 0, w, h);
+                    java.awt.Dimension d = overlay.getPreferredSize();
+                    overlay.setBounds(Math.max(0, w - d.width), 0, d.width, d.height);
+                    card.revalidate();
+                }
+            });
+            split.setRightComponent(layered);
 
             centralPanel.add(split, BorderLayout.CENTER);
 
@@ -970,9 +1232,22 @@ public class MainFrame extends PFUIComponent {
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
         }
-        if (frameMode == FrameMode.NORMAL) {
+        // Only shrink to the normal docked size when the window is genuinely in
+        // NORMAL mode. On macOS the native title bar's green "zoom" button
+        // maximizes the window WITHOUT going through setFrameMode(), so frameMode
+        // stays NORMAL; resizing to 1100x600 here while the OS keeps the window
+        // full-screen left the exposed surface unpainted (a black area, cleared
+        // only by minimizing/restoring). Guard against that with the effective
+        // maximized check.
+        if (frameMode == FrameMode.NORMAL && !isEffectivelyMaximized()) {
             configureNormalSize();
         }
+        // Re-layout and repaint the swapped-in central panel. When we do NOT
+        // resize (e.g. the window is maximized natively) the new panel would
+        // otherwise not be laid out/painted, leaving the black area described
+        // above.
+        centralPanel.revalidate();
+        centralPanel.repaint();
     }
 
     /**
@@ -1004,43 +1279,6 @@ public class MainFrame extends PFUIComponent {
         } else {
             // Quit if systray is not Supported by OS.
             exitProgram();
-        }
-    }
-
-    private void doMinusOperation() {
-//        if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-        // // To COMPACT mode.
-        // setFrameMode(FrameMode.COMPACT);
-        // } else {
-
-        /** PFC-2937: Tray icon minimize and minus button action differ: There is a different behavior
-         *            when you use either and it gets weird, when you intermix them.
-         *            Apparently the current way works well enough for Windows/macOS, so we just have
-         *            to change it here for Linux, when it isn't KDE.
-         *
-         *            @see ActionListener in {@link UIController#initializeSystray()} vs else block here
-         *
-         *            KDE needs special treatmeant (see PFC-2914 and {@link MainFrame.MyWindowListener})
-         */
-        if(OSUtil.isLinux() && LinuxUtil.isNotKDE()) {
-            getUIComponent().setVisible(false);
-        } else {
-            setFrameMode(FrameMode.MINIMIZED);
-            // getUIComponent().setVisible(false);
-        }
-        // }
-    }
-
-    private void doPlusOperation() {
-        if (frameMode == FrameMode.MAXIMIZED) {
-            // To NORMAL mode.
-            setFrameMode(FrameMode.NORMAL);
-            // } else if (frameMode == FrameMode.NORMAL) {
-            // // To MAXIMIZED mode.
-            // setFrameMode(FrameMode.MAXIMIZED);
-        } else {
-            // To NORMAL mode.
-            setFrameMode(FrameMode.MAXIMIZED);
         }
     }
 
@@ -1127,11 +1365,16 @@ public class MainFrame extends PFUIComponent {
                 .get("action_resume_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
                 .get("action_resume_sync.description"));
+            // PFC-3643: paused -> the action resumes, so show a play glyph.
+            pauseResumeActionLabel.setIcon(
+                ActionIcons.get(ActionIcons.Type.PLAY, MENU_ICON_SIZE));
         } else {
             pauseResumeActionLabel.setText(Translation
                 .get("action_pause_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
                 .get("action_pause_sync.description"));
+            pauseResumeActionLabel.setIcon(
+                ActionIcons.get(ActionIcons.Type.PAUSE, MENU_ICON_SIZE));
         }
     }
 
@@ -1178,6 +1421,8 @@ public class MainFrame extends PFUIComponent {
                     text = s;
                 }
                 loginActionLabel.setText(text);
+                // PFC-3643: account header avatar - initials now, the image once per account.
+                avatarLabel.setName(ad.getAccount().getDisplayName());
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));
@@ -1196,9 +1441,13 @@ public class MainFrame extends PFUIComponent {
             // .getTranslation("main_frame.connecting.text"));
             loginActionLabel.setText(" ");
         }
+        updateAvatar();
+        updateAccountLinks();
 
-        noStorageText.setVisible(!ownStorage);
-        usagePB.setVisible(ownStorage);
+        // No bar while not logged in (connecting, login failed): there is no quota to show.
+        boolean loggedIn = client.isLoggedIn();
+        noStorageText.setVisible(loggedIn && !ownStorage);
+        usagePB.setVisible(loggedIn && ownStorage);
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
                 + Format.formatBytesShort(totalStorage));
@@ -1226,35 +1475,13 @@ public class MainFrame extends PFUIComponent {
                         .setMaximizedBounds(uiComponent);
                 }
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-                plusButton.setToolTipText(Translation
-                    .get("main_frame.compact.tips"));
-                plusButton.setIcons(
-                    Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
-                    Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
-                    Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
-                minusButton.setToolTipText(
-                        Translation.get("main_frame.minimize.tips"));
-                // Don't show minimize button if systray is available
-                // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported());
                 checkSplitMinWidth();
                 break;
             case NORMAL :
                 uiComponent.setExtendedState(Frame.NORMAL);
                 uiComponent.setResizable(true);
 
-                plusButton.setToolTipText(
-                        Translation.get("main_frame.maximize.tips"));
-                plusButton.setIcons(Icons.getIconById(
-                        Icons.WINDOW_MAXIMIZE_NORMAL),
-                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
-                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-                minusButton.setToolTipText(
-                        Translation.get("main_frame.minimize.tips"));
 
-                // Don't show minimize button if systray is available
-                // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported());
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1270,19 +1497,6 @@ public class MainFrame extends PFUIComponent {
                 }
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
-                
-                plusButton.setToolTipText(
-                        Translation.get("main_frame.maximize.tips"));
-                plusButton.setIcons(Icons.getIconById(
-                    Icons.WINDOW_MAXIMIZE_NORMAL),
-                    
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-                minusButton.setToolTipText(
-                        Translation.get("main_frame.minimize.tips"));
-                // Don't show minimize button if systray is available
-                // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported());
                 toFront();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1300,7 +1514,6 @@ public class MainFrame extends PFUIComponent {
                 break;
         }
 
-        // setLinkTooltips();
     }
 
     public void hideInlineInfoPanel() {
@@ -1344,31 +1557,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private void setLinkTooltips() {
-        if (getController().isPaused()) {
-            upperMainTextActionLabel.setToolTipText(Translation
-                .get("action_resume_sync.description"));
-            lowerMainTextActionLabel.setToolTipText(Translation
-                .get("action_resume_sync.description"));
-        } else if (frameMode == FrameMode.COMPACT) {
-            upperMainTextActionLabel.setToolTipText(Translation
-                .get("action_expand_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation
-                .get("action_expand_interface.name"));
-        } else if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
-        {
-            upperMainTextActionLabel.setToolTipText(Translation
-                .get("action_collapse_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation
-                .get("action_collapse_interface.name"));
-        } else {
-            upperMainTextActionLabel.setToolTipText(Translation
-                .get("main_frame.minimal.change_loging.tip"));
-            lowerMainTextActionLabel.setToolTipText(Translation
-                .get("main_frame.minimal.change_loging.tip"));
-        }
-    }
-
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -1379,22 +1567,6 @@ public class MainFrame extends PFUIComponent {
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
             }
-        }
-    }
-
-    private class MyOpenWebInterfaceAction extends BaseAction {
-
-        private MyOpenWebInterfaceAction(Controller controller) {
-            super("action_open_web_interface", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // PFC-2349 : Don't freeze UI
-            BrowserLauncher.open(getController(), new URLProducer() {
-                public String url() {
-                    return client.getLoginURLWithCredentials();
-                }
-            });
         }
     }
 
@@ -1442,35 +1614,6 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
-            // setLinkTooltips();
-        }
-    }
-
-    private class MyOpenTransfersAction extends BaseAction {
-
-        private MyOpenTransfersAction(Controller controller) {
-            super("exp.action_open_transfers_information", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (frameMode == FrameMode.COMPACT) {
-                setFrameMode(FrameMode.NORMAL);
-            }
-            getUIController().openTransfersInformation();
-        }
-    }
-
-    private class MyOpenDebugAction extends BaseAction {
-
-        private MyOpenDebugAction(Controller controller) {
-            super("action_open_debug_information", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (frameMode == FrameMode.COMPACT) {
-                setFrameMode(FrameMode.NORMAL);
-            }
-            getUIController().openDebugInformation();
         }
     }
 
@@ -1504,33 +1647,6 @@ public class MainFrame extends PFUIComponent {
         @Override
         public void childClientSpawned(ServerClientEvent event) {
             updateOnlineStorageDetails();
-        }
-    }
-
-    private class MyLoginAction extends BaseAction {
-
-        MyLoginAction(Controller controller) {
-            super("action_login", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (client.isLoggedIn()) {
-                AccountDetails ad = client.getAccountDetails();
-
-                if (ad.isSpaceExceededOrDisabled()) {
-                    getController().getIOProvider().startIO(CloudStorageNotice.full().getPayload(getController()));
-                    return;
-                }
-            }
-
-            if (getController().getNodeManager().isStarted() || getApplicationModel().getLicenseModel()
-                    .getActivationAction() == null) {
-                PFWizard.openLoginWizard(getController(), client);
-            } else {
-                // Activate if not running
-                getApplicationModel().getLicenseModel().getActivationAction()
-                    .actionPerformed(e);
-            }
         }
     }
 

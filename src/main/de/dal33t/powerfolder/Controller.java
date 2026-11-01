@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinAppUserModelID;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
@@ -88,9 +89,9 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
-    private static final int MAJOR_VERSION = 28;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 26;
+    private static final int MAJOR_VERSION = 29;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 40;
 
     /**
      * Program version.
@@ -574,6 +575,11 @@ public class Controller extends PFComponent {
         // Initialize branding/preconfiguration of the client
         initDistribution();
 
+        // PFC-3643: per-brand Windows taskbar identity (AppUserModelID), set before the first window.
+        if (isUIEnabled()) {
+            WinAppUserModelID.setForCurrentProcess(getDistribution().getBinaryName());
+        }
+
         // PFS-5538: config.url may have been set by the distribution's classpath
         // Default.config. Re-attempt loading the server config so that server-side
         // settings (e.g. federation flags) are available before ServerClient is created.
@@ -796,7 +802,12 @@ public class Controller extends PFComponent {
             MacUtils macUtils = MacUtils.getInstance();
             if (macUtils != null) {
                 if (isFirstStart()) {
-                    macUtils.setPFStartup(true, this);
+                    try {
+                        macUtils.setPFStartup(true, this);
+                    } catch (UnsupportedOperationException e) {
+                        // Not started from an app bundle (tests, java -jar): no start up item, but start anyway.
+                        logFine("Start up item: not set up. " + e.getMessage());
+                    }
                 }
                 macUtils.setAppReOpenedListener(this);
             }
@@ -915,44 +926,37 @@ public class Controller extends PFComponent {
             LoggingManager.setPrefix(configName);
         }
 
-        if (verbose) {
-            String str = ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this);
-            Level consoleLevel = LoggingManager.levelForName(str);
-            LoggingManager.setConsoleLogging(consoleLevel != null
-                ? consoleLevel
-                : Level.WARNING);
+        // PFC-3643: the UI client always logs to file and to the in-app log view (no "Enable Logging" toggle),
+        // at INFO unless verbose or log.file.level is set. Servers log only when verbose, as before.
+        boolean uiClient = isUIEnabled();
+        if (verbose || uiClient) {
+            Level fileLevel = LoggingManager.levelForName(ConfigurationEntry.LOG_LEVEL_FILE.getValue(this));
+            if (!verbose && !ConfigurationEntry.LOG_LEVEL_FILE.hasValue(this)) {
+                fileLevel = Level.INFO;
+            }
+            boolean rotate = ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(this);
+            LoggingManager.setFileLogging(fileLevel != null ? fileLevel : Level.FINE, rotate);
 
-            // Enable file logging
-            str = ConfigurationEntry.LOG_LEVEL_FILE.getValue(this);
-            boolean rotate = ConfigurationEntry.LOG_FILE_ROTATE
-                .getValueBoolean(this);
-            Level fileLevel = LoggingManager.levelForName(str);
-            LoggingManager.setFileLogging(fileLevel != null
-                ? fileLevel
-                : Level.FINE, rotate);
-
-            // Switch on the document handler.
-            if (isUIEnabled()) {
-                str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
-                Level uiLogLevel = LoggingManager.levelForName(str);
-                LoggingManager.setDocumentLogging(uiLogLevel != null
-                    ? uiLogLevel
-                    : Level.WARNING, this);
+            // Switch on the document handler (the in-app log view).
+            if (uiClient) {
+                Level uiLogLevel = LoggingManager.levelForName(PreferencesEntry.DOCUMENT_LOGGING.getValueString(this));
+                LoggingManager.setDocumentLogging(uiLogLevel != null ? uiLogLevel : Level.WARNING, this);
             }
 
             if (LoggingManager.isLogToFile()) {
-                logFine("Logging to file '"
-                    + LoggingManager.getLoggingFileName() + '\'');
+                logFine("Logging to file '" + LoggingManager.getLoggingFileName() + '\'');
             } else {
                 logInfo("No logging to file");
             }
+        }
+
+        if (verbose) {
+            Level consoleLevel = LoggingManager.levelForName(ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this));
+            LoggingManager.setConsoleLogging(consoleLevel != null ? consoleLevel : Level.WARNING);
 
             if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
-                str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
-                Level syslogLevel = LoggingManager.levelForName(str);
-                LoggingManager.setSyslogLogging(syslogLevel != null
-                    ? syslogLevel
-                    : Level.WARNING, this);
+                Level syslogLevel = LoggingManager.levelForName(ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this));
+                LoggingManager.setSyslogLogging(syslogLevel != null ? syslogLevel : Level.WARNING, this);
             }
         }
 
@@ -3105,7 +3109,7 @@ public class Controller extends PFComponent {
                     logSevere("ClassCastException", e);
                 }
             } else {
-                logInfo("No notices found - probably first start of PF.");
+                logFine("No notices found - probably first start of PF.");
             }
         }
     }

@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.disk.dao;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Data Access Object for FolderInfo objects.
@@ -116,6 +118,50 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
      *         empty if no matching subfolders exist
      */
     Collection<FolderInfo> getSubFolders(FolderInfo topFolderInfo);
+
+    /**
+     * PFS-5912: The subfolder at a location of the tree, from the database - the same answer on every
+     * cluster node, mounted here or not. A permission change names its subfolder by workspace and path
+     * and arrives on whichever node the load balancer picks; asking the repository there refused every
+     * change on a node that did not have the subfolder mounted.
+     *
+     * @param topFolderInfo the top folder of the tree
+     * @param location      the location inside it, as {@link FolderInfo#locationPath()} writes it
+     * @return the subfolder there, or {@code null} if no row names that location
+     */
+    default FolderInfo findSubFolder(FolderInfo topFolderInfo, String location) {
+        if (topFolderInfo == null || location == null || location.isEmpty()) {
+            return null;
+        }
+        for (FolderInfo subFolder : getSubFolders(topFolderInfo)) {
+            if (location.equals(subFolder.locationPath())) {
+                return subFolder;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * PFS-5976: the subfolders at a location of the tree and below it, from the database - mounted or not.
+     *
+     * @param topFolderInfo the top folder of the tree
+     * @param location      the location inside it, as {@link FolderInfo#locationPath()} writes it
+     */
+    default Collection<FolderInfo> getSubFoldersAt(FolderInfo topFolderInfo, String location) {
+        List<FolderInfo> at = new ArrayList<>();
+        for (FolderInfo subFolder : getSubFolders(topFolderInfo)) {
+            if (isAt(subFolder, location)) {
+                at.add(subFolder);
+            }
+        }
+        return at;
+    }
+
+    /** PFS-5976: whether the subfolder is at the location or below it. */
+    static boolean isAt(FolderInfo subFolder, String location) {
+        String subLocation = subFolder.locationPath();
+        return subLocation != null && (subLocation.equals(location) || subLocation.startsWith(location + '/'));
+    }
 
     /**
      * PFS-5858: The other rows that stand for the same directory as this subfolder - same top folder,

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -34,6 +36,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SwarmingTest extends MultipleControllerTestCase {
 
@@ -48,6 +51,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
+    @Test
     public void testNothing() {
 
     }

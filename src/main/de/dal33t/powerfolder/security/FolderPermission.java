@@ -59,8 +59,20 @@ public abstract class FolderPermission
 
     public abstract AccessMode getMode();
 
+    /**
+     * PFM-837: A permission keeps the folder as it was granted - a snapshot. A rename, a tag change or a move
+     * (PFS-5926) puts a new instance into the pool, which this permission does not get to see - the folder is handed
+     * out as the repository holds it now. A permission received from elsewhere may already carry a newer version than
+     * the pool here (a client before the rename reached it): then that one counts.
+     *
+     * @return the folder as it is now
+     */
     public final FolderInfo getFolder() {
-        return folder;
+        if (folder == null) {
+            return null;
+        }
+        FolderInfo held = folder.latest();
+        return held.getVersion() >= folder.getVersion() ? held : folder;
     }
 
     @Override
@@ -194,7 +206,8 @@ public abstract class FolderPermission
      *   <li>Both permissions refer to the same top-level folder.</li>
      *   <li>The target folder is the same as, or located below, the source folder
      *       in the folder hierarchy.</li>
-     *   <li>The target folder does not explicitly opt out of permission inheritance.</li>
+     *   <li>No subfolder with interrupted permission inheritance lies between the source folder
+     *       (exclusive) and the target folder (inclusive).</li>
      * </ul>
      *
      * @param impliedPermission the permission to check
@@ -215,6 +228,8 @@ public abstract class FolderPermission
             return false;
         }
 
+        // PFS-5926: the location and the inheritance flag count as they are now (see getFolder()), which is what the
+        // barriers below are compared against.
         FolderInfo thisFolder = getFolder();
         FolderInfo otherFolder = otherPermission.getFolder();
 
@@ -226,7 +241,15 @@ public abstract class FolderPermission
             return false;
         }
 
-        return isSameOrBelow(thisFolder, otherFolder);
+        if (!isSameOrBelow(thisFolder, otherFolder)) {
+            return false;
+        }
+
+        // PFS-5904: the interruption may also sit BETWEEN the two - an inheriting subfolder below an interrupted one
+        // inherits from that one, not from the top folder. The innermost barrier enclosing the target decides: a
+        // permission granted on it or below it reaches down, one granted above it does not.
+        FolderInfo barrier = FolderInfo.findEnclosingInterruptedSubFolder(otherFolder, null);
+        return barrier == null || isSameOrBelow(barrier, thisFolder);
     }
 
     /**
@@ -294,7 +317,7 @@ public abstract class FolderPermission
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + folder;
+        return getClass().getSimpleName() + " on " + getFolder();
     }
 
     /** initFromD2DMessage
@@ -332,7 +355,7 @@ public abstract class FolderPermission
         PermissionInfoProto.PermissionInfo.Builder builder = PermissionInfoProto.PermissionInfo.newBuilder();
         builder.setClazzName("PermissionInfo");
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
-        builder.addObjects(com.google.protobuf.Any.pack(this.folder.toD2D()));
+        builder.addObjects(com.google.protobuf.Any.pack(getFolder().toD2D()));
         // Set permission enum
         if (this instanceof FolderAdminPermission) {
             builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_ADMIN);

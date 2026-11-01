@@ -223,8 +223,11 @@ public abstract class PFWizardPanel extends WizardPanel {
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
+        // PFC-3652: place the logo in the content column (2) like the title and the
+        // form fields below, so its left edge lines up with "Login" / "Institution"
+        // instead of starting one column (13px) further left.
         pageBuilder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI)), cc
-            .xywh(1, row, 2, 1, "left, default"));
+            .xy(2, row, "left, default"));
         row += 2;
 
         titleLabel = createTitleLabel(title);

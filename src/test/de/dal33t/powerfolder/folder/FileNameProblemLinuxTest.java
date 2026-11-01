@@ -19,6 +19,10 @@
 */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -26,6 +30,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * this test only runs on linux, since you cannot create files with these names
@@ -33,6 +38,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class FileNameProblemLinuxTest extends ControllerTestCase {
 
+    @BeforeEach
     protected void setUp() throws Exception {
         if (OSUtil.isLinux()) {
             System.out.println("running linux specific Filename problem test");
@@ -47,6 +53,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
      * this test only runs on linux, since you cannot create files with these
      * names on windows.
      */
+    @Test
     public void testFindProblems() {
         if (OSUtil.isLinux()) {
 
@@ -99,7 +106,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             assertEquals(1, handlerCalledCount);
             Path folderBaseDir = getFolder().getLocalBase();
 
-          //  assertTrue("Files in dir: " + Arrays.asList(folderBaseDir.list()), false);
+          //  assertTrue( false,"Files in dir: " + Arrays.asList(folderBaseDir.list()));
             assertTrue(Files.exists(folderBaseDir.resolve("AUX-1")));
             assertTrue(Files.exists(folderBaseDir.resolve("AUX-1.txt")));
             assertTrue(Files.exists(folderBaseDir.resolve("LPT1-1")));
@@ -115,6 +122,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         }
     }
 
+    @AfterEach
     protected void tearDown() throws Exception {
         if (OSUtil.isLinux()) {
             super.tearDown();

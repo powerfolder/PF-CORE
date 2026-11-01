@@ -36,9 +36,16 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class SyncIconButtonMini extends JButtonMini {
 
-    private static final long ROTATION_STEP_DELAY = 200L;
+    // Smooth: the vector glyph turns 6° every 60 ms; the bitmap frames keep their old pace (every 3rd tick).
+    private static final long ROTATION_STEP_DELAY = 60L;
+    private static final int GLYPH_STEP_DEGREES = 6;
+    private static final int BITMAP_TICKS_PER_FRAME = 3;
     private int angle;
+    private int tick;
     private volatile boolean spin;
+    // PFC-3643: when > 0, render the (modern blue) spinner at this px size instead
+    // of the bundled base frame - e.g. the avatar-sized main status glyph.
+    private int spinnerSize;
     private static final Icon ICON_ZERO = Icons
         .getIconById(Icons.SYNC_ANIMATION[0]);
 
@@ -46,6 +53,8 @@ public class SyncIconButtonMini extends JButtonMini {
         super(ICON_ZERO, Translation
             .get("sync_icon_button_mini.tip"));
         angle = 0;
+        // PFC-3643: the vector spinner at the size of the former bitmap frames, sharp at any scale.
+        setSpinnerSize(Math.max(ICON_ZERO.getIconWidth(), 16));
         // TODO Possible memory leak
         controller.scheduleAndRepeat(new MyUpdateTask(this),
             ROTATION_STEP_DELAY);
@@ -54,22 +63,37 @@ public class SyncIconButtonMini extends JButtonMini {
     private void rotate() {
 
         if (!spin) {
-            if (!getIcon().equals(ICON_ZERO)) {
-                setIcon(ICON_ZERO);
+            Icon idle = spinnerSize > 0
+                ? Icons.getSyncSpinnerGlyph(0, spinnerSize) : ICON_ZERO;
+            if (!idle.equals(getIcon())) {
+                setIcon(idle);
             }
             return;
         }
 
-        angle++;
-        if (angle >= Icons.SYNC_ANIMATION.length) {
-            angle = 0;
+        if (spinnerSize > 0) {
+            angle = (angle + GLYPH_STEP_DEGREES) % 180;
+            setIcon(Icons.getSyncSpinnerGlyph(angle, spinnerSize));
+            return;
         }
-        Icon icon = Icons.getIconById(Icons.SYNC_ANIMATION[angle]);
-        setIcon(icon);
+        if (++tick % BITMAP_TICKS_PER_FRAME != 0) {
+            return;
+        }
+        angle = (angle + 1) % Icons.SYNC_ANIMATION.length;
+        setIcon(Icons.getIconById(Icons.SYNC_ANIMATION[angle]));
     }
 
     public void spin(boolean b) {
         spin = b;
+    }
+
+    /** PFC-3643: render the spinner at {@code size} px (0 = bundled base size). */
+    public void setSpinnerSize(int size) {
+        spinnerSize = size;
+        if (size > 0) {
+            angle = 0;
+            setIcon(Icons.getSyncSpinnerGlyph(angle, size));
+        }
     }
 
     private static class MyUpdateTask extends TimerTask {

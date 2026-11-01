@@ -19,12 +19,16 @@
 */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Set of tests to validate the BandwidthStatRecorder functionality.
@@ -38,6 +42,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
      *
      * @throws Exception
      */
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         recorder = new BandwidthStatsRecorder(getController());
@@ -46,6 +51,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
     /**
      * Test that stats coalesce.
      */
+    @Test
     public void testBasicStats() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
@@ -55,18 +61,19 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
-        assertEquals("Wrong size", 1, set.size());
+        assertEquals( 1, set.size(),"Wrong size");
 
         // Check that the values sum.
         CoalescedBandwidthStat stat = set.iterator().next();
-        assertEquals("Wrong initial", 2001L, stat.getInitialBandwidth());
-        assertEquals("Wrong residual", 208L, stat.getResidualBandwidth());
-        assertEquals("Wrong peak", 899L, stat.getPeakBandwidth());
+        assertEquals( 2001L, stat.getInitialBandwidth(),"Wrong initial");
+        assertEquals( 208L, stat.getResidualBandwidth(),"Wrong residual");
+        assertEquals( 899L, stat.getPeakBandwidth(),"Wrong peak");
     }
 
     /**
      * Test that stats for different time get summed in different entries.
      */
+    @Test
     public void testStatsByDate() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
@@ -79,23 +86,24 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
-        assertEquals("Wrong size", 2, set.size());
+        assertEquals( 2, set.size(),"Wrong size");
 
         // Check that the values sum.
         Iterator<CoalescedBandwidthStat> iterator = set.iterator();
         CoalescedBandwidthStat stat1 = iterator.next();
-        assertEquals("Wrong initial 1", 2001L, stat1.getInitialBandwidth());
-        assertEquals("Wrong residual 1", 208L, stat1.getResidualBandwidth());
-        assertEquals("Wrong peak 1", 899L, stat1.getPeakBandwidth());
+        assertEquals( 2001L, stat1.getInitialBandwidth(),"Wrong initial 1");
+        assertEquals( 208L, stat1.getResidualBandwidth(),"Wrong residual 1");
+        assertEquals( 899L, stat1.getPeakBandwidth(),"Wrong peak 1");
         CoalescedBandwidthStat stat2 = iterator.next();
-        assertEquals("Wrong initial 2", 999L, stat2.getInitialBandwidth());
-        assertEquals("Wrong residual 2", 99L, stat2.getResidualBandwidth());
-        assertEquals("Wrong peak 2", 900L, stat2.getPeakBandwidth());
+        assertEquals( 999L, stat2.getInitialBandwidth(),"Wrong initial 2");
+        assertEquals( 99L, stat2.getResidualBandwidth(),"Wrong residual 2");
+        assertEquals( 900L, stat2.getPeakBandwidth(),"Wrong peak 2");
     }
 
     /**
      * Test that stats for different infos get summed in different entries.
      */
+    @Test
     public void testStatsByInfo() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
@@ -107,23 +115,24 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
-        assertEquals("Wrong size", 2, set.size());
+        assertEquals( 2, set.size(),"Wrong size");
 
         // Check that the values sum.
         Iterator<CoalescedBandwidthStat> iterator = set.iterator();
         CoalescedBandwidthStat stat1 = iterator.next();
-        assertEquals("Wrong initial 1", 1001L, stat1.getInitialBandwidth());
-        assertEquals("Wrong residual 1", 107L, stat1.getResidualBandwidth());
-        assertEquals("Wrong peak 1", 894L, stat1.getPeakBandwidth());
+        assertEquals( 1001L, stat1.getInitialBandwidth(),"Wrong initial 1");
+        assertEquals( 107L, stat1.getResidualBandwidth(),"Wrong residual 1");
+        assertEquals( 894L, stat1.getPeakBandwidth(),"Wrong peak 1");
         CoalescedBandwidthStat stat2 = iterator.next();
-        assertEquals("Wrong initial 2", 1999L, stat2.getInitialBandwidth());
-        assertEquals("Wrong residual 2", 200L, stat2.getResidualBandwidth());
-        assertEquals("Wrong peak 2", 900L, stat2.getPeakBandwidth());
+        assertEquals( 1999L, stat2.getInitialBandwidth(),"Wrong initial 2");
+        assertEquals( 200L, stat2.getResidualBandwidth(),"Wrong residual 2");
+        assertEquals( 900L, stat2.getPeakBandwidth(),"Wrong peak 2");
     }
 
     /**
      * Test that we can prune stats by date.
      */
+    @Test
     public void testPrune() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
@@ -136,7 +145,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
 
         // Check that it coalesces stats.
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
-        assertEquals("Wrong size", 2, set.size());
+        assertEquals( 2, set.size(),"Wrong size");
 
         cal.add(Calendar.HOUR, -1);
 
@@ -145,22 +154,23 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
 
         // Check the older one is gone.
         set = recorder.getBandwidthStats();
-        assertEquals("Wrong size", 1, set.size());
+        assertEquals( 1, set.size(),"Wrong size");
         Iterator<CoalescedBandwidthStat> iterator = set.iterator();
         CoalescedBandwidthStat stat = iterator.next();
-        assertEquals("Wrong initial", 999L, stat.getInitialBandwidth());
-        assertEquals("Wrong residual", 99L, stat.getResidualBandwidth());
-        assertEquals("Wrong Peak", 900L, stat.getPeakBandwidth());
+        assertEquals( 999L, stat.getInitialBandwidth(),"Wrong initial");
+        assertEquals( 99L, stat.getResidualBandwidth(),"Wrong residual");
+        assertEquals( 900L, stat.getPeakBandwidth(),"Wrong Peak");
     }
 
+    @Test
     public void testSyntheticFields() {
         CoalescedBandwidthStat stat = new CoalescedBandwidthStat(new Date(),
                 BandwidthLimiterInfo.LAN_INPUT, 5432L, 3453, 40, 7);
-        assertEquals("Bad used bandwidth", 1979, stat.getUsedBandwidth());
-        assertEquals("Bad percent used bandwidth", 36.43225331369661,
-                stat.getPercentageUsedBandwidth());
-        assertEquals("Bad Average used bandwidth", 282.7142857142857,
-                stat.getAverageUsedBandwidth());
+        assertEquals( 1979, stat.getUsedBandwidth(),"Bad used bandwidth");
+        assertEquals( 36.43225331369661,
+                stat.getPercentageUsedBandwidth(),"Bad percent used bandwidth");
+        assertEquals( 282.7142857142857,
+                stat.getAverageUsedBandwidth(),"Bad Average used bandwidth");
     }
 
 }

@@ -110,7 +110,8 @@ public enum PreferencesEntry {
      */
     SERVER_REMEMBER_PASSWORD("server_remind_password", true, true),
 
-    DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
+    // PFC-3643: the in-app log view is always on at INFO by default (no toggle).
+    DOCUMENT_LOGGING("document.logging", Level.INFO.getName()),
 
     AUTO_EXPAND("auto.expand", false),
 

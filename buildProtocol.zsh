@@ -41,6 +41,21 @@ do
   fi
 done
 
+# INT-1774: the generated classes must match the protobuf-java runtime below. A
+# protoc older than the first 4.x release (libprotoc 25) still emits code extending
+# the removed com.google.protobuf.GeneratedMessageV3 and would not compile against
+# protobuf-java-4.36.2.jar. Guard against a stale protoc on $PATH.
+PROTOBUF_JAVA_VERSION="4.36.2"
+MIN_PROTOC_MAJOR=25
+PROTOC_VERSION="`\protoc --version 2>/dev/null | awk '{print $2}'`"
+PROTOC_MAJOR="`echo "$PROTOC_VERSION" | cut -d. -f1`"
+echo "[INFO] protoc ${PROTOC_VERSION:-unknown}, protobuf-java runtime ${PROTOBUF_JAVA_VERSION}"
+if [ -z "$PROTOC_MAJOR" ] || [ "$PROTOC_MAJOR" -lt "$MIN_PROTOC_MAJOR" ] ; then
+  echo "[ERROR] protoc ${PROTOC_VERSION:-<none>} is too old for protobuf-java ${PROTOBUF_JAVA_VERSION};"
+  echo "        need libprotoc major >= ${MIN_PROTOC_MAJOR} (4.x) or the generated classes will not compile."
+  exit -1
+fi
+
 if [ 0 -eq "$#" ] ; then
   usage $0
   exit -1
@@ -116,7 +131,7 @@ EOF
 
       echo "[INFO] Generated \`$TEMP_JAVA_OUT\`"
 
-      \javac -cp ".:./lib/protobuf-java-3.5.0.jar" -d $TEMP_CLASS_OUT $TEMP_JAVA_OUT/**/*.java -Xlint:deprecation
+      \javac -cp ".:./lib/protobuf-java-4.36.2.jar" -d $TEMP_CLASS_OUT $TEMP_JAVA_OUT/**/*.java -Xlint:deprecation
 
       echo "[INFO] Compiled \`$TEMP_CLASS_OUT\´"
 
