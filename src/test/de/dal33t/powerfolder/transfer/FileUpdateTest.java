@@ -425,6 +425,15 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     + ". Downloads active at bart: "
                     + getContollerBart().getTransferManager()
                         .getActiveDownloads()
+                    + ". Uploads at lisa - active: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveUploads()
+                    + ", queued: "
+                    + getContollerLisa().getTransferManager()
+                        .getQueuedUploads()
+                    + ". Lisa still connected to bart: "
+                    + getContollerLisa().getNodeManager()
+                        .getConnectedNodes().size()
                     + ". Known at bart: " + getFolderAtBart().getKnownFiles();
             }
         });
