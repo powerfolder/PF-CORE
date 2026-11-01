@@ -20,4 +20,23 @@
         <cve>CVE-2026-0994</cve>
     </suppress>
 
+    <!--
+        False positive: commons-cli-1.0.jar is Apache Commons CLI (org.apache.commons.cli,
+        command line argument parsing). dependency-check matches it against the CPE of the
+        unrelated Apache Commons Net library, which carries CVE-2021-37533 (the FTP client
+        follows the host in a PASV reply). commons-cli ships no org.apache.commons.net code
+        and no FTP client at all, so the CVE cannot apply. Confidence of the match is "Low".
+        The match is not in the report of 2026-10-10 any more; the rule stays as a guard in
+        case the CPE comes back. Only the wrong product CPE is suppressed - a real Commons
+        CLI advisory still reports.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            commons-cli incorrectly matched against the unrelated commons-net library.
+            False positive, verified against the jar contents (org/apache/commons/cli only).
+        ]]></notes>
+        <filePath regex="true">.*[/\\]commons-cli-[0-9.]+\.jar$</filePath>
+        <cpe>cpe:/a:apache:commons_net</cpe>
+    </suppress>
+
 </suppressions>

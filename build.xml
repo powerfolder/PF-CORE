@@ -201,12 +201,12 @@ For creation of the installer:
 			<include name="jackson-databind-2.21.6.jar" />
 			<include name="jackson-core-2.21.6.jar" />
 			<include name="jackson-annotations-2.21.jar" />
-			<include name="netty-common-4.1.137.Final.jar" />
-			<include name="netty-buffer-4.1.137.Final.jar" />
-			<include name="netty-transport-4.1.137.Final.jar" />
-			<include name="netty-handler-4.1.137.Final.jar" />
-			<include name="netty-codec-4.1.137.Final.jar" />
-			<include name="netty-resolver-4.1.137.Final.jar" />
+			<include name="netty-common-4.1.139.Final.jar" />
+			<include name="netty-buffer-4.1.139.Final.jar" />
+			<include name="netty-transport-4.1.139.Final.jar" />
+			<include name="netty-handler-4.1.139.Final.jar" />
+			<include name="netty-codec-4.1.139.Final.jar" />
+			<include name="netty-resolver-4.1.139.Final.jar" />
 
 			<!-- Protobuf -->
             <include name="protobuf-java-4.36.2.jar"/>
