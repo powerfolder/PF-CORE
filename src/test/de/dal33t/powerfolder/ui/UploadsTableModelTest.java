@@ -458,7 +458,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
-        // Check correct events from model: requested, started, aborted
+        // Check correct events from model
         assertEventsAnnounced(TableModelEvent.INSERT,
             TableModelEvent.UPDATE);
         assertLastEventWas(TableModelEvent.DELETE);
@@ -516,7 +516,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                         + getContollerBart().getTransferManager().getCompletedUploadsCollection().size()
                         + ". " + describe(bartModelListener.events));
         }
-        // Upload requested, then started
+        // Requested and Started
         assertEventsAnnounced(TableModelEvent.INSERT, TableModelEvent.UPDATE);
 
         disconnectBartAndLisa();
