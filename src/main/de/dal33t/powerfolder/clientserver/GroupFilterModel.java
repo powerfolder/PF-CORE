@@ -38,6 +38,7 @@ public class GroupFilterModel implements Serializable {
     private boolean searchFolders = true;
 
     private List<String> groupOIDs;
+    private List<String> ownGroupOIDs;
 
     private int maxResults;
 
@@ -178,6 +179,22 @@ public class GroupFilterModel implements Serializable {
     }
 
     /**
+     * @return the OIDs found in addition to the organization scope, or {@code null} for none.
+     */
+    public List<String> getOwnGroupOIDs() {
+        return ownGroupOIDs;
+    }
+
+    /**
+     * PFS-5970: Groups found whatever their organization - the caller's own groups (member or group admin). Without
+     * them an organization admin found an own group of no or another organization only in the unfiltered list, never
+     * by name or ID.
+     */
+    public void setOwnGroupOIDs(List<String> ownGroupOIDs) {
+        this.ownGroupOIDs = ownGroupOIDs;
+    }
+
+    /**
      * @return how many matches to skip before the first returned one.
      */
     public int getFirstResult() {
@@ -206,6 +223,7 @@ public class GroupFilterModel implements Serializable {
         topLevel = false;
         searchFolders = true;
         groupOIDs = null;
+        ownGroupOIDs = null;
         firstResult = 0;
     }
 }
