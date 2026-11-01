@@ -39,7 +39,6 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.FolderRelatedMessage;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -99,35 +98,45 @@ public class SendFileListTest extends TwoControllerTestCase {
     @Test
     public void testSendAfterScan() {
         joinTestFolder(SyncProfile.HOST_FILES);
-        TestHelper.waitForCondition(20, new Condition() {
+        final FolderInfo folderInfo = getFolderAtBart().getInfo();
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.receivedMessagesFor(getFolderAtBart()
-                    .getInfo());
+                return lisasListener.fileListFor(folderInfo) != null;
+            }
+
+            public String message() {
+                return "Lisa did not receive the file list for "
+                    + folderInfo + ". Received: " + lisasListener.messages;
             }
         });
-        TestHelper.waitMilliSeconds(2000);
         lisasListener.ignoreMetaFolder = true;
-        lisasListener.messages.clear();
+        final int mark = lisasListener.messages.size();
 
         // Create scenario
-        int nFiles = 10;
+        final int nFiles = 10;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.receivedMessagesFor(getFolderAtBart()
-                    .getInfo());
+                return lisasListener.deltaSince(mark, folderInfo, nFiles) != null;
+            }
+
+            public String message() {
+                return "Lisa did not receive one delta of " + nFiles
+                    + " file(s) for " + folderInfo + ". Since the scan: "
+                    + lisasListener.messagesSince(mark, folderInfo);
             }
         });
 
         // Test
-        assertEquals(1, lisasListener.messages.size());
-        assertTrue(
-            lisasListener.messages.get(0) instanceof FolderFilesChanged,"Wrong message received: " + lisasListener.messages.get(0));
-        FolderFilesChanged list = (FolderFilesChanged) lisasListener.messages
-            .get(0);
+        List<FolderRelatedMessage> sinceScan = lisasListener
+            .messagesSince(mark, folderInfo);
+        assertEquals(1, sinceScan.size(),
+            "One scan, one message. Since the scan: " + sinceScan);
+        FolderFilesChanged list = lisasListener.deltaSince(mark,
+            folderInfo, nFiles);
         assertEquals(nFiles, list.getFiles().length);
         assertNull(list.getRemoved());
     }
@@ -207,6 +216,35 @@ public class SendFileListTest extends TwoControllerTestCase {
                 }
             }
             return false;
+        }
+
+        public List<FolderRelatedMessage> messagesSince(int mark,
+            FolderInfo foInfo)
+        {
+            List<FolderRelatedMessage> since = new ArrayList<FolderRelatedMessage>();
+            for (int i = mark; i < messages.size(); i++) {
+                FolderRelatedMessage m = messages.get(i);
+                if (m.folder.equals(foInfo)) {
+                    since.add(m);
+                }
+            }
+            return since;
+        }
+
+        public FolderFilesChanged deltaSince(int mark, FolderInfo foInfo,
+            int nFiles)
+        {
+            for (FolderRelatedMessage m : messagesSince(mark, foInfo)) {
+                if (m instanceof FolderFilesChanged) {
+                    FolderFilesChanged delta = (FolderFilesChanged) m;
+                    if (delta.getFiles() != null
+                        && delta.getFiles().length == nFiles)
+                    {
+                        return delta;
+                    }
+                }
+            }
+            return null;
         }
 
         public boolean fireInEventDispatchThread() {
