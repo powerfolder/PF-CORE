@@ -1016,9 +1016,15 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
         StringBuilder title = new StringBuilder();
 
-        // PFC-3652: show only "v<version> | <device name>" on every branded client;
-        // the branding name is already shown by the logo above the title bar.
-        title.append("v" + Controller.PROGRAM_VERSION);
+        String appName = Translation.get("general.application.name");
+        // Unbranded/missing translation ("- key -") falls back to the product name.
+        if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
+            appName = "PowerFolder";
+        }
+        // PFC-3643: "<app name> v<version> | <device name>" - the taskbar, Alt-Tab and screen readers know a client
+        // only by this title, not by the logo inside the window.
+        title.append(appName);
+        title.append(" v" + Controller.PROGRAM_VERSION);
         title.append(" | " + getController().getMySelf().getNick());
         /* No idea who archi is ;)
         Calendar cal = Calendar.getInstance();

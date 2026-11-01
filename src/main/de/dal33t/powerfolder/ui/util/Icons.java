@@ -1157,13 +1157,16 @@ public class Icons {
             Graphics2D g = base.createGraphics();
             g.drawImage(src.getImage(), 0, 0, null);
             g.dispose();
-            if (shiftLeft) {
-                base = trimLeft(base);
-                w = base.getWidth();
-            }
             BufferedImage master = hiResURL != null ? javax.imageio.ImageIO.read(hiResURL) : null;
-            if (shiftLeft && master != null) {
-                master = trimLeft(master);
+            if (shiftLeft) {
+                // One margin for both: the master is cut by the same share of its width, so the variants keep the
+                // proportions of the base on every scale.
+                int margin = transparentLeftMargin(base);
+                if (master != null) {
+                    master = cropLeft(master, (int) Math.round((double) margin * master.getWidth() / w));
+                }
+                base = cropLeft(base, margin);
+                w = base.getWidth();
             }
             if (master == null || master.getWidth() <= w * 2 || master.getHeight() <= h * 2) {
                 return new ImageIcon(new java.awt.image.BaseMultiResolutionImage(base,
@@ -1187,28 +1190,34 @@ public class Icons {
     }
 
     /**
-     * PFC-3652: drop only the fully transparent columns on the left of a logo bitmap,
-     * so its content starts flush at x=0 and lines up with the avatar / login fields.
-     * Height, the right margin and the logo's drawn size are all kept, so this only
-     * shifts the logo left - it never resizes it. The source file is untouched.
+     * PFC-3652: the fully transparent columns on the left of a logo bitmap. Cut away, the logo's content starts flush
+     * at x=0 and lines up with the avatar / login fields, whatever margin the branding's file carries.
+     *
+     * @return the number of transparent columns, 0 for none or for a fully transparent image
      */
-    private static BufferedImage trimLeft(BufferedImage src) {
+    static int transparentLeftMargin(BufferedImage src) {
         int w = src.getWidth(), h = src.getHeight();
-        int minx = w;
-        for (int x = 0; x < w && minx == w; x++) {
+        for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
                 if (((src.getRGB(x, y) >>> 24) & 0xff) > 8) {
-                    minx = x;
-                    break;
+                    return x;
                 }
             }
         }
-        if (minx <= 0 || minx >= w) {
+        return 0;
+    }
+
+    /**
+     * PFC-3652: {@code src} without its {@code margin} leftmost columns. Height, the right margin and the drawn size
+     * stay, so the logo only moves left - it is never resized. The source file is untouched.
+     */
+    static BufferedImage cropLeft(BufferedImage src, int margin) {
+        if (margin <= 0 || margin >= src.getWidth()) {
             return src;
         }
-        BufferedImage out = new BufferedImage(w - minx, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage out = new BufferedImage(src.getWidth() - margin, src.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = out.createGraphics();
-        g.drawImage(src, -minx, 0, null);
+        g.drawImage(src, -margin, 0, null);
         g.dispose();
         return out;
     }
@@ -1268,7 +1277,7 @@ public class Icons {
     }
 
     /** @return the "&lt;name&gt;_dark.png" path for an icon path, or {@code null} if not applicable. */
-    private static String darkVariantPath(String iconId) {
+    public static String darkVariantPath(String iconId) {
         if (iconId == null) {
             return null;
         }

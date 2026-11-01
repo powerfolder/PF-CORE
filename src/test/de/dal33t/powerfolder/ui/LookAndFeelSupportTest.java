@@ -47,6 +47,13 @@ public class LookAndFeelSupportTest {
     }
 
     @Test
+    public void testPrimaryColorFollowedByAnotherComment() {
+        // PFC-3652: a branding notes why it picked its accent right after the marker (Moser-Cloud synth.xml).
+        String xml = "<color type=\"BACKGROUND\" value=\"#F59425\"/> <!--  Primary color --><!-- brand orange -->";
+        assertEquals("#F59425", LookAndFeelSupport.primaryColorHex(xml));
+    }
+
+    @Test
     public void testPrimaryColorMissingMarker() {
         String xml = "<color type=\"BACKGROUND\" value=\"#112233\"/> <!-- Secondary color -->";
         assertNull(LookAndFeelSupport.primaryColorHex(xml));

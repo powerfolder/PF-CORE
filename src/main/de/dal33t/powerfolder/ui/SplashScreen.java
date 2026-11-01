@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.util.UIThemeState;
 import de.dal33t.powerfolder.util.Waiter;
 
 /**
@@ -104,8 +103,11 @@ public class SplashScreen extends JWindow {
         bar.setPreferredSize(new java.awt.Dimension(image.getPreferredSize().width, 10));
         java.awt.Color accent = LookAndFeelSupport.getAccentColor();
         boolean dark = LookAndFeelSupport.isDarkMode();
-        bar.setForeground(accent);
-        bar.setBackground(dark ? new java.awt.Color(0x2B2B2B) : new java.awt.Color(0xEDF1F5));
+        java.awt.Color track = dark ? new java.awt.Color(0x2B2B2B) : new java.awt.Color(0xEDF1F5);
+        // A dark brand accent (navy, slate) vanishes on the dark track: then the light neutral of the dark-mode
+        // badges fills the bar, as Icons.neutralBadgeColor does.
+        bar.setForeground(dark && contrast(accent, track) < 3 ? new java.awt.Color(0xA9B8C8) : accent);
+        bar.setBackground(track);
         bar.putClientProperty("JProgressBar.largeHeight", Boolean.TRUE);
 
         getContentPane().add(image, BorderLayout.NORTH);
@@ -188,10 +190,12 @@ public class SplashScreen extends JWindow {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         // In dark mode prefer the branding's dark splash (and its @1.5x / @2x
         // siblings) when it ships one; light-only brandings are unaffected.
-        if (UIThemeState.isDark() && path != null && path.endsWith(".png")) {
-            String darkPath = path.substring(0, path.length() - ".png".length()) + "_dark.png";
-            if (cl.getResource(darkPath) != null) {
+        boolean darkSplash = false;
+        if (LookAndFeelSupport.isDarkMode() && path != null && path.endsWith(".png")) {
+            String darkPath = Icons.darkVariantPath(path);
+            if (darkPath != null && cl.getResource(darkPath) != null) {
                 path = darkPath;
+                darkSplash = true;
             }
         }
         URL baseURL = path != null && path.endsWith(".png") ? cl.getResource(path) : null;
@@ -208,9 +212,24 @@ public class SplashScreen extends JWindow {
             }
         }
         if (variants.size() == 1) {
-            return icon;
+            // A dark splash without @1.5x / @2x files is still the dark one.
+            return darkSplash ? new ImageIcon(baseURL) : icon;
         }
         return new ImageIcon(new BaseMultiResolutionImage(variants.toArray(new Image[0])));
+    }
+
+    /** @return the WCAG contrast ratio of two colours, 1 (none) to 21 (black on white). */
+    static double contrast(java.awt.Color a, java.awt.Color b) {
+        double la = luminance(a), lb = luminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+
+    private static double luminance(java.awt.Color c) {
+        double[] rgb = {c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0};
+        for (int i = 0; i < 3; i++) {
+            rgb[i] = rgb[i] <= 0.03928 ? rgb[i] / 12.92 : Math.pow((rgb[i] + 0.055) / 1.055, 2.4);
+        }
+        return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
     }
 
     public void setCompletionPercentage(final int absPerc, int nextPerc) {
