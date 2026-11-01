@@ -1,4 +1,4 @@
-Apache Commons Lang 3.6
+Apache Commons Lang 3.21.0
 https://commons.apache.org/proper/commons-lang/
 
 Copyright 2001-2025 The Apache Software Foundation

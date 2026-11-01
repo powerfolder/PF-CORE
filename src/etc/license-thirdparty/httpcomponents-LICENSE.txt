@@ -1,8 +1,8 @@
 Apache HttpComponents
 https://hc.apache.org/
 
-Includes: httpclient-4.5.3, httpclient-cache-4.5.3, httpcore-4.4.6,
-httpmime-4.5.1, fluent-hc-4.3.5
+Includes: httpclient-4.5.14, httpclient-cache-4.5.14, httpcore-4.4.16,
+httpmime-4.5.14
 
 Copyright 2005-2025 The Apache Software Foundation
 

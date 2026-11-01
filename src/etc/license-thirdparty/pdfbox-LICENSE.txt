@@ -1,4 +1,4 @@
-Apache PDFBox 3.0.6
+Apache PDFBox 3.0.8
 https://pdfbox.apache.org/
 
 Includes: pdfbox, pdfbox-io, pdfbox-tools, fontbox

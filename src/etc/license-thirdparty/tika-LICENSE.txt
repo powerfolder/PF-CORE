@@ -1,4 +1,4 @@
-Apache Tika 3.2.3
+Apache Tika 3.3.3
 https://tika.apache.org/
 
 Includes: tika-core, tika-parsers-standard-package, tika-parser-pdf-module,
