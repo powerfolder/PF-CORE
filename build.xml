@@ -819,6 +819,9 @@ For creation of the installer:
 					      <property name="tests.failed" value="true"/>
 					    </else></if>
 					  </then><else>
+					    <move file="${build.reports.dir}/raw/TEST-${testclass}.xml"
+					              tofile="${build.reports.dir}/flaky/TEST-${testclass}-attempt@{attempt}.xml"
+					              failonerror="false" quiet="true"/>
 					    <echo level="warning">${testclass}: failed on attempt @{attempt} - running it again</echo>
 					  </else></if>
 					</then><else>
