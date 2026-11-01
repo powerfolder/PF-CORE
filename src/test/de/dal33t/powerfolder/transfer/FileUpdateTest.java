@@ -559,11 +559,24 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
                         .next()
                         .getDiskFile(getContollerLisa().getFolderRepository());
+                String transfers = ". Downloads at lisa - active: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownloads()
+                    + ", pending: " + getContollerLisa().getTransferManager()
+                        .getPendingDownloads()
+                    + ". Uploads at bart - active: "
+                    + getContollerBart().getTransferManager()
+                        .getActiveUploads()
+                    + ", queued: " + getContollerBart().getTransferManager()
+                        .getQueuedUploads()
+                    + ". Lisas row: " + getFolderAtLisa().getFile(fileInfo)
+                    + ". Barts row: " + getFolderAtBart().getFile(fileInfo);
                 try {
                     return "size(Lisa):" + Files.size(fileAtLisa) + " size(Bart): " + Files.size(fileAtBart)
-                            + " lastmod(Lisa): " + Files.getLastModifiedTime(fileAtLisa) + " lastmod(Bart): " + Files.getLastModifiedTime(fileAtBart);
+                            + " lastmod(Lisa): " + Files.getLastModifiedTime(fileAtLisa) + " lastmod(Bart): " + Files.getLastModifiedTime(fileAtBart)
+                            + transfers;
                 } catch (IOException e) {
-                    return e.getMessage();
+                    return e.getMessage() + transfers;
                 }
             }
 
