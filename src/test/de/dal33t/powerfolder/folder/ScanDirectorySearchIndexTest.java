@@ -15,8 +15,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class ScanDirectorySearchIndexTest extends ControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         System.setProperty("powerfolder.index.startupDelayMs", "0");
@@ -28,6 +35,7 @@ public class ScanDirectorySearchIndexTest extends ControllerTestCase {
         setupTestFolder(SyncProfile.HOST_FILES);
     }
 
+    @Test
     public void testADirectoryCreatedThroughScanDirectoryIsFound() throws Exception {
         final Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "seed.txt");
