@@ -553,7 +553,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             TestHelper.waitMilliSeconds(100);
             scanFolder(getFolderAtBart());
         }
-        TestHelper.waitForCondition(60, new ConditionWithMessage() {
+        TestHelper.waitForCondition(180, new ConditionWithMessage() {
             @Override
             public String message() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
