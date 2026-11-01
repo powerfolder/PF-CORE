@@ -681,14 +681,17 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         Map<String, Integer> pdf = getIndexManager().suggestTerms("extensionExact", "pd");
-        assertEquals(Integer.valueOf(2), pdf.get("pdf"));
-        assertFalse(pdf.containsKey("docx"));
+        assertEquals(Integer.valueOf(2), pdf.get("pdf"),
+            "Two pdf files were indexed. Suggestions for \"pd\": " + pdf
+                + ". Indexed: " + indexedNames(getIndexManager()));
+        assertFalse(pdf.containsKey("docx"), "Suggestions for \"pd\": " + pdf);
 
         Map<String, Integer> all = getIndexManager().suggestTerms("extensionExact", "");
-        assertTrue(all.containsKey("pdf"));
-        assertTrue(all.containsKey("docx"));
+        assertTrue(all.containsKey("pdf"), "All extensions: " + all);
+        assertTrue(all.containsKey("docx"), "All extensions: " + all);
 
-        assertTrue(getIndexManager().suggestTerms("extensionExact", "zzz").isEmpty());
+        Map<String, Integer> none = getIndexManager().suggestTerms("extensionExact", "zzz");
+        assertTrue(none.isEmpty(), "No extension starts with zzz: " + none);
     }
 
     private FileInfoCriteria dateRangeCriteria() {
