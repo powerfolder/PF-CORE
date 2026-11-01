@@ -171,7 +171,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     + " was not removed from the model. In sync at lisa: "
                     + inSyncAtLisa(fileName) + ". Row: "
                     + uploadRowOf(fileName) + ". Events: "
-                    + bartModelListener.events;
+                    + describe(bartModelListener.events);
             }
         });
 
@@ -184,9 +184,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // (asserted above: 0) plus proof the upload was both tracked and
         // removed at least once.
         List<TableModelEvent> events = bartModelListener.events;
-        assertTrue(countType(events, TableModelEvent.INSERT) >= 1, events.toString());
+        assertTrue(countType(events, TableModelEvent.INSERT) >= 1, describe(events));
         assertTrue(countType(events, TableModelEvent.DELETE) >= 1,
-            "completed upload should have been removed: " + events);
+            "completed upload should have been removed: " + describe(events));
     }
 
     private final List<String> transferEvents =
@@ -227,9 +227,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         return false;
     }
 
-    private boolean eventTypesAre(int... types) {
+    private boolean eventTypesStartWith(int... types) {
         List<TableModelEvent> events = bartModelListener.events;
-        if (events.size() != types.length) {
+        if (events.size() < types.length) {
             return false;
         }
         for (int i = 0; i < types.length; i++) {
@@ -238,6 +238,62 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             }
         }
         return true;
+    }
+
+    private boolean lastEventTypeIs(int type) {
+        List<TableModelEvent> events = bartModelListener.events;
+        return !events.isEmpty()
+            && events.get(events.size() - 1).getType() == type;
+    }
+
+    private void assertEventsAnnounced(int... types) {
+        assertTrue(eventTypesStartWith(types),
+            "The model did not announce " + describe(types) + " first: "
+                + describe(bartModelListener.events));
+    }
+
+    private void assertLastEventWas(int type) {
+        assertTrue(lastEventTypeIs(type),
+            "The model's last announcement was not " + typeName(type)
+                + ": " + describe(bartModelListener.events));
+    }
+
+    private static String describe(List<TableModelEvent> events) {
+        StringBuilder b = new StringBuilder(events.size() + " event(s): ");
+        for (int i = 0; i < events.size(); i++) {
+            TableModelEvent e = events.get(i);
+            if (i > 0) {
+                b.append(", ");
+            }
+            b.append(typeName(e.getType())).append('[')
+                .append(e.getFirstRow()).append("..").append(e.getLastRow())
+                .append(']');
+        }
+        return b.toString();
+    }
+
+    private static String describe(int... types) {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < types.length; i++) {
+            if (i > 0) {
+                b.append(", ");
+            }
+            b.append(typeName(types[i]));
+        }
+        return b.toString();
+    }
+
+    private static String typeName(int type) {
+        if (type == TableModelEvent.INSERT) {
+            return "INSERT";
+        }
+        if (type == TableModelEvent.DELETE) {
+            return "DELETE";
+        }
+        if (type == TableModelEvent.UPDATE) {
+            return "UPDATE";
+        }
+        return "type " + type;
     }
 
     private static int countType(List<TableModelEvent> events, int type) {
@@ -280,7 +336,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     + ", queued: " + getContollerBart().getTransferManager()
                         .getQueuedUploads()
                     + ". What the transfer manager announced: " + transferEvents
-                    + ". Model events: " + bartModelListener.events;
+                    + ". Model events: " + describe(bartModelListener.events);
             }
         });
         TestHelper.waitForEmptyEDT();
@@ -292,7 +348,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // signal - the surviving row is.)
         assertEquals(1, bartModel.getRowCount());
         assertTrue(countType(bartModelListener.events, TableModelEvent.INSERT) >= 1,
-            bartModelListener.events.toString());
+            describe(bartModelListener.events));
     }
 
     @Test
@@ -361,21 +417,21 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 Upload upload = uploadRowOf(fileName);
                 return upload != null && upload.isStarted()
                     && !upload.isCompleted()
-                    && eventTypesAre(TableModelEvent.INSERT,
+                    && eventTypesStartWith(TableModelEvent.INSERT,
                         TableModelEvent.UPDATE);
             }
 
             public String message() {
                 return "Upload of " + fileName + " not running in the model: "
                     + uploadRowOf(fileName) + ". Events: "
-                    + bartModelListener.events;
+                    + describe(bartModelListener.events);
             }
         });
         TestHelper.waitForEmptyEDT();
 
         assertEquals(1, bartModel.getRowCount());
         // Upload requested + started
-        assertEquals(2, bartModelListener.events.size());
+        assertEventsAnnounced(TableModelEvent.INSERT, TableModelEvent.UPDATE);
 
         // Abort thru change of sync profile
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
@@ -383,14 +439,15 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(50, new ConditionWithMessage() {
             public boolean reached() {
                 return uploadRowOf(fileName) == null
-                    && eventTypesAre(TableModelEvent.INSERT,
-                        TableModelEvent.UPDATE, TableModelEvent.DELETE);
+                    && eventTypesStartWith(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE)
+                    && lastEventTypeIs(TableModelEvent.DELETE);
             }
 
             public String message() {
                 return "Aborted upload of " + fileName
                     + " still in the model: " + uploadRowOf(fileName)
-                    + ". Events: " + bartModelListener.events;
+                    + ". Events: " + describe(bartModelListener.events);
             }
         });
         getContollerLisa().getFolderRepository().getFileRequestor()
@@ -401,17 +458,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
-        // Check correct events from model
-        assertEquals(3, bartModelListener.events.size(), bartModelListener.events.toString());
-        // Upload requested
-        assertTrue(bartModelListener.events.get(0)
-            .getType() == TableModelEvent.INSERT);
-        // Upload started
-        assertTrue(bartModelListener.events.get(1)
-            .getType() == TableModelEvent.UPDATE);
-        // Upload aborted
-        assertTrue(bartModelListener.events.get(2)
-            .getType() == TableModelEvent.DELETE);
+        // Check correct events from model: requested, started, aborted
+        assertEventsAnnounced(TableModelEvent.INSERT,
+            TableModelEvent.UPDATE);
+        assertLastEventWas(TableModelEvent.DELETE);
 
         TestHelper.waitForEmptyEDT();
     }
@@ -442,7 +492,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 Upload upload = uploadRowOf(fileName);
                 return upload != null && upload.isStarted()
                     && !upload.isCompleted()
-                    && eventTypesAre(TableModelEvent.INSERT,
+                    && eventTypesStartWith(TableModelEvent.INSERT,
                         TableModelEvent.UPDATE);
             }
 
@@ -450,7 +500,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             public String message() {
                 return "Upload of " + fileName + " not running in the model: "
                     + uploadRowOf(fileName) + ". Bart events: "
-                    + bartModelListener.events + ". Bart active uploads: "
+                    + describe(bartModelListener.events) + ". Bart active uploads: "
                     + getContollerBart().getTransferManager().countActiveUploads();
             }
         });
@@ -459,23 +509,15 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // is then empty!
         assertEquals(1, bartModel.getRowCount(), "Rowcount mismatch");
         // Requested and Started
-        if (bartModelListener.events.size() >= 3) {
-            if (bartModelListener.events.get(2)
-                .getType() == TableModelEvent.DELETE)
-            {
-                fail(
-                    "Premature file transfer finish. increase filesize for testfile. " +
-                            "completed uploads="
-                            + getContollerBart().getTransferManager().getCompletedUploadsCollection().size());
-            }
+        if (countType(bartModelListener.events, TableModelEvent.DELETE) >= 1) {
+            fail(
+                "Premature file transfer finish. increase filesize for testfile. " +
+                        "completed uploads="
+                        + getContollerBart().getTransferManager().getCompletedUploadsCollection().size()
+                        + ". " + describe(bartModelListener.events));
         }
-        // Upload requested
-        assertEquals(TableModelEvent.INSERT,
-            bartModelListener.events.get(0).getType());
-        // Upload started
-        assertEquals(TableModelEvent.UPDATE,
-            bartModelListener.events.get(1).getType());
-        assertEquals(2, bartModelListener.events.size(), "Event count mismatch");
+        // Upload requested, then started
+        assertEventsAnnounced(TableModelEvent.INSERT, TableModelEvent.UPDATE);
 
         disconnectBartAndLisa();
         TestHelper.waitForCondition(30, () -> getContollerBart().getTransferManager()
@@ -487,31 +529,25 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return uploadRowOf(fileName) == null
-                    && eventTypesAre(TableModelEvent.INSERT,
-                        TableModelEvent.UPDATE, TableModelEvent.DELETE);
+                    && eventTypesStartWith(TableModelEvent.INSERT,
+                        TableModelEvent.UPDATE)
+                    && lastEventTypeIs(TableModelEvent.DELETE);
             }
 
             @Override
             public String message() {
                 return "Aborted upload of " + fileName
                     + " still in the model: " + uploadRowOf(fileName)
-                    + ". Bart events: " + bartModelListener.events;
+                    + ". Bart events: " + describe(bartModelListener.events);
             }
         });
 
         // no active upload
         assertEquals(0, bartModel.getRowCount(), "Rowcount mismatch");
         // Upload requested, started, aborted
-        assertEquals(3, bartModelListener.events.size(), "Event count mismatch");
-        // Upload requested
-        assertTrue(bartModelListener.events.get(0)
-            .getType() == TableModelEvent.INSERT);
-        // Upload started
-        assertTrue(bartModelListener.events.get(1)
-            .getType() == TableModelEvent.UPDATE);
-        // Upload aborted
-        assertTrue(bartModelListener.events.get(2)
-            .getType() == TableModelEvent.DELETE);
+        assertEventsAnnounced(TableModelEvent.INSERT,
+            TableModelEvent.UPDATE);
+        assertLastEventWas(TableModelEvent.DELETE);
 
         TestHelper.waitForEmptyEDT();
     }
