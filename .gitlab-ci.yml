@@ -3,7 +3,7 @@ stages:
 
 variables:
   GIT_DEPTH: "1"
-  TEST_ATTEMPTS: "1,2,3"
+  TEST_ATTEMPTS: "1"
 
 # The PF-CORE tests are heavy, so they run ONLY on the nightly scheduled pipeline
 # (set the schedule under the project's pipeline schedules: 04:00 on develop_27).
@@ -123,7 +123,7 @@ test-Windows:
   script:
     - powershell -Command "$dir = $env:CI_PROJECT_DIR; if ($dir) { Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -and $_.CommandLine.Contains($dir) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } }; exit 0"
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -lt (Get-Date).AddHours(-2) } | Stop-Process -Force; exit 0"
-    - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g -Dtest.attempts=%TEST_ATTEMPTS%
+    - call ant run-tests -Dtest.threads=2 -Dtest.fork.heap=1g -Dtest.attempts="%TEST_ATTEMPTS%"
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
