@@ -1014,27 +1014,13 @@ public class MainFrame extends PFUIComponent {
      * Updates the title
      */
     public void updateTitle() {
-        StringBuilder title = new StringBuilder();
-
         String appName = Translation.get("general.application.name");
         // Unbranded/missing translation ("- key -") falls back to the product name.
         if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
             appName = "PowerFolder";
         }
-        // PFC-3643: "<app name> v<version> | <device name>" - the taskbar, Alt-Tab and screen readers know a client
-        // only by this title, not by the logo inside the window.
-        title.append(appName);
-        title.append(" v" + Controller.PROGRAM_VERSION);
-        title.append(" | " + getController().getMySelf().getNick());
-        /* No idea who archi is ;)
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        if (cal.get(Calendar.DAY_OF_MONTH) == 21
-            && cal.get(Calendar.MONTH) == 2)
-        {
-            title.append(" | Happy birthday archi !");
-        }*/
-        uiComponent.setTitle(title.toString());
+        // PFC-3652: the app name only - the taskbar, Alt-Tab and screen readers know a client by this title.
+        uiComponent.setTitle(appName);
     }
 
     /**
