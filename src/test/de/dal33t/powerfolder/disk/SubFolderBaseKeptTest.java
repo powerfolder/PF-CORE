@@ -3,8 +3,10 @@ package de.dal33t.powerfolder.disk;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -12,8 +14,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * PFS-5976: a rename that failed halfway left the location naming the old place - an empty leftover - while the data
@@ -22,8 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class SubFolderBaseKeptTest {
 
-    @TempDir
-    Path base;
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+    private Path base;
+
+    @Before
+    public void setUp() {
+        base = temp.getRoot().toPath();
+    }
 
     private final FolderInfo share = FolderInfoFactory.newTopFolderForTest("share");
 
@@ -40,8 +48,8 @@ public class SubFolderBaseKeptTest {
         Path leftover = Files.createDirectories(base.resolve("area/old/inner"));
         identify(leftover, share);
 
-        assertTrue(FolderRepository.keepsBase(share, data, base.resolve("area/old")), "Directories and a .PowerFolder"
-            + " are no data");
+        assertTrue("Directories and a .PowerFolder"
+            + " are no data", FolderRepository.keepsBase(share, data, base.resolve("area/old")));
     }
 
     @Test
@@ -49,8 +57,8 @@ public class SubFolderBaseKeptTest {
         Path old = Files.createDirectories(base.resolve("area/old"));
         Path data = dataOf(share, "area/new");
 
-        assertFalse(FolderRepository.keepsBase(share, old, data), "The PFS-5935 case: the location is right");
-        assertFalse(FolderRepository.keepsBase(share, base.resolve("gone"), data), "...also when the old base is gone");
+        assertFalse("The PFS-5935 case: the location is right", FolderRepository.keepsBase(share, old, data));
+        assertFalse("...also when the old base is gone", FolderRepository.keepsBase(share, base.resolve("gone"), data));
     }
 
     /**
@@ -69,8 +77,8 @@ public class SubFolderBaseKeptTest {
             .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve("archive"));
         Files.writeString(nestedArchive.resolve("Plan.pdf_K_1"), "deleted");
 
-        assertFalse(FolderRepository.keepsBase(share, data, old), "Its own archive");
-        assertFalse(FolderRepository.keepsBase(share, nested, base.resolve("area/nestedOld")), "A nested one's");
+        assertFalse("Its own archive", FolderRepository.keepsBase(share, data, old));
+        assertFalse("A nested one's", FolderRepository.keepsBase(share, nested, base.resolve("area/nestedOld")));
     }
 
     @Test
@@ -85,8 +93,8 @@ public class SubFolderBaseKeptTest {
         Path anonymous = Files.createDirectories(base.resolve("area/anonymous"));
         Files.writeString(anonymous.resolve("Plan.pdf"), "data");
 
-        assertFalse(FolderRepository.keepsBase(share, foreign, base.resolve("area/old")), "Another folder's data");
-        assertFalse(FolderRepository.keepsBase(share, anonymous, base.resolve("area/old")), "Data without identity");
+        assertFalse("Another folder's data", FolderRepository.keepsBase(share, foreign, base.resolve("area/old")));
+        assertFalse("Data without identity", FolderRepository.keepsBase(share, anonymous, base.resolve("area/old")));
     }
 
     /** Only the system directory itself is no data - a name that merely contains it is. */
