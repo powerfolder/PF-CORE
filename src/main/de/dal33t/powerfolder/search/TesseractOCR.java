@@ -274,7 +274,6 @@ public class TesseractOCR extends Loggable {
         }
 
         Tesseract tess = null;
-        boolean healthy = false;
         try {
             // Indexing is a background batch job — waiting is better than
             // permanently dropping the file's searchable content. With the pool
@@ -288,7 +287,6 @@ public class TesseractOCR extends Loggable {
 
             long start = System.currentTimeMillis();
             String result = isPdf(file) ? doOcrOnPdf(tess, file) : tess.doOCR(file.toFile());
-            healthy = true;
             long elapsed = System.currentTimeMillis() - start;
             if (result != null && !result.isBlank()) {
                 if (isFine()) {
@@ -310,7 +308,7 @@ public class TesseractOCR extends Loggable {
             return null;
         } finally {
             if (tess != null) {
-                returnToPool(tess, healthy);
+                refillPool();
             }
         }
     }
@@ -378,31 +376,34 @@ public class TesseractOCR extends Loggable {
     }
 
     /**
-     * An instance whose {@code doOCR} did not return cleanly is thrown away instead of put back. Tess4J
-     * deletes the native handle in a finally INSIDE doOCR, so after a failure nobody knows whether that
-     * handle is gone, half-built or garbage - and the next call on the same object runs
-     * TessBaseAPIDelete on it. That is not an exception one can catch: it is a SIGSEGV in C that takes
-     * the whole server down, which is what the crash file of 2026-07-10 shows
-     * (TessBaseAPIDelete+0xc, called from Tesseract.dispose, called from doOCR).
+     * A used instance is never put back. It is dropped and the pool is refilled with a fresh one.
      * <p>
-     * If no replacement can be built the pool simply gets smaller. Less OCR is the better outcome:
-     * a pool that runs empty logs "pool exhausted" and skips the content, an instance that kills the
+     * {@code Tesseract.dispose()} calls {@code TessBaseAPIDelete} and then leaves the handle field
+     * pointing at the memory it just freed; only {@code init()} ever replaces it. In
+     * {@code doOCR(File, List)} the {@code finally} that calls {@code dispose()} also covers the image
+     * loading that runs BEFORE {@code init()}. So when a file cannot be decoded - a truncated TIFF, a
+     * JPEG that is not one - the handle of the PREVIOUS run is freed a second time. On a fresh object
+     * that field is null and the same {@code dispose()} does nothing, which is why only a reused
+     * instance can die this way, and why it is the second use that dies and not the failing first one.
+     * <p>
+     * A double free is not an exception one can catch: it is the SIGSEGV in TessBaseAPIDelete of the
+     * crash file of 2026-07-10, and it takes the whole server down. Reusing a Tesseract object saves
+     * nothing in return - the native handle is built inside doOCR and destroyed before it returns, so
+     * an unused instance is a few strings.
+     * <p>
+     * If no replacement can be built the pool simply gets smaller. Less OCR is the better outcome: a
+     * pool that runs empty logs "pool exhausted" and skips the content, an instance that kills the
      * process takes everything with it.
      */
-    private void returnToPool(Tesseract tess, boolean healthy) {
-        if (healthy) {
-            pool.offer(tess);
-            return;
-        }
+    private void refillPool() {
         if (!ocrEnabled) {
             return;
         }
         Tesseract fresh = newInstance();
         if (fresh != null) {
             pool.offer(fresh);
-            logFine("Replaced a Tesseract instance after a failed OCR run");
         } else {
-            logWarning("A Tesseract instance failed and could not be replaced - the OCR pool holds "
+            logWarning("A Tesseract instance could not be replaced - the OCR pool holds "
                     + pool.size() + " instance(s) now");
         }
     }
