@@ -344,7 +344,7 @@ public abstract class TwoControllerTestCase {
 
             if (lisasAccount == null) {
                 lisasAccount = client.getAccountService().register("lisa",
-                    "password", false, null, null, false);
+                    "password", false, null, false);
                 if (lisasAccount == null || !lisasAccount.isValid()) {
                     fail("Unable to register lisa's user account at bart");
                 }
